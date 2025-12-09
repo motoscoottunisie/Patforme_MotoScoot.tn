@@ -57,13 +57,10 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
     window.scrollTo(0, 0);
   }, [garageId]);
 
-  // Mock Images for Gallery if not present in data
-  const galleryImages = garage.images || [
-    garage.image,
-    "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1552168324-d612d77725e3?auto=format&fit=crop&w=800&q=80"
-  ];
+  // Safe Gallery Images with Fallback
+  const galleryImages = garage.images && garage.images.length > 0 
+    ? garage.images 
+    : [garage.image]; // Fallback to main image
 
   // Mock Services if not present
   const services = garage.services || [
@@ -248,19 +245,20 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
                     </button>
                 </div>
 
-                {/* Gallery Grid (Bento Style) */}
+                {/* Gallery Grid (Bento Style) - Safe Rendering */}
                 <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64 md:h-96 rounded-2xl overflow-hidden mb-8">
                     <div className="col-span-2 row-span-2 relative group cursor-pointer">
                         <img src={galleryImages[0]} alt="Main" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
                     </div>
-                    <div className="col-span-1 row-span-1 relative group cursor-pointer">
-                        <img src={galleryImages[1]} alt="Interior 1" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    {/* Only render other grid items if images exist, otherwise fill with main image or hide */}
+                    <div className="col-span-1 row-span-1 relative group cursor-pointer bg-gray-100">
+                        <img src={galleryImages[1] || galleryImages[0]} alt="Interior 1" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                     </div>
-                    <div className="col-span-1 row-span-1 relative group cursor-pointer">
-                        <img src={galleryImages[2]} alt="Interior 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <div className="col-span-1 row-span-1 relative group cursor-pointer bg-gray-100">
+                        <img src={galleryImages[2] || galleryImages[0]} alt="Interior 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                     </div>
-                    <div className="col-span-2 row-span-1 relative group cursor-pointer">
+                    <div className="col-span-2 row-span-1 relative group cursor-pointer bg-gray-100">
                         <img src={galleryImages[3] || galleryImages[0]} alt="Interior 3" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="text-white font-bold flex items-center gap-2 text-sm backdrop-blur-md px-3 py-1.5 rounded-full bg-white/20">

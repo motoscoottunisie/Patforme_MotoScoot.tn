@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Heart, 
@@ -18,7 +17,7 @@ import {
   LayoutGrid,
   List as ListIcon
 } from 'lucide-react';
-import { mockListings } from '../data/mockData';
+import { mockListings, mockModels } from '../data/mockData';
 import Header from './layout/Header';
 import { useFavorites } from '../context/FavoritesContext';
 
@@ -188,6 +187,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
     search: '',
     type: '',
     brand: '',
+    model: '', // Added model filter
     location: '',
     minYear: 2000,
     maxYear: 2026,
@@ -214,9 +214,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
     // Text search (Title or Location)
     if (filters.search && !listing.title.toLowerCase().includes(filters.search.toLowerCase()) && !listing.location.toLowerCase().includes(filters.search.toLowerCase())) return false;
     
-    // Dropdowns (Exact or partial match)
-    if (filters.type && filters.type !== 'Tous les types' && !listing.title.includes(filters.type)) return false; // Basic matching for type as it's not a direct property in Listing interface
-    if (filters.brand && filters.brand !== 'Toutes les marques' && !listing.title.toLowerCase().includes(filters.brand.toLowerCase())) return false; // Matching brand from title since brand prop isn't explicit on listing object
+    // Dropdowns
+    if (filters.type && filters.type !== 'Tous les types' && listing.type !== filters.type) return false;
+    if (filters.brand && filters.brand !== 'Toutes les marques' && !listing.title.toLowerCase().includes(filters.brand.toLowerCase())) return false;
+    
+    // Model Filter logic
+    if (filters.model && filters.model !== 'Tous les modèles' && !listing.title.toLowerCase().includes(filters.model.toLowerCase())) return false;
+    
     if (filters.location && filters.location !== 'Toutes les régions' && filters.location !== 'Toute la Tunisie' && !listing.location.includes(filters.location)) return false;
 
     // Ranges
@@ -244,6 +248,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
       search: '',
       type: '',
       brand: '',
+      model: '',
       location: '',
       minYear: 2000,
       maxYear: 2026,
@@ -405,6 +410,28 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                     <option>BMW</option>
                     <option>Kawasaki</option>
                     <option>KTM</option>
+                    <option>Suzuki</option>
+                    <option>Ducati</option>
+                    <option>Triumph</option>
+                    <option>Piaggio</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* ADDED MODEL FILTER */}
+              <div className="mb-6">
+                <label className="text-sm font-bold text-gray-700 mb-2 block">Modèle</label>
+                <div className="relative">
+                  <select 
+                    value={filters.model}
+                    onChange={(e) => handleFilterChange('model', e.target.value)}
+                    className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
+                  >
+                    <option>Tous les modèles</option>
+                    {mockModels.map((model) => (
+                      <option key={model} value={model}>{model}</option>
+                    ))}
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 </div>
@@ -431,7 +458,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
               <hr className="border-gray-100 mb-6" />
 
-              {/* Range Filters */}
               <DualRangeSlider 
                 label="Année" 
                 min={2000} 
@@ -624,7 +650,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                  </div>
               </div>
               
-              {/* Mobile Inputs similar to desktop */}
               <div className="space-y-6">
                  <div>
                     <label className="block font-bold mb-2">Type</label>
@@ -632,9 +657,48 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                        <option>Tous les types</option>
                        <option>Moto</option>
                        <option>Scooter</option>
+                       <option>Accessoires</option>
                     </select>
                  </div>
-                 {/* ... other dropdowns ... */}
+                 
+                 <div>
+                    <label className="block font-bold mb-2">Marque</label>
+                    <select value={filters.brand} onChange={(e) => handleFilterChange('brand', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                       <option>Toutes les marques</option>
+                       <option>Yamaha</option>
+                       <option>Honda</option>
+                       <option>BMW</option>
+                       <option>Kawasaki</option>
+                       <option>KTM</option>
+                       <option>Suzuki</option>
+                       <option>Ducati</option>
+                       <option>Triumph</option>
+                       <option>Piaggio</option>
+                    </select>
+                 </div>
+
+                 {/* ADDED MOBILE MODEL DROPDOWN */}
+                 <div>
+                    <label className="block font-bold mb-2">Modèle</label>
+                    <select value={filters.model} onChange={(e) => handleFilterChange('model', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                       <option>Tous les modèles</option>
+                       {mockModels.map((model) => (
+                         <option key={model} value={model}>{model}</option>
+                       ))}
+                    </select>
+                 </div>
+
+                 <div>
+                    <label className="block font-bold mb-2">Localisation</label>
+                    <select value={filters.location} onChange={(e) => handleFilterChange('location', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                       <option>Toutes les régions</option>
+                       <option>Tunis</option>
+                       <option>Sousse</option>
+                       <option>Sfax</option>
+                       <option>Nabeul</option>
+                       <option>Bizerte</option>
+                    </select>
+                 </div>
               </div>
 
               <hr className="border-gray-100" />

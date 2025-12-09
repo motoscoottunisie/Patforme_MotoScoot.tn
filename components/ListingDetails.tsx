@@ -106,7 +106,11 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
 
   // Find listing or use fallback
   const listing = mockListings.find(l => l.id === listingId) || mockListings[0];
-  const similarListings = mockListings.filter(l => l.id !== listing.id).slice(0, 3);
+  
+  // UPDATED: Filter similar listings by Type
+  const similarListings = mockListings
+    .filter(l => l.id !== listing.id && l.type === listing.type)
+    .slice(0, 3);
   
   const favorited = isFavorite('listing', listing.id);
 
@@ -119,10 +123,8 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
     "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80"
   ];
 
-  const features = [
-    "ABS", "Anti-patinage", "Poignées chauffantes", "Top Case", 
-    "Bulle haute", "Ligne Akrapovic", "Carnet d'entretien", "Première main"
-  ];
+  // Use real equipment data if available, fallback for demo
+  const features = listing.equipment || ["Aucune option spécifiée"];
 
   // Helper to get deal label and color (Matches SearchResults logic)
   const getDealInfo = (rating?: number) => {
@@ -360,11 +362,13 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                 <div className="bg-white md:rounded-2xl md:p-8 md:shadow-sm md:border border-gray-100">
                    <Accordion title="Équipements & Options" defaultOpen={true} icon={CheckCircle2}>
                       <div className="flex flex-wrap gap-2 pt-2">
-                         {features.map((feature, idx) => (
+                         {features.length > 0 ? features.map((feature, idx) => (
                             <span key={idx} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium">
                                {feature}
                             </span>
-                         ))}
+                         )) : (
+                            <span className="text-gray-500 text-sm italic">Aucun équipement spécifié</span>
+                         )}
                       </div>
                    </Accordion>
                 </div>

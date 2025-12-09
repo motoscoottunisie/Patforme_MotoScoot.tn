@@ -1,3 +1,4 @@
+
 # Stratégie de Placement Publicitaire - MotoScoot.tn
 
 Pour un site de marketplace et de contenu comme **MotoScoot.tn**, l'intégration de la publicité doit trouver un équilibre délicat : générer des revenus (ou promouvoir des partenaires) sans dégrader l'expérience utilisateur (UX) ni la crédibilité de la plateforme.

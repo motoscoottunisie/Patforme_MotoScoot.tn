@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, 
   List, 
@@ -15,7 +15,15 @@ import {
   Calendar as CalendarIcon,
   Edit,
   Trash2,
-  Plus
+  Plus,
+  Camera,
+  Save,
+  Mail,
+  Phone,
+  MapPin,
+  Lock,
+  Shield,
+  CheckCircle2
 } from 'lucide-react';
 import Header from './layout/Header';
 import { mockListings } from '../data/mockData';
@@ -31,6 +39,24 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', onGoHome, onNavigate, isLoggedIn, onTriggerLogin, onLogout }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'settings'>(initialTab);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Profile State
+  const [profileData, setProfileData] = useState({
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john.doe@example.com',
+    phone: '22 123 456',
+    location: 'Tunis',
+    avatar: null as string | null,
+    notifications: {
+      email: true,
+      sms: false,
+      marketing: true
+    }
+  });
 
   useEffect(() => {
     setActiveTab(initialTab);
@@ -44,6 +70,40 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', onGoHome
   ];
 
   const myListings = mockListings.slice(0, 3); // Simulate user's listings
+
+  // Handlers
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setProfileData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleToggleNotification = (key: keyof typeof profileData.notifications) => {
+    setProfileData(prev => ({
+      ...prev,
+      notifications: {
+        ...prev.notifications,
+        [key]: !prev.notifications[key]
+      }
+    }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const imageUrl = URL.createObjectURL(file);
+      setProfileData(prev => ({ ...prev, avatar: imageUrl }));
+    }
+  };
+
+  const handleSaveProfile = () => {
+    setIsSaving(true);
+    // Simulate API Call
+    setTimeout(() => {
+      setIsSaving(false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    }, 1000);
+  };
 
   const renderOverview = () => (
     <div className="space-y-8 animate-fade-in-up">
@@ -173,6 +233,187 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', onGoHome
     </div>
   );
 
+  const renderSettings = () => (
+    <div className="space-y-8 animate-fade-in-up max-w-4xl">
+       {/* SUCCESS TOAST */}
+       {showSuccess && (
+         <div className="fixed top-24 right-4 md:right-8 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-fade-in-up">
+            <CheckCircle2 className="text-green-400" size={20} />
+            <span className="font-bold">Modifications enregistrées avec succès !</span>
+         </div>
+       )}
+
+       {/* HEADER ACTIONS */}
+       <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-900">Paramètres du compte</h2>
+          <button 
+            onClick={handleSaveProfile}
+            disabled={isSaving}
+            className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl font-bold shadow-md hover:bg-primary-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+             {isSaving ? (
+                <>
+                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                   <span>Enregistrement...</span>
+                </>
+             ) : (
+                <>
+                   <Save size={18} />
+                   <span>Enregistrer</span>
+                </>
+             )}
+          </button>
+       </div>
+
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* LEFT: AVATAR & PUBLIC INFO */}
+          <div className="lg:col-span-1 space-y-6">
+             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 text-center">
+                <div className="relative inline-block mb-4 group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                   <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-50 shadow-inner mx-auto">
+                      {profileData.avatar ? (
+                        <img src={profileData.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center text-primary-300">
+                           <User size={48} />
+                        </div>
+                      )}
+                   </div>
+                   <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]">
+                      <Camera className="text-white" size={24} />
+                   </div>
+                   <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                </div>
+                <h3 className="font-bold text-gray-900 text-lg">{profileData.firstName} {profileData.lastName}</h3>
+                <p className="text-gray-500 text-sm mb-4">Membre depuis Janvier 2024</p>
+                <div className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-100">
+                   <Shield size={12} /> Compte Vérifié
+                </div>
+             </div>
+
+             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                <h4 className="font-bold text-gray-900 mb-4">Préférences de notification</h4>
+                <div className="space-y-4">
+                   <label className="flex items-center justify-between cursor-pointer">
+                      <span className="text-sm text-gray-600">Email (Offres & Actus)</span>
+                      <div className={`w-11 h-6 rounded-full p-1 transition-colors ${profileData.notifications.email ? 'bg-primary-600' : 'bg-gray-200'}`} onClick={() => handleToggleNotification('email')}>
+                         <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${profileData.notifications.email ? 'translate-x-5' : ''}`}></div>
+                      </div>
+                   </label>
+                   <label className="flex items-center justify-between cursor-pointer">
+                      <span className="text-sm text-gray-600">SMS (Rdv & Ventes)</span>
+                      <div className={`w-11 h-6 rounded-full p-1 transition-colors ${profileData.notifications.sms ? 'bg-primary-600' : 'bg-gray-200'}`} onClick={() => handleToggleNotification('sms')}>
+                         <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${profileData.notifications.sms ? 'translate-x-5' : ''}`}></div>
+                      </div>
+                   </label>
+                </div>
+             </div>
+          </div>
+
+          {/* RIGHT: EDIT FORM */}
+          <div className="lg:col-span-2 space-y-6">
+             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-8">
+                <h4 className="font-bold text-gray-900 text-lg mb-6 flex items-center gap-2">
+                   <User size={20} className="text-primary-600" />
+                   Informations Personnelles
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                   <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-700">Prénom</label>
+                      <input 
+                        type="text" 
+                        name="firstName" 
+                        value={profileData.firstName} 
+                        onChange={handleProfileChange}
+                        className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all text-sm font-medium" 
+                      />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-700">Nom</label>
+                      <input 
+                        type="text" 
+                        name="lastName" 
+                        value={profileData.lastName} 
+                        onChange={handleProfileChange}
+                        className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all text-sm font-medium" 
+                      />
+                   </div>
+                </div>
+
+                <div className="space-y-2">
+                   <label className="text-sm font-bold text-gray-700">Ville</label>
+                   <div className="relative">
+                      <input 
+                        type="text" 
+                        name="location" 
+                        value={profileData.location} 
+                        onChange={handleProfileChange}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all text-sm font-medium" 
+                      />
+                      <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                   </div>
+                </div>
+             </div>
+
+             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-8">
+                <h4 className="font-bold text-gray-900 text-lg mb-6 flex items-center gap-2">
+                   <Lock size={20} className="text-primary-600" />
+                   Coordonnées & Sécurité
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                   <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-700">Email</label>
+                      <div className="relative">
+                         <input 
+                           type="email" 
+                           name="email" 
+                           value={profileData.email} 
+                           onChange={handleProfileChange}
+                           className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all text-sm font-medium" 
+                         />
+                         <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      </div>
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-700">Téléphone</label>
+                      <div className="relative">
+                         <input 
+                           type="tel" 
+                           name="phone" 
+                           value={profileData.phone} 
+                           onChange={handleProfileChange}
+                           className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all text-sm font-medium" 
+                         />
+                         <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      </div>
+                   </div>
+                </div>
+
+                <div className="pt-6 border-t border-gray-50">
+                   <button className="text-sm font-bold text-primary-600 hover:text-primary-700 flex items-center gap-2 px-4 py-2 hover:bg-primary-50 rounded-lg transition-colors w-fit">
+                      <Lock size={16} />
+                      Changer le mot de passe
+                   </button>
+                </div>
+             </div>
+
+             <div className="bg-red-50 rounded-3xl border border-red-100 p-6 flex justify-between items-center">
+                <div>
+                   <h4 className="font-bold text-red-700">Zone de danger</h4>
+                   <p className="text-xs text-red-500 mt-1">La suppression de votre compte est irréversible.</p>
+                </div>
+                <button className="px-4 py-2 bg-white border border-red-200 text-red-600 font-bold text-xs rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm">
+                   Supprimer le compte
+                </button>
+             </div>
+          </div>
+       </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-12">
       <Header 
@@ -191,11 +432,11 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', onGoHome
             <aside className="w-full lg:w-64 flex-shrink-0">
                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sticky top-24">
                   <div className="flex items-center gap-3 p-3 mb-6 border-b border-gray-50 pb-6">
-                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                        JD
+                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-lg shadow-md overflow-hidden">
+                        {profileData.avatar ? <img src={profileData.avatar} alt="Avatar" className="w-full h-full object-cover"/> : "JD"}
                      </div>
                      <div>
-                        <h3 className="font-bold text-gray-900 text-sm">John Doe</h3>
+                        <h3 className="font-bold text-gray-900 text-sm">{profileData.firstName} {profileData.lastName}</h3>
                         <p className="text-xs text-gray-500">Particulier</p>
                      </div>
                   </div>
@@ -241,18 +482,12 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', onGoHome
                <h1 className="text-2xl font-extrabold text-gray-900 mb-6 hidden lg:block">
                   {activeTab === 'overview' && "Tableau de bord"}
                   {activeTab === 'listings' && "Gérer mes annonces"}
-                  {activeTab === 'settings' && "Mon profil"}
+                  {activeTab === 'settings' && "Modifier mon profil"}
                </h1>
 
                {activeTab === 'overview' && renderOverview()}
                {activeTab === 'listings' && renderListings()}
-               {activeTab === 'settings' && (
-                  <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center py-20 animate-fade-in-up">
-                     <Settings size={48} className="mx-auto text-gray-300 mb-4" />
-                     <h3 className="text-lg font-bold text-gray-900">Paramètres du compte</h3>
-                     <p className="text-gray-500 text-sm">Fonctionnalité bientôt disponible.</p>
-                  </div>
-               )}
+               {activeTab === 'settings' && renderSettings()}
             </div>
 
          </div>

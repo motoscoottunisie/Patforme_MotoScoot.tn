@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Bike, 
@@ -20,9 +19,12 @@ import {
   X,
   CheckCircle2,
   Eye,
-  Home
+  Home,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import Header from './layout/Header';
+import { brandsMoto, mockModels, equipmentOptions, accessoryTypes, conditions } from '../data/mockData';
 
 interface DepositAdProps {
   onGoHome?: () => void;
@@ -32,10 +34,11 @@ interface DepositAdProps {
   onLogout?: () => void;
 }
 
-// --- TYPES & DATA ---
+// --- TYPES ---
 
 type Category = 'Moto' | 'Scooter' | 'Accessoires' | '';
-type Condition = 'Neuf' | 'Très bon' | 'Bon' | 'À réparer' | '';
+// FIXED: Added 'Très bon' to match global data
+type Condition = 'Neuf' | 'État neuf' | 'Excellent' | 'Très bon' | 'Bon' | 'Correct' | 'À réparer' | 'Pour pièces' | '';
 
 interface AdFormData {
   category: Category;
@@ -50,26 +53,17 @@ interface AdFormData {
   city: string;
   description: string;
   images: string[];
+  equipment: string[];
 }
 
-const accessoryTypes = [
-  "Casque", "Blouson / Veste", "Gants", "Bottes / Chaussures", 
-  "Pantalon / Combinaison", "Pièce Moteur", "Échappement", 
-  "Carénage", "Éclairage / Électronique", "Antivol / Alarme", "Autre"
-];
+// Generate years from 2026 down to 1980
+const years = Array.from({ length: 2026 - 1980 + 1 }, (_, i) => (2026 - i).toString());
 
-const brandsMoto = ["Yamaha", "Honda", "Kawasaki", "BMW", "KTM", "Suzuki", "Ducati", "Triumph", "Sym", "Piaggio", "Peugeot", "Aprilia", "Benelli", "Autre"];
-
-const mockModels = [
-  "MT-07", "MT-09", "TMAX 530", "TMAX 560", "XMAX 125", "XMAX 300", "R1", "R6", "Tenere 700", "Tracer 900",
-  "X-ADV", "Forza 300", "Forza 350", "Forza 750", "Africa Twin", "CB650R", "CBR1000RR", "PCX 125", "SH 125", "SH 300",
-  "Z900", "Z650", "Z1000", "Versys 650", "Ninja 400", "Ninja 650", "Ninja ZX-10R",
-  "R 1200 GS", "R 1250 GS", "R 1300 GS", "F 850 GS", "S 1000 RR", "R 18", "C 400 X", "C 400 GT",
-  "Duke 125", "Duke 390", "Duke 790", "Adventure 390", "Super Duke 1290",
-  "Street Triple 675", "Street Triple 765", "Bonneville T100", "Bonneville T120", "Tiger 800", "Tiger 900",
-  "Scrambler 800", "Monster 821", "Monster 937", "Panigale V4", "Multistrada V4",
-  "Vespa GTS 300", "Beverly 300", "Beverly 400", "Liberty 125",
-  "Fiddle II", "Fiddle III", "Symphony ST", "Jet 14", "Orbit II", "Kisbee"
+// Standard displacements
+const ccList = [
+  "49", "50", "80", "100", "110", "125", "150", "200", "250", "300", "350", "400", 
+  "450", "500", "530", "560", "600", "650", "700", "750", "800", "850", "900", 
+  "1000", "1100", "1200", "1250", "1300", "1400", "1500", "1600", "1800", "2300"
 ];
 
 const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn, onTriggerLogin, onLogout }) => {
@@ -90,11 +84,12 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
     year: '',
     mileage: '',
     cc: '',
-    condition: '',
+    condition: '', // Initialized as empty
     price: '',
     city: 'Tunis',
     description: '',
-    images: []
+    images: [],
+    equipment: []
   });
 
   // Scroll to top on step change
@@ -104,6 +99,18 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
 
   const updateField = (field: keyof AdFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleEquipmentToggle = (item: string) => {
+    setFormData(prev => {
+      const exists = prev.equipment.includes(item);
+      return {
+        ...prev,
+        equipment: exists 
+          ? prev.equipment.filter(e => e !== item)
+          : [...prev.equipment, item]
+      };
+    });
   };
 
   const handleNext = () => {
@@ -257,114 +264,178 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
               ))}
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Brand - Dropdown */}
-          <div className="col-span-full md:col-span-1">
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">Marque</label>
+
+          {/* Condition for Accessory */}
+          <div className="pt-2">
+            <label className="block text-sm font-bold text-gray-700 mb-2">État général</label>
             <div className="relative">
-               <select 
-                 value={formData.brand}
-                 onChange={(e) => updateField('brand', e.target.value)}
-                 className="w-full appearance-none px-4 py-3 rounded-xl bg-white border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm cursor-pointer"
-               >
-                 <option value="" disabled>Sélectionner une marque</option>
-                 {brandsMoto.map(brand => (
-                   <option key={brand} value={brand}>{brand}</option>
-                 ))}
-               </select>
-               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                 <ChevronDown size={18} className="text-gray-400" />
-               </div>
+              <select 
+                value={formData.condition}
+                onChange={(e) => updateField('condition', e.target.value as Condition)}
+                className="w-full appearance-none px-4 py-3 rounded-xl bg-white border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm cursor-pointer"
+              >
+                <option value="" disabled>Sélectionner l'état</option>
+                {conditions.map(cond => (
+                  <option key={cond} value={cond}>{cond}</option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <ChevronDown size={18} className="text-gray-400" />
+              </div>
             </div>
           </div>
-          
-          {/* Model - Input with Prediction */}
-          <div className="relative col-span-full md:col-span-1">
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">Modèle</label>
-            <input 
-              type="text" 
-              value={formData.model}
-              onChange={handleModelChange}
-              onFocus={() => { if(formData.model) setShowModelSuggestions(true); }}
-              onBlur={() => setTimeout(() => setShowModelSuggestions(false), 200)}
-              placeholder="Ex: MT-07, TMAX..."
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm transition-all"
-            />
-            
-            {/* Suggestions Dropdown */}
-            {showModelSuggestions && filteredModels.length > 0 && (
-               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                  {filteredModels.map((m, i) => (
-                     <button 
-                        key={i}
-                        onClick={() => selectModel(m)}
-                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors border-b border-gray-50 last:border-0"
-                     >
-                        {m}
-                     </button>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Brand - Dropdown */}
+            <div className="col-span-full md:col-span-1">
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Marque</label>
+              <div className="relative">
+                <select 
+                  value={formData.brand}
+                  onChange={(e) => updateField('brand', e.target.value)}
+                  className="w-full appearance-none px-4 py-3 rounded-xl bg-white border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm cursor-pointer"
+                >
+                  <option value="" disabled>Sélectionner une marque</option>
+                  {brandsMoto.map(brand => (
+                    <option key={brand} value={brand}>{brand}</option>
                   ))}
-               </div>
-            )}
-          </div>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <ChevronDown size={18} className="text-gray-400" />
+                </div>
+              </div>
+            </div>
+            
+            {/* Model - Input with Prediction */}
+            <div className="relative col-span-full md:col-span-1">
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Modèle</label>
+              <input 
+                type="text" 
+                value={formData.model}
+                onChange={handleModelChange}
+                onFocus={() => { if(formData.model) setShowModelSuggestions(true); }}
+                onBlur={() => setTimeout(() => setShowModelSuggestions(false), 200)}
+                placeholder="Ex: MT-07, TMAX..."
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm transition-all"
+              />
+              
+              {/* Suggestions Dropdown */}
+              {showModelSuggestions && filteredModels.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    {filteredModels.map((m, i) => (
+                      <button 
+                          key={i}
+                          onClick={() => selectModel(m)}
+                          className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors border-b border-gray-50 last:border-0"
+                      >
+                          {m}
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
 
-          {/* Year */}
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">Année</label>
-            <input 
-              type="number" 
-              value={formData.year}
-              onChange={(e) => updateField('year', e.target.value)}
-              placeholder="2020"
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm transition-all"
-            />
-          </div>
+            {/* Year - Dropdown */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Année</label>
+              <div className="relative">
+                <select 
+                  value={formData.year}
+                  onChange={(e) => updateField('year', e.target.value)}
+                  className="w-full appearance-none px-4 py-3 rounded-xl bg-white border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm cursor-pointer"
+                >
+                  <option value="" disabled>Année</option>
+                  {years.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <ChevronDown size={18} className="text-gray-400" />
+                </div>
+              </div>
+            </div>
 
-          {/* Mileage */}
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">Kilométrage (km)</label>
-            <input 
-              type="number" 
-              value={formData.mileage}
-              onChange={(e) => updateField('mileage', e.target.value)}
-              placeholder="Ex: 15000"
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm transition-all"
-            />
-          </div>
+            {/* Mileage */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Kilométrage (km)</label>
+              <input 
+                type="number" 
+                value={formData.mileage}
+                onChange={(e) => updateField('mileage', e.target.value)}
+                placeholder="Ex: 15000"
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm transition-all"
+              />
+            </div>
 
-          {/* CC */}
-          <div className="col-span-full md:col-span-1">
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">Cylindrée (cc)</label>
-            <input 
-              type="number" 
-              value={formData.cc}
-              onChange={(e) => updateField('cc', e.target.value)}
-              placeholder="Ex: 700"
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm transition-all"
-            />
+            {/* CC - Dropdown */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Cylindrée (cc)</label>
+              <div className="relative">
+                <select 
+                  value={formData.cc}
+                  onChange={(e) => updateField('cc', e.target.value)}
+                  className="w-full appearance-none px-4 py-3 rounded-xl bg-white border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm cursor-pointer"
+                >
+                  <option value="" disabled>Cylindrée</option>
+                  {ccList.map(cc => (
+                    <option key={cc} value={cc}>{cc} cc</option>
+                  ))}
+                  <option value="Autre">Autre</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <ChevronDown size={18} className="text-gray-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Condition - Next to CC */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">État général</label>
+              <div className="relative">
+                <select 
+                  value={formData.condition}
+                  onChange={(e) => updateField('condition', e.target.value as Condition)}
+                  className="w-full appearance-none px-4 py-3 rounded-xl bg-white border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-base md:text-sm cursor-pointer"
+                >
+                  <option value="" disabled>Sélectionner l'état</option>
+                  {conditions.map(cond => (
+                    <option key={cond} value={cond}>{cond}</option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <ChevronDown size={18} className="text-gray-400" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Condition (Common) */}
-      <div className="pt-4 border-t border-gray-100">
-        <label className="block text-sm font-bold text-gray-700 mb-2">État général</label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {['Neuf', 'Très bon', 'Bon', 'À réparer'].map(cond => (
-            <button
-              key={cond}
-              onClick={() => updateField('condition', cond)}
-              className={`py-2.5 px-2 rounded-xl text-sm font-bold border transition-all 
-                ${formData.condition === cond 
-                  ? 'bg-primary-50 border-primary-600 text-primary-700' 
-                  : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'}`}
-            >
-              {cond}
-            </button>
-          ))}
+      {/* Equipment (Checkboxes) - Vehicle Only */}
+      {!isAccessory && (
+        <div className="pt-4 border-t border-gray-100">
+          <label className="block text-sm font-bold text-gray-700 mb-3">Options et équipements (Optionnel)</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {equipmentOptions.map((item) => {
+              const isChecked = formData.equipment.includes(item);
+              return (
+                <div 
+                  key={item} 
+                  onClick={() => handleEquipmentToggle(item)}
+                  className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all select-none ${isChecked ? 'bg-primary-50 border-primary-500 ring-1 ring-primary-500' : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}
+                >
+                  <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors flex-shrink-0 ${isChecked ? 'bg-primary-600 border-primary-600' : 'bg-white border-gray-300'}`}>
+                    {isChecked && <Check size={10} className="text-white" />}
+                  </div>
+                  <span className={`text-xs font-semibold truncate ${isChecked ? 'text-primary-700' : 'text-gray-600'}`}>{item}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 

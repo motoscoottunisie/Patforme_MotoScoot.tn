@@ -1,8 +1,44 @@
 import { Listing, Garage, Article, BikeModel, Review, Tip } from '../types';
-import { 
-  // Icons are components, we handle them in Hero or map names here. 
-  // For data purity, we'll keep simple data here.
-} from 'lucide-react';
+
+// --- SHARED DATA CONSTANTS ---
+
+export const brandsMoto = [
+  "Yamaha", "Honda", "Kawasaki", "BMW", "KTM", "Suzuki", "Ducati", "Triumph", 
+  "Sym", "Piaggio", "Peugeot", "Aprilia", "Benelli", "Autre"
+];
+
+export const mockModels = [
+  "MT-07", "MT-09", "TMAX 530", "TMAX 560", "XMAX 125", "XMAX 300", "R1", "R6", "Tenere 700", "Tracer 900",
+  "X-ADV", "Forza 300", "Forza 350", "Forza 750", "Africa Twin", "CB650R", "CBR1000RR", "PCX 125", "SH 125", "SH 300",
+  "Z900", "Z650", "Z1000", "Versys 650", "Ninja 400", "Ninja 650", "Ninja ZX-10R",
+  "R 1200 GS", "R 1250 GS", "R 1300 GS", "F 850 GS", "S 1000 RR", "R 18", "C 400 X", "C 400 GT",
+  "Duke 125", "Duke 390", "Duke 790", "Adventure 390", "Super Duke 1290",
+  "Street Triple 675", "Street Triple 765", "Bonneville T100", "Bonneville T120", "Tiger 800", "Tiger 900",
+  "Scrambler 800", "Monster 821", "Monster 937", "Panigale V4", "Multistrada V4",
+  "Vespa GTS 300", "Beverly 300", "Beverly 400", "Liberty 125",
+  "Fiddle II", "Fiddle III", "Symphony ST", "Jet 14", "Orbit II", "Kisbee"
+];
+
+export const equipmentOptions = [
+  "ABS", "Contrôle traction", "Éclairage LED", "Tableau de bord TFT", "Bluetooth", 
+  "Quickshifter", "Modes de conduite", "Régulateur de vitesse", "Poignées chauffantes", 
+  "Selle chauffante", "Anti-wheelie", "Suspension électronique", "Freinage d'urgence auto",
+  "Système de navigation", "Prise USB", "Alarme", "Top case", "Sacoches latérales", 
+  "Bulle haute", "Protège-mains", "Sabot moteur", "Échappement sport", 
+  "Non dédouanée", "RS", "Pièces manquantes", "Sans papiers"
+];
+
+export const accessoryTypes = [
+  "Casque", "Blouson / Veste", "Gants", "Bottes / Chaussures", 
+  "Pantalon / Combinaison", "Pièce Moteur", "Échappement", 
+  "Carénage", "Éclairage / Électronique", "Antivol / Alarme", "Autre"
+];
+
+export const conditions = [
+  "Neuf", "État neuf", "Excellent", "Très bon", "Bon", "Correct", "À réparer", "Pour pièces"
+];
+
+// --- MOCK DATA ---
 
 export const mockListings: Listing[] = [
   {
@@ -18,7 +54,9 @@ export const mockListings: Listing[] = [
     seller: "Mehdi Jeliti",
     sellerType: "Particulier",
     condition: "Excellent",
-    dealRating: 3
+    dealRating: 3,
+    type: "Moto",
+    equipment: ["ABS", "Éclairage LED", "Prise USB", "Carnet d'entretien"]
   },
   {
     id: 2,
@@ -33,7 +71,9 @@ export const mockListings: Listing[] = [
     seller: "Sarah Dubois",
     sellerType: "Pro",
     condition: "Excellent",
-    dealRating: 2
+    dealRating: 2,
+    type: "Moto",
+    equipment: ["ABS", "Contrôle traction", "Poignées chauffantes", "Modes de conduite", "Suspension électronique", "Top case", "Valises"]
   },
   {
     id: 3,
@@ -48,7 +88,9 @@ export const mockListings: Listing[] = [
     seller: "Marc Leroy",
     sellerType: "Particulier",
     condition: "Très bon",
-    dealRating: 3
+    dealRating: 3,
+    type: "Moto",
+    equipment: ["ABS", "Échappement sport", "Protège-mains", "Saute vent"]
   },
   {
     id: 4,
@@ -63,7 +105,9 @@ export const mockListings: Listing[] = [
     seller: "Julie Moreau",
     sellerType: "Particulier",
     condition: "Très bon",
-    dealRating: 2
+    dealRating: 2,
+    type: "Moto",
+    equipment: ["ABS", "Bluetooth", "Tableau de bord TFT"]
   },
   {
     id: 5,
@@ -78,7 +122,9 @@ export const mockListings: Listing[] = [
     seller: "Pierre Martin",
     sellerType: "Pro",
     condition: "Excellent",
-    dealRating: 1
+    dealRating: 1,
+    type: "Moto",
+    equipment: ["ABS", "Prise USB"]
   },
   {
     id: 6,
@@ -93,7 +139,9 @@ export const mockListings: Listing[] = [
     seller: "Sarah Dubois",
     sellerType: "Particulier",
     condition: "Très bon",
-    dealRating: 2
+    dealRating: 2,
+    type: "Moto",
+    equipment: ["ABS", "Poignées chauffantes", "Modes de conduite", "Béquille centrale"]
   },
   {
     id: 7,
@@ -108,7 +156,9 @@ export const mockListings: Listing[] = [
     seller: "Marc Leroy",
     sellerType: "Pro",
     condition: "Bon",
-    dealRating: 1
+    dealRating: 1,
+    type: "Moto",
+    equipment: ["ABS", "Contrôle traction", "Régulateur de vitesse", "Sabot moteur", "Pare-carters"]
   },
   {
     id: 8,
@@ -123,7 +173,9 @@ export const mockListings: Listing[] = [
     seller: "Julie Moreau",
     sellerType: "Particulier",
     condition: "Excellent",
-    dealRating: 3
+    dealRating: 3,
+    type: "Moto",
+    equipment: ["Modes de conduite", "Amortisseur de direction", "Capot de selle"]
   },
   {
     id: 9,
@@ -138,7 +190,9 @@ export const mockListings: Listing[] = [
     seller: "Pierre Martin",
     sellerType: "Pro",
     condition: "Excellent",
-    dealRating: 1
+    dealRating: 1,
+    type: "Moto",
+    equipment: ["ABS", "Audio system", "Marche arrière", "Xénon", "Selles chauffantes", "Verrouillage centralisé"]
   },
   {
     id: 10,
@@ -153,7 +207,9 @@ export const mockListings: Listing[] = [
     seller: "Sarah Dubois",
     sellerType: "Particulier",
     condition: "Excellent",
-    dealRating: 2
+    dealRating: 2,
+    type: "Moto",
+    equipment: ["Quickshifter", "ABS Cornering", "Contrôle traction", "Launch control"]
   },
   {
     id: 11,
@@ -168,7 +224,9 @@ export const mockListings: Listing[] = [
     seller: "Marc Leroy",
     sellerType: "Particulier",
     condition: "Très bon",
-    dealRating: 1
+    dealRating: 1,
+    type: "Moto",
+    equipment: ["Alarme", "Sissy bar", "Stage 1"]
   },
   {
     id: 12,
@@ -183,7 +241,26 @@ export const mockListings: Listing[] = [
     seller: "Julie Moreau",
     sellerType: "Pro",
     condition: "Excellent",
-    dealRating: 3
+    dealRating: 3,
+    type: "Moto",
+    equipment: ["ABS Offroad", "Quickshifter", "Sabot moteur", "Porte-paquets"]
+  },
+  {
+    id: 13,
+    title: "Yamaha TMAX 560 Tech MAX",
+    price: "48 000 TND",
+    image: "https://www.magma-studio.tn/portfolio2/moto/tmax.jpg",
+    year: "2024",
+    mileage: "1 500 km",
+    cc: "562 cm³",
+    location: "Tunis",
+    date: "02/02/2024",
+    seller: "Karim Tounsi",
+    sellerType: "Pro",
+    condition: "État neuf",
+    dealRating: 3,
+    type: "Scooter",
+    equipment: ["Bulle électrique", "Selle chauffante", "Poignées chauffantes", "Régulateur de vitesse", "Smart Key"]
   }
 ];
 
@@ -566,7 +643,7 @@ export const mockTips: Tip[] = [
     id: 1,
     title: "Comment bien graisser son kit chaîne ?",
     category: "Entretien",
-    image: "https://images.unsplash.com/photo-1596706977803-b5417430c45d?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.prismic.io/ipone/7bc93054-160f-480e-8d9c-584dd667d9da_27b5ab16-649b-4df6-b513-ae1766a0acdc_IPO_2021_Articles_Web_Photos_2375x1450_02.jpeg?ixlib=gatsbyFP&auto=compress%2Cformat&fit=max&h=&w=1200",
     date: "05 Sept 2025",
     author: "Atelier Expert",
     readTime: "15 min",
@@ -834,20 +911,3 @@ export const governoratesList = [
 ];
 
 export const tunisianCities = governoratesList;
-
-export const brandsMoto = [
-  "Yamaha",
-  "Honda",
-  "Kawasaki",
-  "BMW",
-  "KTM",
-  "Suzuki",
-  "Ducati",
-  "Triumph",
-  "Sym",
-  "Piaggio",
-  "Peugeot",
-  "Aprilia",
-  "Benelli",
-  "Autre"
-];

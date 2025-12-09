@@ -13,8 +13,10 @@ export interface Listing {
   date: string;
   seller: string;
   sellerType: 'Particulier' | 'Pro';
-  condition: 'Excellent' | 'Très bon' | 'Bon';
+  condition: 'Excellent' | 'Très bon' | 'Bon' | 'Neuf' | 'État neuf' | 'Correct' | 'À réparer' | 'Pour pièces';
   dealRating?: 1 | 2 | 3; // 1: Prix du marché, 2: Bonne affaire, 3: Super affaire
+  equipment?: string[];
+  type: 'Moto' | 'Scooter' | 'Accessoires'; // Added for accurate filtering
 }
 
 export interface GarageService {
