@@ -1,13 +1,14 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
   Tag,
   Layers,
   ChevronDown,
-  Bike
+  Bike,
+  ShoppingBag // Added for accessories icon
 } from 'lucide-react';
-import { tunisianCities } from '../data/mockData';
+import { tunisianCities, brandsMoto, mockModels, accessoryTypes } from '../data/mockData';
 import Header from './layout/Header';
 
 // --- CUSTOM ICON COMPONENTS ---
@@ -60,7 +61,6 @@ const IconGants = (props: any) => (
   />
 );
 
-// Define the interface for category items
 interface CategoryItem {
   icon: React.ElementType;
   label: string;
@@ -87,14 +87,25 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
   const [type, setType] = useState("");
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
+  const [accessoryCategory, setAccessoryCategory] = useState(""); // New state for accessory type
   const [location, setLocation] = useState("");
+
+  // Reset dependent fields when Type changes
+  useEffect(() => {
+    setBrand("");
+    setModel("");
+    setAccessoryCategory("");
+  }, [type]);
 
   const handleSearchClick = () => {
     if (onSearch) {
+      const isAccessory = type === 'Accessoires';
       onSearch({
         type,
-        brand,
-        model,
+        // If it's an accessory, pass the category as a search keyword to find matches
+        search: isAccessory ? accessoryCategory : "", 
+        brand: isAccessory ? "" : brand,
+        model: isAccessory ? "" : model,
         location
       });
     }
@@ -102,8 +113,11 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
 
   const handleCategoryClick = (categoryLabel: string) => {
     if (onSearch) {
+      const isAccessorySub = ["Casques", "Vestes", "Gants"].includes(categoryLabel);
       onSearch({
-        type: categoryLabel,
+        type: isAccessorySub || categoryLabel === "Accessoires" ? "Accessoires" : categoryLabel,
+        // If clicking a specific accessory icon, pre-fill the search
+        search: isAccessorySub ? categoryLabel.slice(0, -1) : "", 
         brand: "",
         model: "",
         location: ""
@@ -111,23 +125,21 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
     }
   };
 
+  const isAccessoryMode = type === 'Accessoires';
+
   return (
     <div className="relative w-full h-[100dvh] md:h-[80vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
       
       {/* Background Container */}
       <div className="absolute inset-0 overflow-hidden z-0">
-        {/* Mobile Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
           style={{ backgroundImage: "url('https://www.magma-studio.tn/portfolio2/hero_section-background_mobile.webp')" }}
         />
-        {/* Desktop Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block"
           style={{ backgroundImage: "url('https://magma-studio.tn/portfolio2/-hero-background.webp')" }}
         />
-
-        {/* Gradient Overlay using Design System Tokens */}
         <div 
           className="absolute inset-0"
           style={{
@@ -154,8 +166,6 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
         <div className="flex-1 flex flex-col justify-center items-center w-full md:px-0 space-y-10 md:space-y-6 mt-12 md:mt-48">
           {/* Headline */}
           <div className="w-full max-w-5xl text-left text-white flex flex-col items-start md:mb-8">
-            
-            {/* Live Ads Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-white text-xs md:text-sm font-bold uppercase tracking-wide mb-6 animate-fade-in-up">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-500 opacity-75"></span>
@@ -195,32 +205,54 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
               </div>
             </div>
 
-            {/* Input 2: Marque (Brand) */}
+            {/* Input 2: Dynamic (Marque OR Type d'accessoire) */}
             <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group">
-              <Tag className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
+              {isAccessoryMode ? (
+                 <ShoppingBag className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
+              ) : (
+                 <Tag className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
+              )}
+              
               <div className="flex-1 relative">
-                <label htmlFor="search-brand" className="sr-only">Marque</label>
-                <select 
-                  id="search-brand"
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
-                >
-                  <option value="" disabled>Marque</option>
-                  <option value="Yamaha">Yamaha</option>
-                  <option value="Honda">Honda</option>
-                  <option value="Kawasaki">Kawasaki</option>
-                  <option value="BMW">BMW</option>
-                  <option value="Ducati">Ducati</option>
-                  <option value="KTM">KTM</option>
-                  <option value="Triumph">Triumph</option>
-                </select>
+                {isAccessoryMode ? (
+                  /* Accessory Category Select */
+                  <>
+                    <label htmlFor="search-accessory-type" className="sr-only">Type d'accessoire</label>
+                    <select 
+                      id="search-accessory-type"
+                      value={accessoryCategory}
+                      onChange={(e) => setAccessoryCategory(e.target.value)}
+                      className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
+                    >
+                      <option value="" disabled>Type d'article</option>
+                      {accessoryTypes.map((acc) => (
+                        <option key={acc} value={acc}>{acc}</option>
+                      ))}
+                    </select>
+                  </>
+                ) : (
+                  /* Brand Select */
+                  <>
+                    <label htmlFor="search-brand" className="sr-only">Marque</label>
+                    <select 
+                      id="search-brand"
+                      value={brand}
+                      onChange={(e) => setBrand(e.target.value)}
+                      className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
+                    >
+                      <option value="" disabled>Marque</option>
+                      {brandsMoto.map((b) => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
+                  </>
+                )}
                 <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" aria-hidden="true" />
               </div>
             </div>
 
-            {/* Input 3: Model */}
-            <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group">
+            {/* Input 3: Model (Disabled for Accessoires) */}
+            <div className={`flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group ${isAccessoryMode ? 'opacity-50 cursor-not-allowed bg-gray-50' : ''}`}>
               <Layers className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
               <div className="flex-1 relative">
                 <label htmlFor="search-model" className="sr-only">Modèle</label>
@@ -228,15 +260,13 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
                   id="search-model" 
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
+                  disabled={isAccessoryMode}
+                  className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none disabled:cursor-not-allowed"
                 >
-                  <option value="" disabled>Modèle</option>
-                  <option value="MT-07">MT-07</option>
-                  <option value="Z900">Z900</option>
-                  <option value="GS 1250">R 1250 GS</option>
-                  <option value="Panigale">Panigale V4</option>
-                  <option value="CBR">CBR 1000RR</option>
-                  <option value="Duke">Duke 390</option>
+                  <option value="" disabled>{isAccessoryMode ? '-' : 'Modèle'}</option>
+                  {!isAccessoryMode && mockModels.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
                 </select>
                 <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" aria-hidden="true" />
               </div>
