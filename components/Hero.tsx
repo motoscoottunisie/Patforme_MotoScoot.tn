@@ -224,7 +224,7 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
                       onChange={(e) => setAccessoryCategory(e.target.value)}
                       className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
                     >
-                      <option value="" disabled>Type d'article</option>
+                      <option value="" disabled>Articles</option>
                       {accessoryTypes.map((acc) => (
                         <option key={acc} value={acc}>{acc}</option>
                       ))}

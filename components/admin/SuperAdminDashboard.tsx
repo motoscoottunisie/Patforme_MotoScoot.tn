@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   LayoutDashboard, 
@@ -42,16 +43,34 @@ import {
   Activity,
   UserPlus,
   ShoppingBag,
-  Zap
+  Zap,
+  Megaphone,
+  Calendar as CalendarIcon,
+  PlayCircle
 } from 'lucide-react';
 import Header from '../layout/Header';
-import { mockArticles, mockTips, mockGarages, popularModels, brandsMoto } from '../../data/mockData';
+import { mockArticles, mockTips, mockGarages, popularModels, brandsMoto, governoratesList } from '../../data/mockData';
 import { Article, Garage, Tip } from '../../types';
 
 // --- TYPES ---
 type ModalMode = 'create' | 'edit' | null;
-type EntityType = 'garage' | 'article' | 'tip' | 'brand' | 'model';
+type EntityType = 'garage' | 'article' | 'tip' | 'brand' | 'model' | 'accessory' | 'ad';
 type VehicleType = 'Moto' | 'Scooter' | 'Accessoires';
+
+interface AdCampaign {
+  id: number;
+  title: string;
+  client: string;
+  zone: 'Header' | 'Sidebar' | 'In-Feed' | 'Popup' | 'Footer';
+  location: string; // Geo targeting
+  startDate: string;
+  endDate: string;
+  mediaType: 'Image' | 'Script';
+  mediaUrl: string;
+  isActive: boolean;
+  views: number;
+  clicks: number;
+}
 
 interface SuperAdminDashboardProps {
   onGoHome?: () => void;
@@ -77,19 +96,6 @@ const StatCard = ({ label, value, change, icon: Icon, color, bg }: any) => (
       <p className="text-sm text-gray-500 font-bold mt-1">{label}</p>
     </div>
   </div>
-);
-
-const ActiveUserCard = ({ label, value, trend }: any) => (
-    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-        <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
-            <p className="text-xl font-extrabold text-gray-900">{value}</p>
-        </div>
-        <div className={`flex items-center gap-1 text-xs font-bold ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {trend > 0 ? <TrendingUp size={16} /> : <TrendingUp size={16} className="rotate-180" />}
-            {Math.abs(trend)}%
-        </div>
-    </div>
 );
 
 const InteractiveAreaChart = ({ data }: { data: { day: number, visits: number, unique: number }[] }) => {
@@ -311,41 +317,25 @@ const geoData = [
 ];
 
 const demographicData = [
-  { label: '18-24 ans', value: 15, color: '#FCD34D' }, // yellow-300
-  { label: '25-34 ans', value: 45, color: '#E6580B' }, // primary-600
-  { label: '35-44 ans', value: 25, color: '#3B82F6' }, // blue-500
-  { label: '45+ ans', value: 15, color: '#9CA3AF' },   // gray-400
+  { label: '18-24 ans', value: 15, color: '#FCD34D' }, 
+  { label: '25-34 ans', value: 45, color: '#E6580B' }, 
+  { label: '35-44 ans', value: 25, color: '#3B82F6' }, 
+  { label: '45+ ans', value: 15, color: '#9CA3AF' },
 ];
 
-const categoryVisits = [
-  { label: 'Motos', count: 24500, percentage: 55, color: 'bg-primary-600' },
-  { label: 'Scooters', count: 13400, percentage: 30, color: 'bg-blue-500' },
-  { label: 'Accessoires', count: 6700, percentage: 15, color: 'bg-green-500' },
+const mockAds: AdCampaign[] = [
+    { id: 1, title: 'Promo Hiver Yamaha', client: 'Yamaha Tunisie', zone: 'Header', location: 'Toute la Tunisie', startDate: '2025-01-01', endDate: '2025-02-01', mediaType: 'Image', mediaUrl: '', isActive: true, views: 12500, clicks: 450 },
+    { id: 2, title: 'Assurance Moto', client: 'Comar', zone: 'Sidebar', location: 'Tunis', startDate: '2025-01-15', endDate: '2025-03-15', mediaType: 'Image', mediaUrl: '', isActive: true, views: 8200, clicks: 120 },
 ];
-
-const topSearchedModels = [
-    { name: "Yamaha TMAX", count: 1240 },
-    { name: "Yamaha MT-07", count: 980 },
-    { name: "Sym Fiddle", count: 850 },
-    { name: "Vespa GTS", count: 720 },
-];
-
-const topSearchedBrands = [
-    { name: "Yamaha", count: 4500 },
-    { name: "Sym", count: 2800 },
-    { name: "Honda", count: 2100 },
-    { name: "BMW", count: 1500 },
-];
-
-// --- MAIN COMPONENT ---
 
 const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'content' | 'garages' | 'metadata'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'content' | 'garages' | 'ads' | 'brands' | 'models' | 'accessories'>('overview');
   
   // Data State
   const [garages, setGarages] = useState<Garage[]>(mockGarages);
   const [articles, setArticles] = useState<Article[]>(mockArticles);
   const [tips, setTips] = useState<Tip[]>(mockTips);
+  const [ads, setAds] = useState<AdCampaign[]>(mockAds);
   const [brands, setBrands] = useState<{name: string, type: VehicleType}[]>([
     ...brandsMoto.map(b => ({ name: b, type: 'Moto' as VehicleType })),
     { name: 'Vespa', type: 'Scooter' }, { name: 'Piaggio', type: 'Scooter' },
@@ -359,14 +349,12 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
 
   // UI State
   const [contentTab, setContentTab] = useState<'news' | 'tips'>('news');
-  const [metadataType, setMetadataType] = useState<VehicleType>('Moto');
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [brandFilter, setBrandFilter] = useState<VehicleType | 'All'>('All');
+  const [modelFilter, setModelFilter] = useState<'Moto' | 'Scooter'>('Moto');
   const itemsPerPage = 6;
   
-  // Brand Filter State for Models
-  const [modelBrandFilter, setModelBrandFilter] = useState<string>("");
-
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>(null);
@@ -382,7 +370,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
   useEffect(() => {
     setCurrentPage(1);
     setSearchQuery("");
-  }, [activeTab, contentTab, metadataType]);
+  }, [activeTab, contentTab, brandFilter, modelFilter]);
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ message, type });
@@ -392,33 +380,45 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
   const handleOpenModal = (entity: EntityType, mode: ModalMode, item: any = null) => {
     setCurrentEntity(entity);
     setModalMode(mode);
-    if (mode === 'create' && (entity === 'brand' || entity === 'model')) {
-        setSelectedItem({ type: metadataType });
+    
+    // Set default Type for new items based on current context
+    if (mode === 'create') {
+        let defaultType: VehicleType = 'Moto';
+        if (entity === 'model') defaultType = modelFilter; // Use current model filter
+        if (entity === 'accessory') defaultType = 'Accessoires'; 
+        
+        setSelectedItem({ type: defaultType });
     } else {
         setSelectedItem(item);
     }
+    
     setTagInput("");
     setServiceInput({ name: "", price: "" });
     setIsModalOpen(true);
   };
 
   const handleSave = (formData: any) => {
+    const newId = Date.now();
+    
     if (currentEntity === 'garage') {
-      if (modalMode === 'create') setGarages([{ ...formData, id: Date.now(), rating: 0, reviewsCount: 0 }, ...garages]);
+      if (modalMode === 'create') setGarages([{ ...formData, id: newId, rating: 0, reviewsCount: 0 }, ...garages]);
       else setGarages(garages.map(g => g.id === selectedItem.id ? { ...g, ...formData } : g));
     } else if (currentEntity === 'article') {
-      if (modalMode === 'create') setArticles([{ ...formData, id: Date.now(), date: new Date().toLocaleDateString() }, ...articles]);
+      if (modalMode === 'create') setArticles([{ ...formData, id: newId, date: new Date().toLocaleDateString() }, ...articles]);
       else setArticles(articles.map(a => a.id === selectedItem.id ? { ...a, ...formData } : a));
     } else if (currentEntity === 'tip') {
-      if (modalMode === 'create') setTips([{ ...formData, id: Date.now(), date: new Date().toLocaleDateString() }, ...tips]);
+      if (modalMode === 'create') setTips([{ ...formData, id: newId, date: new Date().toLocaleDateString() }, ...tips]);
       else setTips(tips.map(t => t.id === selectedItem.id ? { ...t, ...formData } : t));
     } else if (currentEntity === 'brand') {
        if (modalMode === 'create' && !brands.some(b => b.name === formData.name && b.type === formData.type)) {
           setBrands([...brands, { name: formData.name, type: formData.type }]);
        }
-    } else if (currentEntity === 'model') {
-       if (modalMode === 'create') setModels([...models, { ...formData, id: Date.now() }]);
+    } else if (currentEntity === 'model' || currentEntity === 'accessory') {
+       if (modalMode === 'create') setModels([...models, { ...formData, id: newId }]);
        else setModels(models.map(m => m.id === selectedItem.id ? { ...m, ...formData } : m));
+    } else if (currentEntity === 'ad') {
+       if (modalMode === 'create') setAds([{ ...formData, id: newId, views: 0, clicks: 0 }, ...ads]);
+       else setAds(ads.map(a => a.id === selectedItem.id ? { ...a, ...formData } : a));
     }
     
     showNotification(`${modalMode === 'create' ? 'Ajout' : 'Modification'} effectué avec succès`);
@@ -431,173 +431,324 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
       else if (entity === 'article') setArticles(articles.filter(a => a.id !== id));
       else if (entity === 'tip') setTips(tips.filter(t => t.id !== id));
       else if (entity === 'brand') setBrands(brands.filter(b => !(b.name === id && b.type === extraParam)));
-      else if (entity === 'model') setModels(models.filter(m => m.id !== id));
+      else if (entity === 'model' || entity === 'accessory') setModels(models.filter(m => m.id !== id));
+      else if (entity === 'ad') setAds(ads.filter(a => a.id !== id));
       showNotification("Élément supprimé", "success");
     }
   };
 
-  // --- VIEWS ---
+  // --- RENDER FUNCTIONS ---
 
-  const Overview = () => (
+  const renderOverview = () => (
     <div className="space-y-8 animate-fade-in-up">
-       {/* 1. Main KPIs */}
-       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard label="Inscriptions" value="1,245" change="+18%" icon={UserPlus} color="text-primary-600" bg="bg-primary-50" />
-          <StatCard label="Annonces" value="3,204" change="+5%" icon={ShoppingBag} color="text-blue-600" bg="bg-blue-50" />
-          <StatCard label="Garages" value={garages.length.toString()} change="+2" icon={Wrench} color="text-orange-600" bg="bg-orange-50" />
-          <StatCard label="Leads (Appels)" value="8.5k" change="+24%" icon={Phone} color="text-green-600" bg="bg-green-50" />
-       </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Visiteurs Uniques (30j)" value="45.2K" change="+12.5%" icon={Users} color="text-primary-600" bg="bg-primary-50"/>
+        <StatCard label="Pages Vues" value="128K" change="+8.2%" icon={Eye} color="text-blue-600" bg="bg-blue-50"/>
+        <StatCard label="Nouvelles Annonces" value="854" change="+24%" icon={Plus} color="text-green-600" bg="bg-green-50"/>
+        <StatCard label="Taux de Rebond" value="42%" change="-2.1%" icon={Activity} color="text-purple-600" bg="bg-purple-50"/>
+      </div>
 
-       {/* 2. Charts Row: Traffic & Active Users */}
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Traffic Chart */}
-          <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
-             <div className="flex justify-between items-center mb-8">
-                <div>
-                   <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                       <Activity size={20} className="text-primary-600" />
-                       Trafic Global
-                   </h3>
-                   <p className="text-gray-500 text-xs mt-1 font-medium">Visites vs Visiteurs Uniques</p>
-                </div>
-                <div className="flex items-center gap-1 bg-gray-50 rounded-xl p-1 border border-gray-100">
-                   <button className="px-4 py-1.5 text-xs font-bold bg-white shadow-sm rounded-lg text-gray-900 border border-gray-100">30J</button>
-                   <button className="px-4 py-1.5 text-xs font-bold text-gray-400 hover:text-gray-700 transition-colors">7J</button>
-                </div>
-             </div>
-             <InteractiveAreaChart data={trafficData} />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         {/* Main Chart */}
+         <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+               <h3 className="font-bold text-gray-900 text-lg">Trafic du site</h3>
+               <select className="bg-gray-50 border border-gray-200 text-xs font-bold text-gray-600 rounded-lg px-3 py-2 outline-none">
+                  <option>30 derniers jours</option>
+                  <option>7 derniers jours</option>
+                  <option>12 derniers mois</option>
+               </select>
+            </div>
+            <InteractiveAreaChart data={trafficData} />
+         </div>
 
-          {/* Active Users Stats */}
-          <div className="flex flex-col gap-4">
-             <div className="p-6 bg-white rounded-3xl border border-gray-100 shadow-sm flex-1 flex flex-col justify-center">
-                 <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-                    <Zap size={16} className="text-yellow-500" /> Utilisateurs Actifs
-                 </h4>
-                 <div className="space-y-4">
-                    <ActiveUserCard label="24 Heures" value="850" trend={5} />
-                    <ActiveUserCard label="7 Jours" value="5,240" trend={12} />
-                    <ActiveUserCard label="30 Jours" value="18,500" trend={-2} />
-                 </div>
-             </div>
-          </div>
-       </div>
+         {/* Device Stats */}
+         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col">
+            <h3 className="font-bold text-gray-900 text-lg mb-6">Appareils</h3>
+            <div className="space-y-6 flex-1 flex flex-col justify-center">
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-gray-100 rounded-lg text-gray-600"><Smartphone size={20}/></div>
+                     <span className="font-bold text-gray-700 text-sm">Mobile</span>
+                  </div>
+                  <div className="text-right">
+                     <span className="block font-extrabold text-gray-900">65%</span>
+                     <span className="text-xs text-green-600 font-bold">+12%</span>
+                  </div>
+               </div>
+               <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden"><div className="bg-primary-600 h-full rounded-full" style={{width: '65%'}}></div></div>
 
-       {/* 3. Market Insights Row */}
-       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Geo Distribution */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
-              <h3 className="font-bold text-gray-900 text-lg mb-6 flex items-center gap-2">
-                 <MapPin className="text-primary-600" size={20} />
-                 Répartition Géographique
-              </h3>
-              <GeoBarChart data={geoData} />
-          </div>
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-gray-100 rounded-lg text-gray-600"><Monitor size={20}/></div>
+                     <span className="font-bold text-gray-700 text-sm">Desktop</span>
+                  </div>
+                  <div className="text-right">
+                     <span className="block font-extrabold text-gray-900">30%</span>
+                     <span className="text-xs text-red-600 font-bold">-5%</span>
+                  </div>
+               </div>
+               <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden"><div className="bg-blue-600 h-full rounded-full" style={{width: '30%'}}></div></div>
 
-          {/* Category Visits */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex flex-col">
-             <h3 className="font-bold text-gray-900 text-lg mb-6 flex items-center gap-2">
-                <Layers size={20} className="text-blue-600" />
-                Vues par Catégorie
-             </h3>
-             <div className="space-y-6 flex-1 flex flex-col justify-center">
-                {categoryVisits.map((cat, i) => (
-                    <div key={i} className="group">
-                        <div className="flex justify-between items-end mb-2">
-                            <span className="font-bold text-gray-700 text-sm">{cat.label}</span>
-                            <span className="text-xs font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded">{cat.count.toLocaleString()} vues</span>
-                        </div>
-                        <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                            <div className={`h-full rounded-full ${cat.color} group-hover:opacity-80 transition-opacity`} style={{ width: `${cat.percentage}%` }}></div>
-                        </div>
-                    </div>
-                ))}
-             </div>
-          </div>
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-gray-100 rounded-lg text-gray-600"><Tablet size={20}/></div>
+                     <span className="font-bold text-gray-700 text-sm">Tablette</span>
+                  </div>
+                  <div className="text-right">
+                     <span className="block font-extrabold text-gray-900">5%</span>
+                     <span className="text-xs text-gray-400 font-bold">=</span>
+                  </div>
+               </div>
+               <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden"><div className="bg-purple-600 h-full rounded-full" style={{width: '5%'}}></div></div>
+            </div>
+         </div>
+      </div>
 
-          {/* Demographics */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex flex-col">
-             <h3 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
-                <Users size={20} className="text-purple-600" />
-                Démographie
-             </h3>
-             <div className="flex-1 flex items-center justify-center">
-                <DonutChart data={demographicData} />
-             </div>
-          </div>
-       </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         {/* Demographics */}
+         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+            <h3 className="font-bold text-gray-900 text-lg mb-6">Démographie</h3>
+            <DonutChart data={demographicData} />
+         </div>
 
-       {/* 4. Top Searches & Activity */}
-       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
-             <h3 className="font-bold text-gray-900 text-lg mb-8 flex items-center gap-2">
-                <Search size={20} className="text-primary-600" />
-                Top Recherches
-             </h3>
-             <div className="grid grid-cols-2 gap-12">
-                <div>
-                    <h4 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">Par Modèle</h4>
-                    <ul className="space-y-4">
-                        {topSearchedModels.map((m, i) => (
-                            <li key={i} className="flex justify-between items-center text-sm group">
-                                <span className="font-bold text-gray-700 flex items-center gap-2">
-                                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${i === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'}`}>
-                                        {i+1}
-                                    </span>
-                                    {m.name}
-                                </span>
-                                <span className="text-xs font-bold text-gray-900">{m.count}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div>
-                    <h4 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-2">Par Marque</h4>
-                    <ul className="space-y-4">
-                        {topSearchedBrands.map((m, i) => (
-                            <li key={i} className="flex justify-between items-center text-sm group">
-                                <span className="font-bold text-gray-700 flex items-center gap-2">
-                                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${i === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'}`}>
-                                        {i+1}
-                                    </span>
-                                    {m.name}
-                                </span>
-                                <span className="text-xs font-bold text-gray-900">{m.count}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-             </div>
-          </div>
+         {/* Geo Distribution */}
+         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+            <h3 className="font-bold text-gray-900 text-lg mb-6">Géolocalisation (Top 5)</h3>
+            <GeoBarChart data={geoData} />
+         </div>
 
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
-             <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                    <Clock size={20} className="text-gray-400" />
-                    Activité Récente
-                </h3>
-                <button className="text-primary-600 text-xs font-bold hover:underline bg-primary-50 px-3 py-1 rounded-full">Voir tout</button>
-             </div>
-             <div className="space-y-2">
-                {[1, 2, 3, 4, 5].map((i) => (
-                   <div key={i} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer group">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500 text-xs border border-gray-200 group-hover:bg-white group-hover:shadow-sm transition-all">
-                         {i % 2 === 0 ? 'JD' : 'SA'}
-                      </div>
-                      <div className="flex-1">
-                         <p className="text-sm font-bold text-gray-900 group-hover:text-primary-600 transition-colors">Nouvelle inscription</p>
-                         <p className="text-xs text-gray-500 font-medium">{i % 2 === 0 ? 'Particulier' : 'Pro'} • Tunis</p>
-                      </div>
-                      <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded">{i * 12} min</span>
-                   </div>
-                ))}
-             </div>
-          </div>
-       </div>
+         {/* Active Users Live */}
+         <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-3xl border border-gray-800 shadow-lg text-white flex flex-col">
+            <div className="flex justify-between items-start mb-8">
+               <div>
+                  <h3 className="font-bold text-lg mb-1">Utilisateurs Actifs</h3>
+                  <p className="text-gray-400 text-xs">En temps réel</p>
+               </div>
+               <div className="relative">
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                  </span>
+               </div>
+            </div>
+            
+            <div className="text-center my-auto">
+               <span className="text-6xl font-black tracking-tighter block mb-2">124</span>
+               <span className="text-sm font-bold text-green-400 bg-green-400/10 px-3 py-1 rounded-full">+14 depuis 5 min</span>
+            </div>
+
+            <div className="mt-8 space-y-3">
+               <div className="flex justify-between text-xs font-medium text-gray-400 border-b border-gray-700 pb-2">
+                  <span>Page</span>
+                  <span>Utilisateurs</span>
+               </div>
+               {[{p: '/home', c: 45}, {p: '/search', c: 32}, {p: '/listing/123', c: 18}].map((u, i) => (
+                  <div key={i} className="flex justify-between text-sm font-bold">
+                     <span className="text-gray-300">{u.p}</span>
+                     <span>{u.c}</span>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </div>
     </div>
   );
 
-  const GarageView = () => {
+  const renderBrandsView = () => {
+    const filteredBrands = brands.filter(b => brandFilter === 'All' ? true : b.type === brandFilter);
+    const searchedBrands = filteredBrands.filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const paginated = searchedBrands.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    
+    return (
+        <div className="space-y-6 animate-fade-in-up">
+            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-3xl border border-gray-100 shadow-sm gap-4">
+               <div className="flex gap-2 p-1 bg-gray-50 rounded-xl overflow-x-auto w-full md:w-auto">
+                  {['All', 'Moto', 'Scooter', 'Accessoires'].map((type) => (
+                      <button key={type} onClick={() => setBrandFilter(type as any)} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${brandFilter === type ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
+                         {type === 'All' ? 'Toutes' : type}
+                      </button>
+                  ))}
+               </div>
+               
+               <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                       <input type="text" placeholder="Rechercher une marque..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 transition-all" />
+                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    </div>
+                    <button onClick={() => handleOpenModal('brand', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap">
+                        <Plus size={16} /> Ajouter
+                    </button>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <table className="w-full text-left">
+                   <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase">
+                      <tr>
+                          <th className="p-5">Marque</th>
+                          <th className="p-5">Catégorie</th>
+                          <th className="p-5 text-right">Actions</th>
+                      </tr>
+                   </thead>
+                   <tbody className="divide-y divide-gray-50">
+                      {paginated.map((b, i) => (
+                         <tr key={i} className="hover:bg-gray-50 transition-colors group">
+                            <td className="p-5">
+                               <div className="flex items-center gap-3">
+                                   <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 font-bold border border-gray-200">
+                                       {b.name.charAt(0)}
+                                   </div>
+                                   <span className="font-bold text-sm text-gray-900">{b.name}</span>
+                               </div>
+                            </td>
+                            <td className="p-5">
+                                <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wide border ${b.type === 'Accessoires' ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
+                                    {b.type}
+                                </span>
+                            </td>
+                            <td className="p-5 text-right space-x-2">
+                               <button onClick={() => handleDelete('brand', b.name, b.type)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
+                            </td>
+                         </tr>
+                      ))}
+                      {paginated.length === 0 && (
+                          <tr><td colSpan={3} className="p-8 text-center text-gray-400 italic">Aucune marque trouvée.</td></tr>
+                      )}
+                   </tbody>
+                </table>
+                <Pagination totalItems={searchedBrands.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+            </div>
+        </div>
+    );
+  };
+
+  const renderModelsView = () => {
+    // Filter models to exclude accessories (which have their own view) and filter by vehicle type
+    const filteredModels = models.filter(m => m.type !== 'Accessoires' && m.type === modelFilter);
+    const searchedModels = filteredModels.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.brand.toLowerCase().includes(searchQuery.toLowerCase()));
+    const paginated = searchedModels.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    return (
+        <div className="space-y-6 animate-fade-in-up">
+            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-3xl border border-gray-100 shadow-sm gap-4">
+                <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+                   <button onClick={() => setModelFilter('Moto')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${modelFilter === 'Moto' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>Motos</button>
+                   <button onClick={() => setModelFilter('Scooter')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${modelFilter === 'Scooter' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>Scooters</button>
+                </div>
+                
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                       <input type="text" placeholder="Rechercher un modèle..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 transition-all" />
+                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    </div>
+                    <button onClick={() => handleOpenModal('model', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap">
+                       <Plus size={16} /> Ajouter
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <table className="w-full text-left">
+                   <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase">
+                      <tr>
+                          <th className="p-5">Modèle</th>
+                          <th className="p-5">Marque</th>
+                          <th className="p-5">Prix Indicatif</th>
+                          <th className="p-5 text-right">Actions</th>
+                      </tr>
+                   </thead>
+                   <tbody className="divide-y divide-gray-50">
+                      {paginated.map(m => (
+                         <tr key={m.id} className="hover:bg-gray-50 transition-colors group">
+                            <td className="p-5 flex items-center gap-4">
+                               <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                                   <img src={m.image} className="w-full h-full object-cover" alt={m.name} />
+                               </div>
+                               <span className="font-bold text-sm text-gray-900">{m.name}</span>
+                            </td>
+                            <td className="p-5 text-sm font-medium text-gray-600">{m.brand}</td>
+                            <td className="p-5 text-sm text-gray-600">{m.price}</td>
+                            <td className="p-5 text-right space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                               <button onClick={() => handleOpenModal('model', 'edit', m)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow"><Edit size={14}/></button>
+                               <button onClick={() => handleDelete('model', m.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow"><Trash2 size={14}/></button>
+                            </td>
+                         </tr>
+                      ))}
+                      {paginated.length === 0 && (
+                          <tr><td colSpan={4} className="p-8 text-center text-gray-400 italic">Aucun modèle trouvé.</td></tr>
+                      )}
+                   </tbody>
+                </table>
+                <Pagination totalItems={searchedModels.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+            </div>
+        </div>
+    );
+  };
+
+  const renderAccessoriesView = () => {
+    const accessories = models.filter(m => m.type === 'Accessoires');
+    const searchedAccess = accessories.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.brand.toLowerCase().includes(searchQuery.toLowerCase()));
+    const paginated = searchedAccess.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    return (
+        <div className="space-y-6 animate-fade-in-up">
+            <div className="flex justify-between items-center bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
+                <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                    <ShoppingBag size={20} className="text-primary-600"/> Catalogue Accessoires
+                </h3>
+                
+                <div className="flex items-center gap-3">
+                    <div className="relative w-64">
+                       <input type="text" placeholder="Rechercher..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 transition-all" />
+                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    </div>
+                    <button onClick={() => handleOpenModal('accessory', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap">
+                       <Plus size={16} /> Ajouter
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <table className="w-full text-left">
+                   <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase">
+                      <tr>
+                          <th className="p-5">Produit</th>
+                          <th className="p-5">Marque</th>
+                          <th className="p-5">Prix</th>
+                          <th className="p-5 text-right">Actions</th>
+                      </tr>
+                   </thead>
+                   <tbody className="divide-y divide-gray-50">
+                      {paginated.map(item => (
+                         <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
+                            <td className="p-5 flex items-center gap-4">
+                               <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                                   <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
+                               </div>
+                               <span className="font-bold text-sm text-gray-900">{item.name}</span>
+                            </td>
+                            <td className="p-5 text-sm font-medium text-gray-600">{item.brand}</td>
+                            <td className="p-5 text-sm font-bold text-gray-900">{item.price}</td>
+                            <td className="p-5 text-right space-x-2">
+                               <button onClick={() => handleOpenModal('accessory', 'edit', item)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Edit size={14}/></button>
+                               <button onClick={() => handleDelete('accessory', item.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
+                            </td>
+                         </tr>
+                      ))}
+                      {paginated.length === 0 && (
+                          <tr><td colSpan={4} className="p-8 text-center text-gray-400 italic">Aucun accessoire trouvé.</td></tr>
+                      )}
+                   </tbody>
+                </table>
+                <Pagination totalItems={searchedAccess.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+            </div>
+        </div>
+    );
+  };
+
+  const renderGarageView = () => {
     const filtered = garages.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase()));
     const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -643,7 +794,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
     );
   };
 
-  const ContentView = () => {
+  const renderContentView = () => {
     const list = contentTab === 'news' ? articles : tips;
     const paginated = list.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -689,100 +840,87 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
     );
   };
 
-  const MetadataView = () => {
-    const filteredBrands = brands.filter(b => b.type === metadataType);
-    
-    // ADDED: Filter models based on type AND selected brand
-    const filteredModels = models.filter(m => 
-      m.type === metadataType && 
-      (modelBrandFilter === "" || m.brand === modelBrandFilter)
-    );
-
-    return (
-      <div className="space-y-6 animate-fade-in-up">
-         <div className="flex gap-2 p-1 bg-gray-100 rounded-xl w-fit">
-            {['Moto', 'Scooter', 'Accessoires'].map((type) => (
-                <button 
-                  key={type} 
-                  onClick={() => { setMetadataType(type as VehicleType); setModelBrandFilter(""); }} 
-                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${metadataType === type ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                   {type}
-                </button>
-            ))}
-         </div>
-
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Brands */}
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col h-[500px]">
-               <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-3xl sticky top-0 z-10">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2"><Tag size={18} className="text-primary-600"/> Marques</h3>
-                  <button onClick={() => handleOpenModal('brand', 'create')} className="p-2 bg-white border border-gray-200 hover:border-primary-600 rounded-lg text-primary-600 transition-colors shadow-sm"><Plus size={16}/></button>
-               </div>
-               <div className="p-5 flex-1 overflow-y-auto custom-scrollbar">
-                  <div className="flex flex-wrap gap-2">
-                     {filteredBrands.map((b, i) => (
-                        <div key={i} className="group flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 shadow-sm">
-                           {b.name}
-                           <button onClick={() => handleDelete('brand', b.name, b.type)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><XCircle size={14}/></button>
-                        </div>
-                     ))}
-                     {filteredBrands.length === 0 && <p className="text-sm text-gray-400 italic w-full text-center">Aucune marque.</p>}
+  const renderAdsView = () => {
+     return (
+        <div className="space-y-6 animate-fade-in-up">
+           <div className="flex justify-between items-center bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                 <Megaphone className="text-purple-600" size={20} /> Campagnes Publicitaires
+              </h2>
+              <button onClick={() => handleOpenModal('ad', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95">
+                 <Plus size={16} /> Créer une campagne
+              </button>
+           </div>
+           
+           {ads.length === 0 ? (
+               <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center shadow-sm">
+                  <div className="w-16 h-16 bg-purple-50 text-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                     <Megaphone size={32} />
                   </div>
+                  <h3 className="font-bold text-gray-900 text-lg mb-2">Aucune campagne active</h3>
+                  <p className="text-gray-500 text-sm">Commencez par créer une nouvelle campagne publicitaire pour monétiser la plateforme.</p>
                </div>
-            </div>
-
-            {/* Models */}
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col h-[500px]">
-               <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-3xl sticky top-0 z-10">
-                  <div className="flex items-center gap-3">
-                     <h3 className="font-bold text-gray-900 flex items-center gap-2"><Database size={18} className="text-blue-600"/> Modèles</h3>
-                     
-                     {/* ADDED: Brand Filter Dropdown */}
-                     <select 
-                       value={modelBrandFilter}
-                       onChange={(e) => setModelBrandFilter(e.target.value)}
-                       className="bg-white border border-gray-200 text-xs font-bold text-gray-700 rounded-lg px-2 py-1 outline-none focus:border-blue-500"
-                     >
-                        <option value="">Toutes les marques</option>
-                        {filteredBrands.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}
-                     </select>
-                  </div>
-                  
-                  <button onClick={() => handleOpenModal('model', 'create')} className="p-2 bg-white border border-gray-200 hover:border-primary-600 rounded-lg text-primary-600 transition-colors shadow-sm"><Plus size={16}/></button>
+           ) : (
+               <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                  <table className="w-full text-left">
+                     <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase">
+                        <tr>
+                           <th className="p-5">Campagne</th>
+                           <th className="p-5">Client</th>
+                           <th className="p-5">Zone</th>
+                           <th className="p-5">Stats</th>
+                           <th className="p-5">Statut</th>
+                           <th className="p-5 text-right">Actions</th>
+                        </tr>
+                     </thead>
+                     <tbody className="divide-y divide-gray-50">
+                        {ads.map(ad => (
+                           <tr key={ad.id} className="hover:bg-gray-50 transition-colors">
+                              <td className="p-5">
+                                 <span className="font-bold text-sm text-gray-900 block">{ad.title}</span>
+                                 <span className="text-xs text-gray-500">{ad.startDate} - {ad.endDate}</span>
+                              </td>
+                              <td className="p-5 text-sm text-gray-600">{ad.client}</td>
+                              <td className="p-5">
+                                 <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-bold">{ad.zone}</span>
+                              </td>
+                              <td className="p-5">
+                                 <div className="text-xs font-medium">
+                                    <div className="flex items-center gap-1 text-gray-900"><Eye size={12}/> {ad.views.toLocaleString()}</div>
+                                    <div className="flex items-center gap-1 text-gray-500"><MousePointer2 size={12}/> {ad.clicks.toLocaleString()}</div>
+                                 </div>
+                              </td>
+                              <td className="p-5">
+                                 {ad.isActive ? (
+                                    <span className="flex items-center gap-1 text-green-600 text-xs font-bold"><CheckCircle2 size={12}/> Actif</span>
+                                 ) : (
+                                    <span className="flex items-center gap-1 text-gray-400 text-xs font-bold"><XCircle size={12}/> Inactif</span>
+                                 )}
+                              </td>
+                              <td className="p-5 text-right space-x-2">
+                                 <button onClick={() => handleOpenModal('ad', 'edit', ad)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors"><Edit size={16}/></button>
+                                 <button onClick={() => handleDelete('ad', ad.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors"><Trash2 size={16}/></button>
+                              </td>
+                           </tr>
+                        ))}
+                     </tbody>
+                  </table>
                </div>
-               <div className="flex-1 overflow-y-auto custom-scrollbar">
-                  {filteredModels.map(m => (
-                     <div key={m.id} className="flex justify-between items-center p-4 hover:bg-gray-50 border-b border-gray-50 last:border-0 group transition-colors">
-                        <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0"><img src={m.image} className="w-full h-full object-cover" /></div>
-                           <div><p className="font-bold text-sm text-gray-900">{m.name}</p><p className="text-xs text-gray-500">{m.brand}</p></div>
-                        </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                           <button onClick={() => handleOpenModal('model', 'edit', m)} className="p-1.5 text-gray-400 hover:text-primary-600"><Edit size={14}/></button>
-                           <button onClick={() => handleDelete('model', m.id)} className="p-1.5 text-gray-400 hover:text-red-600"><Trash2 size={14}/></button>
-                        </div>
-                     </div>
-                  ))}
-                  {filteredModels.length === 0 && <p className="text-sm text-gray-400 italic w-full text-center py-10">Aucun modèle trouvé.</p>}
-               </div>
-            </div>
-         </div>
-      </div>
-    );
+           )}
+        </div>
+     );
   };
 
-  // --- MODAL FORM ---
   const ModalForm = () => {
-    // Initial form state based on currentItem or empty defaults
     const [formData, setFormData] = useState<any>(
       selectedItem || {
-        // Defaults
         ...(currentEntity === 'garage' && { name: '', address: '', description: '', isVerified: false, image: '', phone: '', email: '', website: '', hours: 'Lundi-Samedi: 09h-18h', specialties: [], services: [] }),
         ...(currentEntity === 'article' && { title: '', category: 'Nouveautés', author: 'Admin', summary: '', content: '', image: '', readTime: '5 min', tags: [], isFeatured: false }),
         ...(currentEntity === 'tip' && { title: '', category: 'Entretien', difficulty: 'Débutant', author: 'Atelier', summary: '', content: '', image: '', readTime: '5 min', tools: [] }),
-        ...(currentEntity === 'brand' && { name: '', type: metadataType }),
-        ...(currentEntity === 'model' && { name: '', brand: '', price: '', image: '', type: metadataType })
+        ...(currentEntity === 'brand' && { name: '', type: 'Moto' }),
+        ...(currentEntity === 'model' && { name: '', brand: '', price: '', image: '', type: 'Moto' }),
+        ...(currentEntity === 'accessory' && { name: '', brand: '', price: '', image: '', type: 'Accessoires' }),
+        ...(currentEntity === 'ad' && { title: '', client: '', zone: 'Header', location: 'Toute la Tunisie', startDate: '', endDate: '', mediaType: 'Image', isActive: true })
       }
     );
 
@@ -821,19 +959,19 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
       setFormData({ ...formData, services: formData.services.filter((_: any, i: number) => i !== index) });
     };
 
+    // Filter brands based on the type of model we are creating
     const availableBrands = brands.filter(b => b.type === formData.type);
 
     return (
       <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in-up">
         <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
           <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-            <h3 className="text-xl font-extrabold text-gray-900 capitalize">{modalMode === 'create' ? 'Ajouter' : 'Modifier'} {currentEntity}</h3>
+            <h3 className="text-xl font-extrabold text-gray-900 capitalize">{modalMode === 'create' ? 'Ajouter' : 'Modifier'} {currentEntity === 'ad' ? 'Publicité' : currentEntity}</h3>
             <button onClick={() => setIsModalOpen(false)} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors"><X size={20} className="text-gray-500" /></button>
           </div>
           <div className="p-8 space-y-6">
              
-             {/* Common Image Upload */}
-             {(currentEntity !== 'brand') && (
+             {(currentEntity !== 'brand' && currentEntity !== 'ad') && (
                 <div className="flex gap-6 items-center">
                    <div onClick={() => fileInputRef.current?.click()} className="w-24 h-24 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center cursor-pointer hover:border-primary-400 transition-colors overflow-hidden flex-shrink-0">
                       {formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <ImageIcon className="text-gray-400"/>}
@@ -846,7 +984,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                 </div>
              )}
              
-             {/* --- GARAGE FORM --- */}
              {currentEntity === 'garage' && (
                 <div className="space-y-6">
                    <div className="grid grid-cols-2 gap-4">
@@ -855,7 +992,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                    </div>
                    <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm resize-none" placeholder="Description du garage..."></textarea>
                    
-                   {/* Specialties */}
                    <div>
                        <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Spécialités</label>
                        <div className="flex gap-2 mb-2">
@@ -869,7 +1005,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                        </div>
                    </div>
 
-                   {/* Services */}
                    <div>
                        <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Services</label>
                        <div className="flex gap-2 mb-2">
@@ -893,7 +1028,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                 </div>
              )}
 
-             {/* --- ARTICLE/TIP FORM --- */}
              {(currentEntity === 'article' || currentEntity === 'tip') && (
                 <div className="space-y-4">
                    <div className="grid grid-cols-2 gap-4">
@@ -905,7 +1039,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                    <textarea name="summary" value={formData.summary} onChange={handleChange} rows={2} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm resize-none" placeholder="Résumé court..."></textarea>
                    <textarea name="content" value={formData.content} onChange={handleChange} rows={6} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm font-mono" placeholder="Contenu HTML..."></textarea>
                    
-                   {/* Tags */}
                    <div>
                        <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Tags</label>
                        <div className="flex gap-2 mb-2">
@@ -921,21 +1054,114 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                 </div>
              )}
 
-             {/* --- METADATA FORMS --- */}
              {currentEntity === 'brand' && (
-                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Nom de la marque" className="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 outline-none text-sm font-bold" />
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Nom de la marque" className="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 outline-none text-sm font-bold" />
+                        <select name="type" value={formData.type} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-primary-500">
+                            <option value="Moto">Moto</option>
+                            <option value="Scooter">Scooter</option>
+                            <option value="Accessoires">Accessoires</option>
+                        </select>
+                    </div>
+                </div>
              )}
              
-             {currentEntity === 'model' && (
+             {(currentEntity === 'model' || currentEntity === 'accessory') && (
                <div className="space-y-4">
-                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 font-bold text-sm text-gray-700">Type: {formData.type}</div>
+                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 font-bold text-sm text-gray-700 flex justify-between items-center">
+                      <span>Type: {formData.type}</span>
+                      {currentEntity === 'model' && (
+                          <div className="flex gap-2">
+                              <button onClick={() => setFormData({...formData, type: 'Moto'})} className={`px-2 py-1 rounded text-xs border ${formData.type === 'Moto' ? 'bg-black text-white border-black' : 'bg-white border-gray-200'}`}>Moto</button>
+                              <button onClick={() => setFormData({...formData, type: 'Scooter'})} className={`px-2 py-1 rounded text-xs border ${formData.type === 'Scooter' ? 'bg-black text-white border-black' : 'bg-white border-gray-200'}`}>Scooter</button>
+                          </div>
+                      )}
+                  </div>
                   <select name="brand" value={formData.brand} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-primary-500">
                      <option value="" disabled>Choisir la marque</option>
                      {availableBrands.map((b, i) => <option key={i} value={b.name}>{b.name}</option>)}
                   </select>
-                  <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-primary-500" placeholder="Nom du modèle" />
+                  <div className="grid grid-cols-2 gap-4">
+                      <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-primary-500" placeholder={currentEntity === 'model' ? "Nom du modèle" : "Nom de l'accessoire"} />
+                      <input type="text" name="price" value={formData.price} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-primary-500" placeholder="Prix indicatif (ex: 25 000 DT)" />
+                  </div>
                </div>
             )}
+
+            {currentEntity === 'ad' && (
+                <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                        <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Titre de la campagne" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm font-bold" />
+                        <input type="text" name="client" value={formData.client} onChange={handleChange} placeholder="Client / Annonceur" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                         <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Zone d'affichage</label>
+                            <select name="zone" value={formData.zone} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm">
+                                <option>Header</option>
+                                <option>Sidebar</option>
+                                <option>In-Feed</option>
+                                <option>Popup</option>
+                                <option>Footer</option>
+                            </select>
+                         </div>
+                         <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Zone Géographique</label>
+                            <select name="location" value={formData.location} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm">
+                                <option>Toute la Tunisie</option>
+                                {governoratesList.map(g => <option key={g}>{g}</option>)}
+                            </select>
+                         </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                         <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Date de début</label>
+                            <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
+                         </div>
+                         <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Date de fin</label>
+                            <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
+                         </div>
+                    </div>
+                    
+                    <div>
+                        <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Type de média</label>
+                        <div className="flex gap-4 mb-4">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="mediaType" value="Image" checked={formData.mediaType === 'Image'} onChange={handleChange} />
+                                <span className="text-sm">Image / Bannière</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="mediaType" value="Script" checked={formData.mediaType === 'Script'} onChange={handleChange} />
+                                <span className="text-sm">Script HTML / Embed</span>
+                            </label>
+                        </div>
+
+                        {formData.mediaType === 'Image' ? (
+                            <div className="flex gap-4 items-center p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                <div onClick={() => fileInputRef.current?.click()} className="w-20 h-20 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-primary-400 transition-colors overflow-hidden">
+                                    {formData.image ? <img src={formData.image} className="w-full h-full object-cover"/> : <ImageIcon className="text-gray-400"/>}
+                                    <input type="file" ref={fileInputRef} className="hidden" onChange={handleImageUpload}/>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-xs text-gray-500 mb-2">Formats: JPG, PNG, GIF. Max 2Mo.</p>
+                                    <input type="text" name="mediaUrl" value={formData.mediaUrl} onChange={handleChange} placeholder="Lien de redirection (URL)" className="w-full px-3 py-2 bg-white rounded-lg border border-gray-200 outline-none text-sm" />
+                                </div>
+                            </div>
+                        ) : (
+                            <textarea name="mediaUrl" value={formData.mediaUrl} onChange={handleChange} rows={4} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm font-mono" placeholder="Collez votre code script ici (Google Ads, etc.)"></textarea>
+                        )}
+                    </div>
+
+                    <label className="flex items-center gap-2 text-sm font-bold text-gray-700 cursor-pointer p-3 bg-gray-50 rounded-xl border border-gray-200">
+                      <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="w-5 h-5 text-primary-600 rounded" /> Activer la campagne
+                   </label>
+                </div>
+             )}
+
           </div>
           <div className="px-8 py-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 rounded-b-3xl">
              <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors">Annuler</button>
@@ -958,7 +1184,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
       <main className="max-w-7xl mx-auto px-4 md:px-8 py-8">
          <div className="flex flex-col lg:flex-row gap-8">
             
-            {/* Sidebar Navigation */}
             <aside className="w-full lg:w-64 flex-shrink-0">
                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sticky top-24">
                   <div className="flex items-center gap-3 p-3 mb-6 border-b border-gray-50 pb-6">
@@ -981,8 +1206,21 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                      <button onClick={() => setActiveTab('content')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'content' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
                         <FileText size={18} /> Contenu (Blog)
                      </button>
-                     <button onClick={() => setActiveTab('metadata')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'metadata' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
-                        <Database size={18} /> Données
+                     
+                     <div className="pt-4 pb-2 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Données</div>
+                     
+                     <button onClick={() => setActiveTab('brands')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'brands' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
+                        <Tag size={18} /> Marques
+                     </button>
+                     <button onClick={() => setActiveTab('models')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'models' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
+                        <Database size={18} /> Modèles
+                     </button>
+                     <button onClick={() => setActiveTab('accessories')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'accessories' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
+                        <ShoppingBag size={18} /> Accessoires
+                     </button>
+
+                     <button onClick={() => setActiveTab('ads')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'ads' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
+                        <Megaphone size={18} /> Publicité
                      </button>
                   </nav>
 
@@ -994,28 +1232,31 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                </div>
             </aside>
 
-            {/* Main Content Area */}
             <div className="flex-1 min-w-0">
                <h1 className="text-2xl font-extrabold text-gray-900 mb-6 hidden lg:block">
                   {activeTab === 'overview' && "Tableau de Bord"}
                   {activeTab === 'garages' && "Gestion des Garages"}
                   {activeTab === 'content' && "Gestion du Contenu"}
-                  {activeTab === 'metadata' && "Données de Référence"}
+                  {activeTab === 'brands' && "Gestion des Marques"}
+                  {activeTab === 'models' && "Gestion des Modèles"}
+                  {activeTab === 'accessories' && "Gestion des Accessoires"}
+                  {activeTab === 'ads' && "Gestion Publicitaire"}
                </h1>
 
-               {activeTab === 'overview' && <Overview />}
-               {activeTab === 'garages' && <GarageView />}
-               {activeTab === 'content' && <ContentView />}
-               {activeTab === 'metadata' && <MetadataView />}
+               {activeTab === 'overview' && renderOverview()}
+               {activeTab === 'garages' && renderGarageView()}
+               {activeTab === 'content' && renderContentView()}
+               {activeTab === 'brands' && renderBrandsView()}
+               {activeTab === 'models' && renderModelsView()}
+               {activeTab === 'accessories' && renderAccessoriesView()}
+               {activeTab === 'ads' && renderAdsView()}
             </div>
 
          </div>
       </main>
 
-      {/* MODAL */}
       {isModalOpen && <ModalForm />}
 
-      {/* TOAST */}
       {notification && (
         <div className={`fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 text-white font-bold animate-fade-in-up z-[100] ${notification.type === 'success' ? 'bg-gray-900' : 'bg-red-600'}`}>
            {notification.type === 'success' ? <CheckCircle2 size={20} className="text-green-400" /> : <AlertCircle size={20} />}

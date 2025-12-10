@@ -66,10 +66,10 @@ const Accordion = ({ title, children, defaultOpen = false, icon: Icon }: any) =>
   );
 };
 
-const SimilarListingCard: React.FC<{ listing: Listing, onClick: () => void }> = ({ listing, onClick }) => (
+const SimilarListingCard: React.FC<{ listing: Listing, onClick: () => void, className?: string }> = ({ listing, onClick, className = "" }) => (
     <div 
       onClick={onClick}
-      className="flex-shrink-0 w-64 md:w-full bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer group"
+      className={`bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer group flex-shrink-0 ${className}`}
     >
         <div className="relative h-40 overflow-hidden">
             <img src={listing.image} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" alt={listing.title} />
@@ -80,9 +80,17 @@ const SimilarListingCard: React.FC<{ listing: Listing, onClick: () => void }> = 
         <div className="p-3">
             <h4 className="font-bold text-gray-900 truncate mb-1">{listing.title}</h4>
             <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span>{listing.year}</span>
-                <span>•</span>
-                <span>{listing.mileage}</span>
+                {listing.type === 'Accessoires' ? (
+                    <span className="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-bold uppercase text-gray-600">
+                        {listing.condition}
+                    </span>
+                ) : (
+                    <>
+                        <span>{listing.year}</span>
+                        <span>•</span>
+                        <span>{listing.mileage}</span>
+                    </>
+                )}
             </div>
         </div>
     </div>
@@ -98,21 +106,25 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
   onTriggerLogin, 
   onLogout 
 }) => {
-  const [showPhone, setShowPhone] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Similar Listings Slider State
+  const [currentSimIndex, setCurrentSimIndex] = useState(0);
+  const [simItemsToShow, setSimItemsToShow] = useState(3);
+  const [isSimPaused, setIsSimPaused] = useState(false);
 
   const { isFavorite, toggleFavorite } = useFavorites();
 
   // Find listing or use fallback
   const listing = mockListings.find(l => l.id === listingId) || mockListings[0];
   
-  // UPDATED: Filter similar listings by Type
+  // Filter similar listings by Type
   const similarListings = mockListings
-    .filter(l => l.id !== listing.id && l.type === listing.type)
-    .slice(0, 3);
+    .filter(l => l.id !== listing.id && l.type === listing.type);
   
   const favorited = isFavorite('listing', listing.id);
+  const isAccessory = listing.type === 'Accessoires';
 
   // Mock Images
   const allImages = [
@@ -161,12 +173,40 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setCurrentSimIndex(0); // Reset slider when listing changes
   }, [listingId]);
 
-  const handleRestrictedAction = () => {
-    if (!isLoggedIn) {
-      onTriggerLogin?.();
-    }
+  // Similar Listings Slider Logic
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) setSimItemsToShow(1);
+      else if (window.innerWidth < 1024) setSimItemsToShow(2);
+      else setSimItemsToShow(3);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (isSimPaused || similarListings.length <= simItemsToShow) return;
+    
+    const interval = setInterval(() => {
+        setCurrentSimIndex(prev => {
+            const max = Math.ceil(similarListings.length - simItemsToShow);
+            return prev >= max ? 0 : prev + 1;
+        });
+    }, 3500); // 3.5s auto scroll
+    return () => clearInterval(interval);
+  }, [isSimPaused, similarListings.length, simItemsToShow]);
+
+  const nextSim = () => {
+      const max = Math.ceil(similarListings.length - simItemsToShow);
+      setCurrentSimIndex(prev => (prev >= max ? 0 : prev + 1));
+  };
+  const prevSim = () => {
+      const max = Math.ceil(similarListings.length - simItemsToShow);
+      setCurrentSimIndex(prev => (prev <= 0 ? max : prev - 1));
   };
 
   return (
@@ -281,24 +321,36 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                </div>
 
                {/* Mobile Quick Specs Grid (Visible without scroll) */}
-               <div className="md:hidden grid grid-cols-2 gap-3 mb-6 bg-gray-50 p-4 rounded-xl">
-                  <div className="flex flex-col">
-                     <span className="text-xs text-gray-500 font-medium">Année</span>
-                     <span className="text-sm font-bold text-gray-900">{listing.year}</span>
-                  </div>
-                  <div className="flex flex-col">
-                     <span className="text-xs text-gray-500 font-medium">Kilométrage</span>
-                     <span className="text-sm font-bold text-gray-900">{listing.mileage}</span>
-                  </div>
-                  <div className="flex flex-col">
-                     <span className="text-xs text-gray-500 font-medium">Cylindrée</span>
-                     <span className="text-sm font-bold text-gray-900">{listing.cc}</span>
-                  </div>
-                  <div className="flex flex-col">
-                     <span className="text-xs text-gray-500 font-medium">Boîte</span>
-                     <span className="text-sm font-bold text-gray-900">Manuelle</span>
-                  </div>
-               </div>
+               {isAccessory ? (
+                 <div className="md:hidden mb-6 bg-gray-50 p-4 rounded-xl flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary-600 shadow-sm border border-gray-100">
+                        <CheckCircle2 size={24} />
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">État général</span>
+                       <span className="text-lg font-bold text-gray-900">{listing.condition}</span>
+                    </div>
+                 </div>
+               ) : (
+                 <div className="md:hidden grid grid-cols-2 gap-3 mb-6 bg-gray-50 p-4 rounded-xl">
+                    <div className="flex flex-col">
+                       <span className="text-xs text-gray-500 font-medium">Année</span>
+                       <span className="text-sm font-bold text-gray-900">{listing.year}</span>
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-xs text-gray-500 font-medium">Kilométrage</span>
+                       <span className="text-sm font-bold text-gray-900">{listing.mileage}</span>
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-xs text-gray-500 font-medium">Cylindrée</span>
+                       <span className="text-sm font-bold text-gray-900">{listing.cc}</span>
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-xs text-gray-500 font-medium">Boîte</span>
+                       <span className="text-sm font-bold text-gray-900">Manuelle</span>
+                    </div>
+                 </div>
+               )}
 
                {/* Deal Gauge */}
                {listing.dealRating && (
@@ -318,96 +370,139 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                )}
 
                {/* Desktop Specs Grid */}
-               <div className="hidden md:grid grid-cols-4 gap-4 mb-8">
-                  {[
-                     { label: 'Année', value: listing.year, icon: Calendar },
-                     { label: 'Kilométrage', value: listing.mileage, icon: Gauge },
-                     { label: 'Cylindrée', value: listing.cc, icon: Info },
-                     { label: 'Boîte', value: 'Manuelle', icon: Fuel },
-                  ].map((item, idx) => (
-                     <div key={idx} className="bg-white border border-gray-100 p-4 rounded-xl flex items-center gap-3 shadow-sm">
+               {isAccessory ? (
+                  <div className="hidden md:grid grid-cols-4 gap-4 mb-8">
+                     <div className="bg-white border border-gray-100 p-4 rounded-xl flex items-center gap-3 shadow-sm">
                         <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">
-                           <item.icon size={20} />
+                           <CheckCircle2 size={20} />
                         </div>
                         <div>
-                           <p className="text-xs text-gray-500 font-medium">{item.label}</p>
-                           <p className="font-bold text-gray-900">{item.value}</p>
+                           <p className="text-xs text-gray-500 font-medium">État général</p>
+                           <p className="font-bold text-gray-900">{listing.condition}</p>
                         </div>
                      </div>
-                  ))}
-               </div>
+                  </div>
+               ) : (
+                  <div className="hidden md:grid grid-cols-4 gap-4 mb-8">
+                      {[
+                         { label: 'Année', value: listing.year, icon: Calendar },
+                         { label: 'Kilométrage', value: listing.mileage, icon: Gauge },
+                         { label: 'Cylindrée', value: listing.cc, icon: Info },
+                         { label: 'Boîte', value: 'Manuelle', icon: Fuel },
+                      ].map((item, idx) => (
+                         <div key={idx} className="bg-white border border-gray-100 p-4 rounded-xl flex items-center gap-3 shadow-sm">
+                            <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">
+                               <item.icon size={20} />
+                            </div>
+                            <div>
+                               <p className="text-xs text-gray-500 font-medium">{item.label}</p>
+                               <p className="font-bold text-gray-900">{item.value}</p>
+                            </div>
+                         </div>
+                      ))}
+                  </div>
+               )}
             </div>
 
             {/* --- ACCORDIONS CONTENT --- */}
             <div className="px-4 md:px-0 space-y-6">
                 
-                {/* Description */}
+                {/* Description - Renamed for Accessories */}
                 <div className="bg-white md:rounded-2xl md:p-8 md:shadow-sm md:border border-gray-100">
-                   <Accordion title="Description du véhicule" defaultOpen={true} icon={FileText}>
+                   <Accordion title={isAccessory ? "Description" : "Description du véhicule"} defaultOpen={true} icon={FileText}>
                       <p className="text-gray-600 leading-relaxed whitespace-pre-line text-sm md:text-base">
-                         Bonjour, je vends ma {listing.title} en excellent état.
-                         {'\n\n'}
-                         Entretien à jour, carnet d'entretien disponible. La révision des 20 000 km a été faite récemment (vidange, filtres, bougies).
-                         {'\n'}
-                         Moto toujours stationnée dans un garage fermé. Temps de chauffe toujours respecté.
-                         {'\n'}
-                         Aucun frais à prévoir. Pneus Michelin Road 5 quasi neufs.
-                         {'\n\n'}
-                         Visible sur {listing.location}. Prix légèrement négociable devant la moto. Pas d'échange.
+                         {isAccessory 
+                            ? `Je vends cet article : ${listing.title}.\n\nÉtat : ${listing.condition}.\n\nPour plus d'informations ou des photos supplémentaires, n'hésitez pas à me contacter.`
+                            : `Bonjour, je vends ma ${listing.title} en excellent état.\n\nEntretien à jour, carnet d'entretien disponible. La révision a été faite récemment.\n\nVisible sur ${listing.location}. Prix légèrement négociable.`
+                         }
                       </p>
                    </Accordion>
                 </div>
 
-                {/* Equipments */}
-                <div className="bg-white md:rounded-2xl md:p-8 md:shadow-sm md:border border-gray-100">
-                   <Accordion title="Équipements & Options" defaultOpen={true} icon={CheckCircle2}>
-                      <div className="flex flex-wrap gap-2 pt-2">
-                         {features.length > 0 ? features.map((feature, idx) => (
-                            <span key={idx} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium">
-                               {feature}
-                            </span>
-                         )) : (
-                            <span className="text-gray-500 text-sm italic">Aucun équipement spécifié</span>
-                         )}
-                      </div>
-                   </Accordion>
-                </div>
+                {/* Equipments - Vehicles Only */}
+                {!isAccessory && (
+                    <div className="bg-white md:rounded-2xl md:p-8 md:shadow-sm md:border border-gray-100">
+                       <Accordion title="Équipements & Options" defaultOpen={true} icon={CheckCircle2}>
+                          <div className="flex flex-wrap gap-2 pt-2">
+                             {features.length > 0 ? features.map((feature, idx) => (
+                                <span key={idx} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium">
+                                   {feature}
+                                </span>
+                             )) : (
+                                <span className="text-gray-500 text-sm italic">Aucun équipement spécifié</span>
+                             )}
+                          </div>
+                       </Accordion>
+                    </div>
+                )}
 
-                {/* Vehicle History (HistoVec style) */}
-                <div className="bg-white md:rounded-2xl md:p-8 md:shadow-sm md:border border-gray-100">
-                   <Accordion title="Historique & Administratif" defaultOpen={false} icon={Flag}>
-                      <div className="space-y-4 pt-2">
-                         <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                            <span className="text-gray-600">Origine</span>
-                            <span className="font-bold text-gray-900">Importée (France)</span>
-                         </div>
-                         <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                            <span className="text-gray-600">Première main</span>
-                            <span className="font-bold text-gray-900">Non (2ème main)</span>
-                         </div>
-                         <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                            <span className="text-gray-600">Carte grise</span>
-                            <span className="font-bold text-success-600 flex items-center gap-1"><CheckCircle2 size={14} /> À mon nom</span>
-                         </div>
-                         <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                            <span className="text-gray-600">Certificat de non-gage</span>
-                            <span className="font-bold text-success-600 flex items-center gap-1"><CheckCircle2 size={14} /> Disponible</span>
-                         </div>
-                      </div>
-                   </Accordion>
-                </div>
+                {/* History - Vehicles Only */}
+                {!isAccessory && (
+                    <div className="bg-white md:rounded-2xl md:p-8 md:shadow-sm md:border border-gray-100">
+                       <Accordion title="Historique & Administratif" defaultOpen={false} icon={Flag}>
+                          <div className="space-y-4 pt-2">
+                             <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                                <span className="text-gray-600">Origine</span>
+                                <span className="font-bold text-gray-900">Importée (France)</span>
+                             </div>
+                             <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                                <span className="text-gray-600">Première main</span>
+                                <span className="font-bold text-gray-900">Non (2ème main)</span>
+                             </div>
+                             <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                                <span className="text-gray-600">Carte grise</span>
+                                <span className="font-bold text-success-600 flex items-center gap-1"><CheckCircle2 size={14} /> À mon nom</span>
+                             </div>
+                             <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                                <span className="text-gray-600">Certificat de non-gage</span>
+                                <span className="font-bold text-success-600 flex items-center gap-1"><CheckCircle2 size={14} /> Disponible</span>
+                             </div>
+                          </div>
+                       </Accordion>
+                    </div>
+                )}
 
             </div>
 
-            {/* --- SIMILAR LISTINGS --- */}
-            <div className="px-4 md:px-0 py-8">
-               <h3 className="text-xl font-bold text-gray-900 mb-4">Annonces similaires</h3>
-               <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar">
-                  {similarListings.map(l => (
-                     <SimilarListingCard key={l.id} listing={l} onClick={() => onNavigate?.('listing-details', { id: l.id })} />
-                  ))}
-               </div>
-            </div>
+            {/* --- SIMILAR LISTINGS SLIDER --- */}
+            {similarListings.length > 0 && (
+                <div className="px-4 md:px-0 py-8">
+                   <div className="flex justify-between items-end mb-4">
+                        <h3 className="text-xl font-bold text-gray-900">Annonces similaires</h3>
+                        
+                        {/* Desktop Controls */}
+                        <div className="hidden md:flex gap-2">
+                            <button onClick={prevSim} className="p-2 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
+                                <ChevronLeft size={18} />
+                            </button>
+                            <button onClick={nextSim} className="p-2 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                   </div>
+                   
+                   <div 
+                     className="overflow-hidden relative group" 
+                     onMouseEnter={() => setIsSimPaused(true)} 
+                     onMouseLeave={() => setIsSimPaused(false)}
+                   >
+                        <div 
+                            className="flex transition-transform duration-500 ease-out"
+                            style={{ transform: `translateX(-${currentSimIndex * (100 / simItemsToShow)}%)` }}
+                        >
+                            {similarListings.map(l => (
+                                <div key={l.id} style={{ width: `${100 / simItemsToShow}%` }} className="flex-shrink-0 px-2">
+                                    <SimilarListingCard 
+                                      listing={l} 
+                                      onClick={() => onNavigate?.('listing-details', { id: l.id })} 
+                                      className="w-full h-full border-gray-200" 
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                   </div>
+                </div>
+            )}
 
           </div>
 
@@ -442,13 +537,13 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                    </div>
 
                    <div className="space-y-3">
-                      <button 
-                        onClick={() => setShowPhone(!showPhone)}
+                      <a 
+                        href="tel:+21625123456"
                         className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
                       >
                          <Phone size={18} />
-                         {showPhone ? "25 123 456" : "Afficher le numéro"}
-                      </button>
+                         Appeler le vendeur
+                      </a>
                    </div>
                 </div>
 
@@ -473,10 +568,13 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
 
       {/* MOBILE STICKY FOOTER */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 safe-area-bottom z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex gap-3">
-         <button className="flex-1 h-12 bg-primary-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 text-base active:scale-95 transition-transform shadow-lg">
+         <a 
+            href="tel:+21625123456"
+            className="flex-1 h-12 bg-primary-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 text-base active:scale-95 transition-transform shadow-lg"
+         >
             <Phone size={18} />
             <span>Appeler</span>
-         </button>
+         </a>
          <button className="flex-1 h-12 bg-[#25D366] text-white font-bold rounded-xl flex items-center justify-center gap-2 text-base active:scale-95 transition-transform shadow-lg">
             <MessageCircle size={18} />
             <span>WhatsApp</span>

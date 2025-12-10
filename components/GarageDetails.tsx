@@ -20,11 +20,13 @@ import {
   ThumbsUp,
   User,
   MoreVertical,
-  Plus
+  Plus,
+  X,
+  Send
 } from 'lucide-react';
 import Header from './layout/Header';
 import { mockGarages } from '../data/mockData';
-import { Garage } from '../types';
+import { Garage, GarageReview } from '../types';
 
 interface GarageDetailsProps {
   garageId: number;
@@ -46,16 +48,22 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
   onLogout 
 }) => {
   const [activeTab, setActiveTab] = useState<'about' | 'services' | 'reviews'>('about');
-  const [showPhone, setShowPhone] = useState(false);
+  
+  // Review Logic States
+  const [reviews, setReviews] = useState<GarageReview[]>([]);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [newReviewRating, setNewReviewRating] = useState(0);
+  const [newReviewContent, setNewReviewContent] = useState('');
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Find garage or fallback
   const garage = mockGarages.find(g => g.id === garageId) || mockGarages[0];
-  // Use specific garage reviews if available, otherwise empty array
-  const reviews = garage.reviewsList || [];
 
+  // Sync reviews when garageId changes
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [garageId]);
+    setReviews(garage.reviewsList || []);
+  }, [garageId, garage.reviewsList]);
 
   // Safe Gallery Images with Fallback
   const galleryImages = garage.images && garage.images.length > 0 
@@ -73,6 +81,37 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
   // Helper to determine if open (Mock logic)
   const isOpen = true; 
 
+  const handleOpenReviewModal = () => {
+    if (!isLoggedIn) {
+      onTriggerLogin?.();
+      return;
+    }
+    setNewReviewRating(0);
+    setNewReviewContent('');
+    setIsReviewModalOpen(true);
+  };
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newReviewRating === 0) return;
+
+    const newReview: GarageReview = {
+      id: Date.now(),
+      author: "Utilisateur (Moi)", // In a real app, get from auth context
+      rating: newReviewRating,
+      date: "À l'instant",
+      content: newReviewContent,
+      helpfulCount: 0,
+      isVerifiedOwner: true,
+      avatar: "" 
+    };
+
+    setReviews([newReview, ...reviews]);
+    setIsReviewModalOpen(false);
+    setShowSuccessToast(true);
+    setTimeout(() => setShowSuccessToast(false), 3000);
+  };
+
   const renderReviews = () => {
     return (
       <div className="space-y-8 animate-fade-in-up">
@@ -88,7 +127,7 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
                       <Star key={i} size={20} className={i < Math.floor(garage.rating) ? "text-warning-400 fill-warning-400" : "text-gray-200 fill-gray-200"} />
                    ))}
                 </div>
-                <p className="text-gray-500 text-sm font-medium">{garage.reviewsCount || 0} avis</p>
+                <p className="text-gray-500 text-sm font-medium">{reviews.length} avis</p>
              </div>
 
              {/* Progress Bars */}
@@ -110,7 +149,10 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
              {/* CTA */}
              <div className="flex flex-col items-center justify-center w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 md:pl-8">
                 <p className="text-gray-900 font-bold mb-3 text-center">Vous connaissez ce garage ?</p>
-                <button className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:border-primary-600 hover:text-primary-600 transition-colors shadow-sm active:scale-95 w-full whitespace-nowrap">
+                <button 
+                  onClick={handleOpenReviewModal}
+                  className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:border-primary-600 hover:text-primary-600 transition-colors shadow-sm active:scale-95 w-full whitespace-nowrap"
+                >
                    Donner mon avis
                 </button>
              </div>
@@ -123,9 +165,9 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
              <div key={review.id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-4">
                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 overflow-hidden">
                          {review.avatar ? (
-                            <img src={review.avatar} alt={review.author} className="w-full h-full rounded-full object-cover" />
+                            <img src={review.avatar} alt={review.author} className="w-full h-full object-cover" />
                          ) : (
                             <User size={20} />
                          )}
@@ -171,7 +213,10 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-1">Aucun avis pour le moment</h3>
                 <p className="text-gray-500 mb-6">Soyez le premier à partager votre expérience avec ce garage.</p>
-                <button className="px-6 py-2.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md">
+                <button 
+                  onClick={handleOpenReviewModal}
+                  className="px-6 py-2.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md"
+                >
                    Rédiger un avis
                 </button>
              </div>
@@ -229,7 +274,7 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
                                    ))}
                                 </div>
                                 <span className="font-bold text-gray-900 ml-1">{garage.rating}</span>
-                                <span className="text-gray-400">({garage.reviewsCount} avis)</span>
+                                <span className="text-gray-400">({reviews.length} avis)</span>
                             </div>
                             <span className="hidden md:inline text-gray-300">•</span>
                             <div className="flex items-center gap-1">
@@ -280,7 +325,7 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
                         onClick={() => setActiveTab('reviews')}
                         className={`px-6 py-3 font-bold text-sm whitespace-nowrap border-b-2 transition-colors ${activeTab === 'reviews' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}
                     >
-                        Avis clients ({garage.reviewsCount})
+                        Avis clients ({reviews.length})
                     </button>
                 </div>
 
@@ -398,13 +443,13 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
 
                             {/* CTAs */}
                             <div className="space-y-3">
-                                <button 
-                                  onClick={() => setShowPhone(!showPhone)}
+                                <a 
+                                  href={`tel:${garage.phone?.replace(/\s/g, '') || "+21671000000"}`}
                                   className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
                                 >
                                     <Phone size={18} />
-                                    {showPhone ? (garage.phone || "+216 71 000 000") : "Afficher le numéro"}
-                                </button>
+                                    Appeler
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -425,15 +470,90 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
       
       {/* MOBILE FIXED BOTTOM BAR */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 safe-area-bottom z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex gap-3">
-         <button className="flex-1 h-12 bg-primary-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 text-base active:scale-95 transition-transform shadow-lg">
+         <a 
+            href={`tel:${garage.phone?.replace(/\s/g, '') || "+21671000000"}`}
+            className="flex-1 h-12 bg-primary-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 text-base active:scale-95 transition-transform shadow-lg"
+         >
             <Phone size={18} />
             <span>Appeler</span>
-         </button>
+         </a>
          <button className="flex-1 h-12 bg-gray-100 text-gray-900 font-bold rounded-xl flex items-center justify-center gap-2 text-base active:scale-95 transition-transform">
             <Navigation size={18} />
             <span>Y aller</span>
          </button>
       </div>
+
+      {/* REVIEW MODAL */}
+      {isReviewModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in-up">
+           <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                 <h3 className="font-bold text-lg text-gray-900">Rédiger un avis</h3>
+                 <button 
+                   onClick={() => setIsReviewModalOpen(false)}
+                   className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+                 >
+                    <X size={20} />
+                 </button>
+              </div>
+              
+              <form onSubmit={handleSubmitReview} className="p-6 space-y-6">
+                 {/* Rating Input */}
+                 <div className="flex flex-col items-center gap-2">
+                    <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Votre note</span>
+                    <div className="flex gap-2">
+                       {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setNewReviewRating(star)}
+                            className="transition-transform hover:scale-110 focus:outline-none"
+                          >
+                             <Star 
+                               size={32} 
+                               className={`${star <= newReviewRating ? 'text-warning-400 fill-warning-400' : 'text-gray-200 fill-gray-200'} transition-colors`} 
+                             />
+                          </button>
+                       ))}
+                    </div>
+                    <span className="text-sm font-bold text-primary-600 h-5">
+                       {newReviewRating > 0 ? ['Mauvais', 'Moyen', 'Bien', 'Très bien', 'Excellent'][newReviewRating - 1] : ''}
+                    </span>
+                 </div>
+
+                 {/* Comment Input */}
+                 <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700">Votre expérience</label>
+                    <textarea 
+                      required
+                      rows={4}
+                      value={newReviewContent}
+                      onChange={(e) => setNewReviewContent(e.target.value)}
+                      placeholder="Partagez votre expérience avec ce garage (qualité de service, prix, accueil...)"
+                      className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none text-sm resize-none transition-all"
+                    />
+                 </div>
+
+                 <button 
+                   type="submit"
+                   disabled={newReviewRating === 0 || !newReviewContent.trim()}
+                   className="w-full py-3.5 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                 >
+                    <Send size={18} />
+                    Publier mon avis
+                 </button>
+              </form>
+           </div>
+        </div>
+      )}
+
+      {/* SUCCESS TOAST */}
+      {showSuccessToast && (
+         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 z-[110] animate-fade-in-up">
+            <CheckCircle2 className="text-success-400" size={20} />
+            <span className="font-bold text-sm">Votre avis a été publié avec succès !</span>
+         </div>
+      )}
 
     </div>
   );
