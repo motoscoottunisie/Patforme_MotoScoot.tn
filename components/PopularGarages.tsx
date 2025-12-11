@@ -11,8 +11,8 @@ const PopularGarages: React.FC<PopularGaragesProps> = ({ onNavigate }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsToShow, setItemsToShow] = useState(3);
   const [isPaused, setIsPaused] = useState(false);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Handle Resize for Responsive Items
   useEffect(() => {
@@ -61,6 +61,7 @@ const PopularGarages: React.FC<PopularGaragesProps> = ({ onNavigate }) => {
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsPaused(true);
     setTouchStart(e.targetTouches[0].clientX);
+    setTouchEnd(null);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -68,7 +69,7 @@ const PopularGarages: React.FC<PopularGaragesProps> = ({ onNavigate }) => {
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (touchStart === null || touchEnd === null) return;
     
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > 50;
@@ -81,8 +82,8 @@ const PopularGarages: React.FC<PopularGaragesProps> = ({ onNavigate }) => {
       setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
     }
 
-    setTouchEnd(0);
-    setTouchStart(0);
+    setTouchEnd(null);
+    setTouchStart(null);
     setIsPaused(false);
   };
 

@@ -174,16 +174,16 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
               + 500 annonces en ligne
             </div>
 
-            <h1 className="font-extrabold text-[2.55rem] md:text-5xl tracking-tight leading-[1.1] mb-2 md:mb-4">
+            <h1 className="font-extrabold text-[2.55rem] md:text-5xl tracking-tight leading-[1.1] mb-2 md:mb-4 drop-shadow-sm">
               Achetez ou vendez <br className="md:hidden" /> votre moto d'occasion
             </h1>
-            <p className="text-base md:text-xl font-normal opacity-95">
+            <p className="text-base md:text-xl font-medium opacity-95 text-white/90">
            Solution simple et rapide pour acheter ou vendre votre moto d’occasion en quelques clics.
             </p>
           </div>
 
           {/* Search Bar */}
-          <div className="w-full max-w-5xl bg-white rounded-xl p-2 flex flex-col md:flex-row items-stretch md:items-center shadow-lg">
+          <div className="w-full max-w-5xl bg-white rounded-xl p-2 flex flex-col md:flex-row items-stretch md:items-center shadow-2xl">
             
             {/* Input 1: Type */}
             <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group">
@@ -295,7 +295,7 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
             {/* Search Button */}
             <button 
               onClick={handleSearchClick}
-              className="bg-primary-600 hover:bg-primary-700 text-white font-bold py-4 px-10 rounded-lg shadow-none transition-transform transform active:scale-95 md:ml-2 mt-2 md:mt-0 flex-shrink-0"
+              className="bg-gray-900 hover:bg-gray-800 text-white font-bold py-4 px-10 rounded-lg shadow-none transition-transform transform active:scale-95 md:ml-2 mt-2 md:mt-0 flex-shrink-0"
               aria-label="Lancer la recherche"
             >
               Rechercher

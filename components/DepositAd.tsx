@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Bike, 
@@ -37,7 +38,6 @@ interface DepositAdProps {
 // --- TYPES ---
 
 type Category = 'Moto' | 'Scooter' | 'Accessoires' | '';
-// FIXED: Added 'Très bon' to match global data
 type Condition = 'Neuf' | 'État neuf' | 'Excellent' | 'Très bon' | 'Bon' | 'Correct' | 'À réparer' | 'Pour pièces' | '';
 
 interface AdFormData {
@@ -84,7 +84,7 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
     year: '',
     mileage: '',
     cc: '',
-    condition: '', // Initialized as empty
+    condition: '', 
     price: '',
     city: 'Tunis',
     description: '',
@@ -99,6 +99,26 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
 
   const updateField = (field: keyof AdFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCategorySelect = (cat: Category) => {
+    // Reset specific fields when category changes
+    setFormData(prev => ({
+        ...prev,
+        category: cat,
+        // Reset vehicle fields if switching to Accessories
+        brand: cat === 'Accessoires' ? '' : prev.brand,
+        model: cat === 'Accessoires' ? '' : prev.model,
+        year: cat === 'Accessoires' ? '' : prev.year,
+        mileage: cat === 'Accessoires' ? '' : prev.mileage,
+        cc: cat === 'Accessoires' ? '' : prev.cc,
+        // Reset accessory fields if switching to Vehicle
+        accessoryType: cat !== 'Accessoires' ? '' : prev.accessoryType,
+        // Condition might be shared but safer to reset if logic differs
+        condition: '', 
+        equipment: []
+    }));
+    handleNext();
   };
 
   const handleEquipmentToggle = (item: string) => {
@@ -158,7 +178,6 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
 
   const handleAddTag = (tag: string) => {
     const currentDesc = formData.description;
-    // Bug Fix: Prevent duplicate tags
     if (!currentDesc.includes(tag)) {
       updateField('description', currentDesc ? currentDesc + ', ' + tag : tag);
     }
@@ -216,7 +235,7 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
         {['Moto', 'Scooter', 'Accessoires'].map((cat) => (
           <button
             key={cat}
-            onClick={() => { updateField('category', cat); handleNext(); }}
+            onClick={() => handleCategorySelect(cat as Category)}
             className={`p-4 md:p-6 rounded-xl border transition-all flex flex-row md:flex-col items-center justify-start md:justify-center gap-4 group active:scale-[0.98] 
               ${formData.category === cat 
                 ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600' 

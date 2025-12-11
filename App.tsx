@@ -19,9 +19,12 @@ import GarageDetails from './components/GarageDetails';
 import Favorites from './components/Favorites';
 import Dashboard from './components/Dashboard';
 import SuperAdminDashboard from './components/admin/SuperAdminDashboard';
+import TechSpecsBrands from './components/TechSpecsBrands';
+import TechSpecsModels from './components/TechSpecsModels';
+import TechSpecsDetails from './components/TechSpecsDetails';
 import { FavoritesProvider } from './context/FavoritesContext';
 
-type ViewState = 'home' | 'search' | 'news' | 'garages' | 'tips' | 'contact' | 'listing-details' | 'article-details' | 'tip-details' | 'deposit' | 'garage-details' | 'favorites' | 'dashboard' | 'super-admin';
+type ViewState = 'home' | 'search' | 'news' | 'garages' | 'tips' | 'contact' | 'listing-details' | 'article-details' | 'tip-details' | 'deposit' | 'garage-details' | 'favorites' | 'dashboard' | 'super-admin' | 'tech-specs-brands' | 'tech-specs-models' | 'tech-specs-details';
 
 const App: React.FC = () => {
   // Initialize state from history to handle refreshes correctly
@@ -46,6 +49,14 @@ const App: React.FC = () => {
 
   const [selectedGarageId, setSelectedGarageId] = useState<number | null>(() => {
     return typeof window !== 'undefined' && window.history.state?.view === 'garage-details' ? window.history.state.id : null;
+  });
+
+  // Tech Specs State
+  const [selectedTechBrand, setSelectedTechBrand] = useState<string | null>(() => {
+    return typeof window !== 'undefined' && window.history.state?.brand ? window.history.state.brand : null;
+  });
+  const [selectedTechSpecId, setSelectedTechSpecId] = useState<number | null>(() => {
+    return typeof window !== 'undefined' && window.history.state?.view === 'tech-specs-details' ? window.history.state.id : null;
   });
 
   const [dashboardTab, setDashboardTab] = useState<'overview' | 'listings' | 'settings'>(() => {
@@ -76,6 +87,10 @@ const App: React.FC = () => {
            if (event.state.view === 'article-details') setSelectedArticleId(event.state.id);
            if (event.state.view === 'tip-details') setSelectedTipId(event.state.id);
            if (event.state.view === 'garage-details') setSelectedGarageId(event.state.id);
+           if (event.state.view === 'tech-specs-details') setSelectedTechSpecId(event.state.id);
+        }
+        if (event.state.brand && event.state.view === 'tech-specs-models') {
+            setSelectedTechBrand(event.state.brand);
         }
         // Restore Dashboard Tab
         if (event.state.view === 'dashboard' && event.state.tab) {
@@ -95,14 +110,9 @@ const App: React.FC = () => {
   // Scroll Restoration Logic
   useEffect(() => {
     // Basic scroll to top on view change, except for back navigation which is handled by browser partially
-    // For a full app, we would store scroll position in history state.
-    // Here we just ensure we are at top for new views.
     if ('scrollRestoration' in window.history) {
         window.history.scrollRestoration = 'manual';
     }
-    
-    // Prevent scrolling to top if we are just going back (popstate usually handles this, 
-    // but with manual state we might want to be explicit. For simplicity in this demo:
     window.scrollTo(0, 0);
   }, [currentView]);
 
@@ -112,6 +122,9 @@ const App: React.FC = () => {
     if (view === 'article-details' && params?.id) setSelectedArticleId(params.id);
     if (view === 'tip-details' && params?.id) setSelectedTipId(params.id);
     if (view === 'garage-details' && params?.id) setSelectedGarageId(params.id);
+    if (view === 'tech-specs-models' && params?.brand) setSelectedTechBrand(params.brand);
+    if (view === 'tech-specs-details' && params?.id) setSelectedTechSpecId(params.id);
+    
     if (view === 'dashboard' && params?.tab) setDashboardTab(params.tab);
     else if (view === 'dashboard') setDashboardTab('overview');
     
@@ -315,6 +328,42 @@ const App: React.FC = () => {
                 initialTab={dashboardTab}
                 onGoHome={() => navigateTo('home')}
                 onNavigate={(view, params) => navigateTo(view as ViewState, params)}
+                isLoggedIn={isLoggedIn}
+                onTriggerLogin={openLoginModal}
+                onLogout={handleLogout}
+              />
+              <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+            </>
+          ) : currentView === 'tech-specs-brands' ? (
+            <>
+              <TechSpecsBrands
+                onGoHome={() => navigateTo('home')}
+                onNavigate={(view, params) => navigateTo(view as ViewState, params)}
+                isLoggedIn={isLoggedIn}
+                onTriggerLogin={openLoginModal}
+                onLogout={handleLogout}
+              />
+              <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+            </>
+          ) : currentView === 'tech-specs-models' ? (
+            <>
+              <TechSpecsModels
+                brand={selectedTechBrand || 'Yamaha'}
+                onGoHome={() => navigateTo('home')}
+                onNavigate={(view, params) => navigateTo(view as ViewState, params)}
+                isLoggedIn={isLoggedIn}
+                onTriggerLogin={openLoginModal}
+                onLogout={handleLogout}
+              />
+              <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+            </>
+          ) : currentView === 'tech-specs-details' ? (
+            <>
+              <TechSpecsDetails
+                specId={selectedTechSpecId || 1}
+                onGoHome={() => navigateTo('home')}
+                onNavigate={(view, params) => navigateTo(view as ViewState, params)}
+                onBack={() => navigateTo('tech-specs-brands')} // Basic back behavior, can be refined
                 isLoggedIn={isLoggedIn}
                 onTriggerLogin={openLoginModal}
                 onLogout={handleLogout}

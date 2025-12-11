@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Plus, Heart, User, Filter, LogOut, Settings, LayoutDashboard, List } from 'lucide-react';
+import { Menu, X, Plus, Heart, User, Filter, LogOut, Settings, LayoutDashboard, List, ChevronDown } from 'lucide-react';
 import { useFavorites } from '../../context/FavoritesContext';
 
 interface HeaderProps {
@@ -30,7 +30,9 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isNewsMenuOpen, setIsNewsMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const newsMenuRef = useRef<HTMLDivElement>(null);
   
   // Get favorites count
   const { favoritesCount } = useFavorites();
@@ -53,6 +55,9 @@ const Header: React.FC<HeaderProps> = ({
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
       }
+      if (newsMenuRef.current && !newsMenuRef.current.contains(event.target as Node)) {
+        setIsNewsMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -62,6 +67,7 @@ const Header: React.FC<HeaderProps> = ({
 
   const handleNavClick = (view: string, params?: any) => {
     setIsMobileMenuOpen(false);
+    setIsNewsMenuOpen(false);
     if (onNavigate) onNavigate(view, params);
   };
 
@@ -101,7 +107,34 @@ const Header: React.FC<HeaderProps> = ({
             <nav className="hidden lg:flex items-center gap-8" aria-label="Navigation principale">
               <div className="flex items-center gap-6">
                 <button onClick={() => onNavigate?.('search')} className={`${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}>Annonces</button>
-                <button onClick={() => onNavigate?.('news')} className={`${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}>Actualités</button>
+                
+                {/* News Dropdown */}
+                <div className="relative" ref={newsMenuRef}>
+                    <button 
+                        onClick={() => setIsNewsMenuOpen(!isNewsMenuOpen)}
+                        className={`flex items-center gap-1 ${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}
+                    >
+                        Actualités <ChevronDown size={14} className={`transition-transform duration-200 ${isNewsMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {isNewsMenuOpen && (
+                        <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-fade-in-up origin-top-left overflow-hidden">
+                            <button 
+                                onClick={() => handleNavClick('news')}
+                                className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors block"
+                            >
+                                Actualités & Essais
+                            </button>
+                            <button 
+                                onClick={() => handleNavClick('tech-specs-brands')}
+                                className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors block"
+                            >
+                                Fiches Techniques
+                            </button>
+                        </div>
+                    )}
+                </div>
+
                 <button onClick={() => onNavigate?.('garages')} className={`${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}>Garages</button>
                 <button onClick={() => onNavigate?.('tips')} className={`${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}>Conseils</button>
                 <button onClick={() => onNavigate?.('contact')} className={`${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}>Contact</button>
@@ -279,10 +312,16 @@ const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Scrollable Navigation Links */}
-          <nav className="flex-1 overflow-y-auto py-8 px-6 flex flex-col gap-8 justify-center items-center">
+          <nav className="flex-1 overflow-y-auto py-8 px-6 flex flex-col gap-6 justify-center items-center">
              <button onClick={() => { handleNavClick('home'); onGoHome?.(); }} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.1s`, opacity: 0 }}>Accueil</button>
              <button onClick={() => handleNavClick('search')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.2s`, opacity: 0 }}>Annonces</button>
-             <button onClick={() => handleNavClick('news')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.3s`, opacity: 0 }}>Actualités</button>
+             
+             {/* Mobile News Split */}
+             <div className="flex flex-col gap-4 w-full items-center">
+                 <button onClick={() => handleNavClick('news')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.3s`, opacity: 0 }}>Actualités</button>
+                 <button onClick={() => handleNavClick('tech-specs-brands')} className="text-lg font-bold text-gray-500 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.35s`, opacity: 0 }}>Fiches Techniques</button>
+             </div>
+
              <button onClick={() => handleNavClick('garages')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.4s`, opacity: 0 }}>Garages</button>
              <button onClick={() => handleNavClick('tips')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.45s`, opacity: 0 }}>Conseils</button>
              <button onClick={() => handleNavClick('contact')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.5s`, opacity: 0 }}>Contact</button>

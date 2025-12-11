@@ -1,10 +1,11 @@
-import { Listing, Garage, Article, BikeModel, Review, Tip } from '../types';
+
+import { Listing, Garage, Article, BikeModel, Review, Tip, TechSpec } from '../types';
 
 // --- SHARED DATA CONSTANTS ---
 
 export const brandsMoto = [
   "Yamaha", "Honda", "Kawasaki", "BMW", "KTM", "Suzuki", "Ducati", "Triumph", 
-  "Sym", "Piaggio", "Peugeot", "Aprilia", "Benelli", "Autre"
+  "Sym", "Piaggio", "Peugeot", "Aprilia", "Benelli", "Zontes", "Autre"
 ];
 
 export const mockModels = [
@@ -16,7 +17,8 @@ export const mockModels = [
   "Street Triple 675", "Street Triple 765", "Bonneville T100", "Bonneville T120", "Tiger 800", "Tiger 900",
   "Scrambler 800", "Monster 821", "Monster 937", "Panigale V4", "Multistrada V4",
   "Vespa GTS 300", "Beverly 300", "Beverly 400", "Liberty 125",
-  "Fiddle II", "Fiddle III", "Symphony ST", "Jet 14", "Orbit II", "Kisbee"
+  "Fiddle II", "Fiddle III", "Symphony ST", "Jet 14", "Orbit II", "Kisbee",
+  "350 E", "310 M", "125 M", "350 D"
 ];
 
 export const equipmentOptions = [
@@ -39,6 +41,235 @@ export const conditions = [
 ];
 
 // --- MOCK DATA ---
+
+export const mockTechSpecs: TechSpec[] = [
+  {
+    id: 1,
+    brand: "Yamaha",
+    model: "MT-07",
+    year: 2024,
+    category: "Roadster",
+    priceNew: "34 500 DT",
+    image: "https://www.yamaha-motor.eu/library/assets/products/2024/motorcycles/hyper-naked/mt-07/900-75/2024-Yamaha-MT-07-EU-Midnight_Cyan-Studio-001-03.jpg",
+    gallery: [
+        "https://www.yamaha-motor.eu/library/assets/products/2024/motorcycles/hyper-naked/mt-07/900-75/2024-Yamaha-MT-07-EU-Midnight_Cyan-Studio-001-03.jpg",
+        "https://www.yamaha-motor.eu/library/assets/products/2024/motorcycles/hyper-naked/mt-07/900-75/2024-Yamaha-MT-07-EU-Midnight_Cyan-Action-002-03.jpg",
+        "https://www.yamaha-motor.eu/library/assets/products/2024/motorcycles/hyper-naked/mt-07/900-75/2024-Yamaha-MT-07-EU-Icon_Blue-Studio-001-03.jpg"
+    ],
+    engine: {
+      type: "Bicylindre en ligne, 4 temps, refroidissement liquide, DOHC, 4 soupapes",
+      cc: "689 cm³",
+      power: "73.4 ch à 8 750 tr/min",
+      torque: "67.0 Nm à 6 500 tr/min",
+      fuelSystem: "Injection électronique",
+      cooling: "Liquide",
+      transmission: "6 vitesses, chaîne"
+    },
+    chassis: {
+      frame: "Diamant",
+      suspensionFront: "Fourche télescopique",
+      suspensionRear: "Bras oscillant, suspension type Monocross",
+      brakesFront: "Double disque, Ø 298 mm",
+      brakesRear: "Simple disque, Ø 245 mm",
+      tireFront: "120/70 ZR 17M/C(58W)",
+      tireRear: "180/55 ZR 17M/C(73W)"
+    },
+    dimensions: {
+      weight: "184 kg (tous pleins faits)",
+      seatHeight: "805 mm",
+      tank: "14 L",
+      length: "2 085 mm",
+      wheelbase: "1 400 mm"
+    },
+    consumption: "4.2 L/100km",
+    topSpeed: "205 km/h"
+  },
+  {
+    id: 2,
+    brand: "Yamaha",
+    model: "TMAX 560 Tech MAX",
+    year: 2024,
+    category: "Scooter",
+    priceNew: "54 000 DT",
+    image: "https://www.yamaha-motor.eu/library/assets/products/2024/scooters/sport-scooters/tmax-tech-max/900-75/2024-Yamaha-TMAX_Tech_MAX-EU-Dark_Magma-Studio-001-03.jpg",
+    engine: {
+      type: "Bicylindre parallèle, 4 temps, refroidissement liquide, DOHC, 4 soupapes",
+      cc: "562 cm³",
+      power: "47.6 ch à 7 500 tr/min",
+      torque: "55.7 Nm à 5 250 tr/min",
+      fuelSystem: "Injection électronique",
+      cooling: "Liquide",
+      transmission: "Automatique à courroie en V"
+    },
+    chassis: {
+      frame: "Aluminium moulé sous pression",
+      suspensionFront: "Fourche télescopique inversée",
+      suspensionRear: "Bras oscillant",
+      brakesFront: "Double disque hydraulique, Ø 267 mm",
+      brakesRear: "Simple disque hydraulique, Ø 282 mm",
+      tireFront: "120/70R15M/C 56H",
+      tireRear: "160/60R15M/C 67H"
+    },
+    dimensions: {
+      weight: "220 kg",
+      seatHeight: "800 mm",
+      tank: "15 L",
+      length: "2 195 mm",
+      wheelbase: "1 575 mm"
+    },
+    consumption: "4.8 L/100km",
+    topSpeed: "180 km/h"
+  },
+  {
+    id: 3,
+    brand: "Kawasaki",
+    model: "Z900",
+    year: 2024,
+    category: "Roadster",
+    priceNew: "42 000 DT",
+    image: "https://storage.kawasaki.eu/public/kawasaki.eu/en-EU/model/24MY_Z900_GN1_STU_1.jpg",
+    engine: {
+      type: "4 cylindres en ligne, 4 temps, refroidissement liquide",
+      cc: "948 cm³",
+      power: "125 ch à 9 500 tr/min",
+      torque: "98.6 Nm à 7 700 tr/min",
+      fuelSystem: "Injection : Ø 36 mm x 4",
+      cooling: "Liquide",
+      transmission: "6 vitesses, chaîne"
+    },
+    chassis: {
+      frame: "Treillis, acier haute résistance",
+      suspensionFront: "Fourche inversée de 41 mm",
+      suspensionRear: "Back-link horizontal",
+      brakesFront: "Double disque en pétales semi-flottant de 300 mm",
+      brakesRear: "Simple disque en pétales de 250 mm",
+      tireFront: "120/70ZR17M/C (58W)",
+      tireRear: "180/55ZR17M/C (73W)"
+    },
+    dimensions: {
+      weight: "212 kg",
+      seatHeight: "820 mm",
+      tank: "17 L",
+      length: "2 070 mm",
+      wheelbase: "1 455 mm"
+    },
+    consumption: "5.7 L/100km",
+    topSpeed: "240 km/h"
+  },
+  {
+    id: 4,
+    brand: "BMW",
+    model: "R 1300 GS",
+    year: 2024,
+    category: "Trail",
+    priceNew: "98 000 DT",
+    image: "https://www.bmw-motorrad.fr/content/dam/bmw/marketFR/bmw-motorrad_fr/all-models/adventure/r1300gs/r1300gs-allow-pdp-technical-data-1920x1080.jpg",
+    engine: {
+      type: "Boxer bicylindre à quatre temps refroidi par air/liquide",
+      cc: "1 300 cm³",
+      power: "145 ch à 7 750 tr/min",
+      torque: "149 Nm à 6 500 tr/min",
+      fuelSystem: "Injection électronique",
+      cooling: "Air/Liquide",
+      transmission: "6 vitesses, cardan"
+    },
+    chassis: {
+      frame: "Cadre principal en acier et cadre arrière boulonné",
+      suspensionFront: "EVO Telelever",
+      suspensionRear: "EVO Paralever",
+      brakesFront: "Double disque flottant, Ø 310 mm",
+      brakesRear: "Monodisque, Ø 285 mm",
+      tireFront: "120/70 R 19",
+      tireRear: "170/60 R 17"
+    },
+    dimensions: {
+      weight: "237 kg",
+      seatHeight: "850 mm",
+      tank: "19 L",
+      length: "2 212 mm",
+      wheelbase: "1 518 mm"
+    },
+    consumption: "4.8 L/100km",
+    topSpeed: "> 200 km/h"
+  },
+  {
+    id: 5,
+    brand: "Zontes",
+    model: "350 E",
+    year: 2024,
+    category: "Scooter",
+    priceNew: "21 500 DT",
+    image: "https://zontes.fr/wp-content/uploads/2023/02/ZONTES-350E-NOIR-MAT-34.jpg",
+    gallery: [
+        "https://zontes.fr/wp-content/uploads/2023/02/ZONTES-350E-NOIR-MAT-34.jpg",
+        "https://zontes.fr/wp-content/uploads/2023/02/ZONTES-350E-NOIR-MAT-32.jpg"
+    ],
+    engine: {
+      type: "Monocylindre 4 temps, refroidissement liquide, SOHC, 4 soupapes",
+      cc: "349 cm³",
+      power: "37 ch à 7 500 tr/min",
+      torque: "38 Nm à 6 000 tr/min",
+      fuelSystem: "Injection électronique Bosch",
+      cooling: "Liquide",
+      transmission: "Automatique CVT"
+    },
+    chassis: {
+      frame: "Tubulaire en acier",
+      suspensionFront: "Fourche télescopique hydraulique",
+      suspensionRear: "Double amortisseur réglable",
+      brakesFront: "Disque J.Juan, ABS Bosch",
+      brakesRear: "Disque J.Juan, ABS Bosch",
+      tireFront: "120/70-15",
+      tireRear: "140/70-14"
+    },
+    dimensions: {
+      weight: "182 kg",
+      seatHeight: "770 mm",
+      tank: "16 L",
+      length: "2 195 mm",
+      wheelbase: "1 565 mm"
+    },
+    consumption: "3.5 L/100km",
+    topSpeed: "155 km/h"
+  },
+  {
+    id: 6,
+    brand: "Zontes",
+    model: "125 M",
+    year: 2024,
+    category: "Scooter",
+    priceNew: "13 800 DT",
+    image: "https://zontes.fr/wp-content/uploads/2021/03/ZONTES-125M-BLEU-MAT-34.jpg",
+    gallery: ["https://zontes.fr/wp-content/uploads/2021/03/ZONTES-125M-BLEU-MAT-34.jpg"],
+    engine: {
+      type: "Monocylindre 4 temps, refroidissement liquide",
+      cc: "125 cm³",
+      power: "14.6 ch à 8 250 tr/min",
+      torque: "12.8 Nm à 6 500 tr/min",
+      fuelSystem: "Injection électronique",
+      cooling: "Liquide",
+      transmission: "Automatique CVT"
+    },
+    chassis: {
+      frame: "Tubulaire acier",
+      suspensionFront: "Fourche télescopique",
+      suspensionRear: "Double amortisseur",
+      brakesFront: "Disque avec ABS",
+      brakesRear: "Disque avec ABS",
+      tireFront: "100/80-14",
+      tireRear: "120/70-14"
+    },
+    dimensions: {
+      weight: "148 kg",
+      seatHeight: "748 mm",
+      tank: "12 L",
+      length: "2 000 mm",
+      wheelbase: "1 390 mm"
+    },
+    consumption: "2.6 L/100km",
+    topSpeed: "115 km/h"
+  }
+];
 
 export const mockListings: Listing[] = [
   {

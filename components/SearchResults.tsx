@@ -35,6 +35,8 @@ const DualRangeSlider = ({
   label, 
   min, 
   max, 
+  valueMin,
+  valueMax,
   step = 1, 
   unit = '',
   onChange
@@ -42,16 +44,27 @@ const DualRangeSlider = ({
   label: string; 
   min: number; 
   max: number; 
+  valueMin?: number;
+  valueMax?: number;
   step?: number; 
   unit?: string;
   onChange?: (min: number, max: number) => void;
 }) => {
-  const [minVal, setMinVal] = useState(min);
-  const [maxVal, setMaxVal] = useState(max);
+  const [minVal, setMinVal] = useState(valueMin ?? min);
+  const [maxVal, setMaxVal] = useState(valueMax ?? max);
   
   const minValRef = useRef(min);
   const maxValRef = useRef(max);
   const range = useRef<HTMLDivElement>(null);
+
+  // Sync with props if they change (e.g. Reset Filters)
+  useEffect(() => {
+    if (valueMin !== undefined) setMinVal(valueMin);
+  }, [valueMin]);
+
+  useEffect(() => {
+    if (valueMax !== undefined) setMaxVal(valueMax);
+  }, [valueMax]);
 
   // Notify parent of changes with debounce
   useEffect(() => {
@@ -107,7 +120,7 @@ const DualRangeSlider = ({
             setMinVal(value);
             minValRef.current = value;
           }}
-          className="absolute pointer-events-none appearance-none z-20 h-2 w-full bg-transparent 
+          className={`absolute pointer-events-none appearance-none z-20 h-2 w-full bg-transparent 
             [&::-webkit-slider-thumb]:pointer-events-auto 
             [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:h-7 
             [&::-webkit-slider-thumb]:appearance-none 
@@ -116,7 +129,16 @@ const DualRangeSlider = ({
             [&::-webkit-slider-thumb]:border-2 
             [&::-webkit-slider-thumb]:border-white 
             [&::-webkit-slider-thumb]:shadow-md 
-            [&::-webkit-slider-thumb]:cursor-pointer"
+            [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-moz-range-thumb]:pointer-events-auto 
+            [&::-moz-range-thumb]:w-7 [&::-moz-range-thumb]:h-7 
+            [&::-moz-range-thumb]:appearance-none 
+            [&::-moz-range-thumb]:rounded-full 
+            [&::-moz-range-thumb]:bg-primary-600 
+            [&::-moz-range-thumb]:border-2 
+            [&::-moz-range-thumb]:border-white 
+            [&::-moz-range-thumb]:shadow-md 
+            [&::-moz-range-thumb]:cursor-pointer`}
           style={{ zIndex: minVal > min + (max - min) / 2 ? 50 : 20 }}
         />
         <input
@@ -130,7 +152,7 @@ const DualRangeSlider = ({
             setMaxVal(value);
             maxValRef.current = value;
           }}
-          className="absolute pointer-events-none appearance-none z-30 h-2 w-full bg-transparent 
+          className={`absolute pointer-events-none appearance-none z-30 h-2 w-full bg-transparent 
             [&::-webkit-slider-thumb]:pointer-events-auto 
             [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:h-7 
             [&::-webkit-slider-thumb]:appearance-none 
@@ -139,7 +161,16 @@ const DualRangeSlider = ({
             [&::-webkit-slider-thumb]:border-2 
             [&::-webkit-slider-thumb]:border-white 
             [&::-webkit-slider-thumb]:shadow-md 
-            [&::-webkit-slider-thumb]:cursor-pointer"
+            [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-moz-range-thumb]:pointer-events-auto 
+            [&::-moz-range-thumb]:w-7 [&::-moz-range-thumb]:h-7 
+            [&::-moz-range-thumb]:appearance-none 
+            [&::-moz-range-thumb]:rounded-full 
+            [&::-moz-range-thumb]:bg-primary-600 
+            [&::-moz-range-thumb]:border-2 
+            [&::-moz-range-thumb]:border-white 
+            [&::-moz-range-thumb]:shadow-md 
+            [&::-moz-range-thumb]:cursor-pointer`}
         />
 
         <div className="relative w-full h-2 bg-gray-200 rounded-full z-10 pointer-events-none">
@@ -183,12 +214,24 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const { isFavorite, toggleFavorite } = useFavorites();
 
+  // Prevent body scroll when mobile filter is open
+  useEffect(() => {
+    if (isMobileFilterOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileFilterOpen]);
+
   // Filter State
   const [filters, setFilters] = useState({
     search: '',
     type: '',
     brand: '',
-    model: '', // Added model filter
+    model: '', 
     location: '',
     minYear: 2000,
     maxYear: 2026,
@@ -225,17 +268,20 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
     if (filters.location && filters.location !== 'Toutes les régions' && filters.location !== 'Toute la Tunisie' && !listing.location.includes(filters.location)) return false;
 
     // Ranges
-    const year = parseInt(listing.year);
-    if (year < filters.minYear || year > filters.maxYear) return false;
-
-    const km = parseInt(listing.mileage.replace(/\D/g, ''));
-    if (km < filters.minKm || km > filters.maxKm) return false;
-
     const price = parseInt(listing.price.replace(/\D/g, ''));
     if (price < filters.minPrice || price > filters.maxPrice) return false;
 
-    const cc = parseInt(listing.cc.replace(/\D/g, ''));
-    if (cc < filters.minCC || cc > filters.maxCC) return false;
+    // Vehicle Specific Filters (Skip if Accessoires)
+    if (listing.type !== 'Accessoires') {
+        const year = parseInt(listing.year);
+        if (year < filters.minYear || year > filters.maxYear) return false;
+
+        const km = parseInt(listing.mileage.replace(/\D/g, ''));
+        if (km < filters.minKm || km > filters.maxKm) return false;
+
+        const cc = parseInt(listing.cc.replace(/\D/g, ''));
+        if (cc < filters.minCC || cc > filters.maxCC) return false;
+    }
 
     return true;
   });
@@ -285,6 +331,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
   };
 
   const SHOW_IN_FEED_AD = true;
+  const isAccessory = filters.type === 'Accessoires';
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -420,7 +467,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                 </div>
               </div>
 
-              {/* ADDED MODEL FILTER */}
+              {/* MODEL FILTER */}
               <div className="mb-6">
                 <label className="text-sm font-bold text-gray-700 mb-2 block">Modèle</label>
                 <div className="relative">
@@ -459,34 +506,47 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
               <hr className="border-gray-100 mb-6" />
 
-              <DualRangeSlider 
-                label="Année" 
-                min={2000} 
-                max={2026} 
-                onChange={(min, max) => { handleFilterChange('minYear', min); handleFilterChange('maxYear', max); }}
-              />
-              <DualRangeSlider 
-                label="Kilométrage" 
-                min={0} 
-                max={300000} 
-                step={1000} 
-                unit="km" 
-                onChange={(min, max) => { handleFilterChange('minKm', min); handleFilterChange('maxKm', max); }}
-              />
-              <DualRangeSlider 
-                label="Cylindrée" 
-                min={50} 
-                max={1650} 
-                step={50} 
-                unit="cc" 
-                onChange={(min, max) => { handleFilterChange('minCC', min); handleFilterChange('maxCC', max); }}
-              />
+              {!isAccessory && (
+                <>
+                  <DualRangeSlider 
+                    label="Année" 
+                    min={2000} 
+                    max={2026} 
+                    valueMin={filters.minYear}
+                    valueMax={filters.maxYear}
+                    onChange={(min, max) => { handleFilterChange('minYear', min); handleFilterChange('maxYear', max); }}
+                  />
+                  <DualRangeSlider 
+                    label="Kilométrage" 
+                    min={0} 
+                    max={300000} 
+                    step={1000} 
+                    unit="km" 
+                    valueMin={filters.minKm}
+                    valueMax={filters.maxKm}
+                    onChange={(min, max) => { handleFilterChange('minKm', min); handleFilterChange('maxKm', max); }}
+                  />
+                  <DualRangeSlider 
+                    label="Cylindrée" 
+                    min={50} 
+                    max={1650} 
+                    step={50} 
+                    unit="cc" 
+                    valueMin={filters.minCC}
+                    valueMax={filters.maxCC}
+                    onChange={(min, max) => { handleFilterChange('minCC', min); handleFilterChange('maxCC', max); }}
+                  />
+                </>
+              )}
+              
               <DualRangeSlider 
                 label="Prix" 
                 min={0} 
                 max={200000} 
                 step={100} 
                 unit="DT" 
+                valueMin={filters.minPrice}
+                valueMax={filters.maxPrice}
                 onChange={(min, max) => { handleFilterChange('minPrice', min); handleFilterChange('maxPrice', max); }}
               />
 
@@ -513,6 +573,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                    const isGrid = viewMode === 'grid';
                    const dealInfo = getDealInfo(listing.dealRating);
                    const favorited = isFavorite('listing', listing.id);
+                   const isItemAccessory = listing.type === 'Accessoires';
                    
                    return (
                   <React.Fragment key={listing.id}>
@@ -577,11 +638,17 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                             </div>
 
                             <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-sm font-semibold text-gray-700 my-2">
-                               <div className="flex items-center gap-1.5"><Calendar size={16} className="text-gray-400" /> <span>{listing.year}</span></div>
-                               <span className="text-gray-300 hidden md:inline">•</span>
-                               <div className="flex items-center gap-1.5"><Gauge size={16} className="text-gray-400" /> <span>{listing.mileage}</span></div>
-                               <span className="text-gray-300 hidden md:inline">•</span>
-                               <div className="flex items-center gap-1.5"><Info size={16} className="text-gray-400" /> <span>{listing.cc}</span></div>
+                               {isItemAccessory ? (
+                                  <div className="flex items-center gap-1.5"><Info size={16} className="text-gray-400" /> <span>{listing.condition}</span></div>
+                               ) : (
+                                  <>
+                                    <div className="flex items-center gap-1.5"><Calendar size={16} className="text-gray-400" /> <span>{listing.year}</span></div>
+                                    <span className="text-gray-300 hidden md:inline">•</span>
+                                    <div className="flex items-center gap-1.5"><Gauge size={16} className="text-gray-400" /> <span>{listing.mileage}</span></div>
+                                    <span className="text-gray-300 hidden md:inline">•</span>
+                                    <div className="flex items-center gap-1.5"><Info size={16} className="text-gray-400" /> <span>{listing.cc}</span></div>
+                                  </>
+                               )}
                             </div>
 
                             {listing.dealRating && (
@@ -619,7 +686,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                           {!isGrid && (
                             <div className="hidden md:flex flex-col justify-between items-end p-5 border-l border-gray-100 w-64 flex-shrink-0 bg-gray-50/50">
                                <div className="text-right w-full">
-                                  <span className="block text-2xl font-extrabold text-primary-600 leading-none mb-1">{listing.price}</span>
+                                  <span className="block text-3xl font-black text-primary-600 leading-none mb-1">{listing.price}</span>
                                </div>
                                <div className="w-full flex flex-col gap-2.5 mt-4">
                                   <button className="w-full h-10 rounded-lg bg-primary-600 text-white font-bold text-sm shadow-md hover:bg-primary-700 transition-all flex items-center justify-center gap-2">
@@ -719,8 +786,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
               <hr className="border-gray-100" />
 
-              <DualRangeSlider label="Année" min={2000} max={2026} onChange={(min, max) => { handleFilterChange('minYear', min); handleFilterChange('maxYear', max); }} />
-              <DualRangeSlider label="Prix" min={0} max={200000} step={100} unit="DT" onChange={(min, max) => { handleFilterChange('minPrice', min); handleFilterChange('maxPrice', max); }} />
+              {!isAccessory && (
+                <>
+                  <DualRangeSlider label="Année" min={2000} max={2026} valueMin={filters.minYear} valueMax={filters.maxYear} onChange={(min, max) => { handleFilterChange('minYear', min); handleFilterChange('maxYear', max); }} />
+                  <DualRangeSlider label="Kilométrage" min={0} max={300000} valueMin={filters.minKm} valueMax={filters.maxKm} onChange={(min, max) => { handleFilterChange('minKm', min); handleFilterChange('maxKm', max); }} />
+                </>
+              )}
+              <DualRangeSlider label="Prix" min={0} max={200000} step={100} unit="DT" valueMin={filters.minPrice} valueMax={filters.maxPrice} onChange={(min, max) => { handleFilterChange('minPrice', min); handleFilterChange('maxPrice', max); }} />
            </div>
 
            <div className="p-4 border-t border-gray-100 bg-white sticky bottom-0 z-20 pb-8 safe-area-bottom">

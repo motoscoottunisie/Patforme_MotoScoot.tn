@@ -226,6 +226,79 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
     );
   };
 
+  const renderGallery = () => {
+      const images = galleryImages;
+      
+      // Case 1: Single Image
+      if (images.length === 1) {
+          return (
+              <div className="h-64 md:h-96 rounded-2xl overflow-hidden mb-8 relative group cursor-pointer">
+                  <img src={images[0]} alt="Main" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+              </div>
+          );
+      }
+
+      // Case 2: Two Images
+      if (images.length === 2) {
+          return (
+              <div className="grid grid-cols-2 gap-2 h-64 md:h-96 rounded-2xl overflow-hidden mb-8">
+                  <div className="relative group cursor-pointer overflow-hidden">
+                      <img src={images[0]} alt="View 1" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  </div>
+                  <div className="relative group cursor-pointer overflow-hidden">
+                      <img src={images[1]} alt="View 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  </div>
+              </div>
+          );
+      }
+
+      // Case 3: Three Images
+      if (images.length === 3) {
+          return (
+              <div className="grid grid-cols-2 gap-2 h-64 md:h-96 rounded-2xl overflow-hidden mb-8">
+                  <div className="relative group cursor-pointer overflow-hidden">
+                      <img src={images[0]} alt="Main" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  </div>
+                  <div className="grid grid-rows-2 gap-2">
+                      <div className="relative group cursor-pointer overflow-hidden">
+                          <img src={images[1]} alt="Side 1" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      </div>
+                      <div className="relative group cursor-pointer overflow-hidden">
+                          <img src={images[2]} alt="Side 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      </div>
+                  </div>
+              </div>
+          );
+      }
+
+      // Case 4+: Full Bento Grid
+      return (
+        <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64 md:h-96 rounded-2xl overflow-hidden mb-8">
+            <div className="col-span-2 row-span-2 relative group cursor-pointer">
+                <img src={images[0]} alt="Main" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+            </div>
+            <div className="col-span-1 row-span-1 relative group cursor-pointer bg-gray-100">
+                <img src={images[1]} alt="Interior 1" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            </div>
+            <div className="col-span-1 row-span-1 relative group cursor-pointer bg-gray-100">
+                <img src={images[2]} alt="Interior 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            </div>
+            <div className="col-span-2 row-span-1 relative group cursor-pointer bg-gray-100">
+                <img src={images[3]} alt="Interior 3" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                {images.length > 4 && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-white font-bold flex items-center gap-2 text-sm backdrop-blur-md px-3 py-1.5 rounded-full bg-white/20">
+                            <Camera size={16} /> +{images.length - 4} photos
+                        </span>
+                    </div>
+                )}
+            </div>
+        </div>
+      );
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans pb-24 lg:pb-12">
       
@@ -290,28 +363,8 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
                     </button>
                 </div>
 
-                {/* Gallery Grid (Bento Style) - Safe Rendering */}
-                <div className="grid grid-cols-4 grid-rows-2 gap-2 h-64 md:h-96 rounded-2xl overflow-hidden mb-8">
-                    <div className="col-span-2 row-span-2 relative group cursor-pointer">
-                        <img src={galleryImages[0]} alt="Main" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
-                    </div>
-                    {/* Only render other grid items if images exist, otherwise fill with main image or hide */}
-                    <div className="col-span-1 row-span-1 relative group cursor-pointer bg-gray-100">
-                        <img src={galleryImages[1] || galleryImages[0]} alt="Interior 1" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                    </div>
-                    <div className="col-span-1 row-span-1 relative group cursor-pointer bg-gray-100">
-                        <img src={galleryImages[2] || galleryImages[0]} alt="Interior 2" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                    </div>
-                    <div className="col-span-2 row-span-1 relative group cursor-pointer bg-gray-100">
-                        <img src={galleryImages[3] || galleryImages[0]} alt="Interior 3" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="text-white font-bold flex items-center gap-2 text-sm backdrop-blur-md px-3 py-1.5 rounded-full bg-white/20">
-                                <Camera size={16} /> Voir toutes les photos
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                {/* Render Dynamic Gallery */}
+                {renderGallery()}
 
                 {/* Tabs / Navigation */}
                 <div className="flex border-b border-gray-100 mb-8 overflow-x-auto no-scrollbar">

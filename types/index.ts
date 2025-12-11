@@ -111,3 +111,41 @@ export interface CategoryItem {
   icon: React.ElementType;
   label: string;
 }
+
+export interface TechSpec {
+  id: number;
+  brand: string;
+  model: string;
+  year: number;
+  category: 'Roadster' | 'Sportive' | 'Trail' | 'Scooter' | 'Custom' | 'Off-road';
+  priceNew: string;
+  image: string;
+  gallery?: string[];
+  engine: {
+    type: string;
+    cc: string;
+    power: string;
+    torque: string;
+    fuelSystem: string;
+    cooling: string;
+    transmission: string;
+  };
+  chassis: {
+    frame: string;
+    suspensionFront: string;
+    suspensionRear: string;
+    brakesFront: string;
+    brakesRear: string;
+    tireFront: string;
+    tireRear: string;
+  };
+  dimensions: {
+    weight: string;
+    seatHeight: string;
+    tank: string;
+    length: string;
+    wheelbase: string;
+  };
+  consumption?: string;
+  topSpeed?: string;
+}

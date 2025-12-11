@@ -105,6 +105,14 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', onGoHome
     }, 1000);
   };
 
+  const handleTabChange = (tab: 'overview' | 'listings' | 'settings') => {
+      if (onNavigate) {
+          onNavigate('dashboard', { tab });
+      } else {
+          setActiveTab(tab);
+      }
+  };
+
   const renderOverview = () => (
     <div className="space-y-8 animate-fade-in-up">
       {/* Stats Grid */}
@@ -443,21 +451,21 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'overview', onGoHome
 
                   <nav className="space-y-1">
                      <button 
-                       onClick={() => setActiveTab('overview')}
+                       onClick={() => handleTabChange('overview')}
                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'overview' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}
                      >
                         <LayoutDashboard size={18} />
                         Vue d'ensemble
                      </button>
                      <button 
-                       onClick={() => setActiveTab('listings')}
+                       onClick={() => handleTabChange('listings')}
                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'listings' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}
                      >
                         <List size={18} />
                         Mes annonces
                      </button>
                      <button 
-                       onClick={() => setActiveTab('settings')}
+                       onClick={() => handleTabChange('settings')}
                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'settings' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}
                      >
                         <Settings size={18} />

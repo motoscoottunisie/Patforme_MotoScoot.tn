@@ -23,7 +23,9 @@ import {
   FileText,
   ArrowUpRight,
   Fuel,
-  ExternalLink
+  ExternalLink,
+  Shield,
+  AlertTriangle
 } from 'lucide-react';
 import { Listing } from '../types';
 import Header from './layout/Header';
@@ -41,30 +43,6 @@ interface ListingDetailsProps {
 }
 
 // --- SUB-COMPONENTS ---
-
-const Accordion = ({ title, children, defaultOpen = false, icon: Icon }: any) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  return (
-    <div className="border-b border-gray-100 last:border-0">
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-5 text-left focus:outline-none group"
-      >
-        <div className="flex items-center gap-3">
-           {Icon && <Icon size={20} className="text-primary-600" />}
-           <span className="font-bold text-gray-900 text-lg group-hover:text-primary-600 transition-colors">{title}</span>
-        </div>
-        {isOpen ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
-      </button>
-      <div 
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100 pb-5' : 'max-h-0 opacity-0'}`}
-      >
-        {children}
-      </div>
-    </div>
-  );
-};
 
 const SimilarListingCard: React.FC<{ listing: Listing, onClick: () => void, className?: string }> = ({ listing, onClick, className = "" }) => (
     <div 
@@ -107,6 +85,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
   onLogout 
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isPhoneRevealed, setIsPhoneRevealed] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Similar Listings Slider State
@@ -174,6 +153,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
   useEffect(() => {
     window.scrollTo(0, 0);
     setCurrentSimIndex(0); // Reset slider when listing changes
+    setIsPhoneRevealed(false); // Reset phone reveal
   }, [listingId]);
 
   // Similar Listings Slider Logic
@@ -207,6 +187,10 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
   const prevSim = () => {
       const max = Math.ceil(similarListings.length - simItemsToShow);
       setCurrentSimIndex(prev => (prev <= 0 ? max : prev - 1));
+  };
+
+  const handlePhoneClick = () => {
+      setIsPhoneRevealed(true);
   };
 
   return (
@@ -259,7 +243,8 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* LEFT COLUMN: Main Content (8 cols) */}
-          <div className="lg:col-span-8 space-y-4 md:space-y-8">
+          {/* Changed from space-y to flex gap to fix alignment issue caused by hidden elements receiving top margin */}
+          <div className="lg:col-span-8 flex flex-col gap-4 md:gap-8">
             
             {/* --- GALLERY SECTION --- */}
             
@@ -311,14 +296,31 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
 
             {/* --- HEADER INFO SECTION --- */}
             <div className="px-4 md:px-0">
-               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                  <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">
+               {/* Mobile Layout: Flex Row for Title + Price, then Gauge below */}
+               <div className="flex justify-between items-start md:block mb-2 md:mb-4 gap-4">
+                  <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight md:mb-0 flex-1">
                      {listing.title}
                   </h1>
-                  <span className="md:hidden text-2xl font-extrabold text-primary-600">
+                  
+                  {/* Mobile Price - Next to Title */}
+                  <span className="md:hidden text-xl font-extrabold text-primary-600 whitespace-nowrap pt-1">
                      {listing.price}
                   </span>
                </div>
+
+               {/* Mobile Deal Gauge - Under Title/Price */}
+               {listing.dealRating && (
+                  <div className="md:hidden mb-4">
+                      <div className="inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                         <div className="flex gap-0.5">
+                            {[1, 2, 3].map(level => (
+                               <div key={level} className={`w-4 h-1.5 rounded-full ${listing.dealRating! >= level ? dealInfo.color : 'bg-gray-200'}`}></div>
+                            ))}
+                         </div>
+                         <span className={`text-xs font-bold uppercase tracking-wide ${dealInfo.textColor}`}>{dealInfo.label}</span>
+                      </div>
+                  </div>
+               )}
 
                {/* Mobile Quick Specs Grid (Visible without scroll) */}
                {isAccessory ? (
@@ -350,23 +352,6 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                        <span className="text-sm font-bold text-gray-900">Manuelle</span>
                     </div>
                  </div>
-               )}
-
-               {/* Deal Gauge */}
-               {listing.dealRating && (
-                  <div className="flex items-center gap-3 mb-6 bg-white border border-gray-100 p-3 rounded-xl shadow-sm md:inline-flex md:pr-6">
-                     <div className="flex items-center gap-1 w-24">
-                        {[1, 2, 3].map(level => (
-                           <div 
-                              key={level} 
-                              className={`h-2 flex-1 rounded-full ${listing.dealRating! >= level ? dealInfo.color : 'bg-gray-200'}`}
-                           ></div>
-                        ))}
-                     </div>
-                     <span className={`text-sm font-bold ${dealInfo.textColor}`}>
-                        {dealInfo.label}
-                     </span>
-                  </div>
                )}
 
                {/* Desktop Specs Grid */}
@@ -404,64 +389,75 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                )}
             </div>
 
-            {/* --- ACCORDIONS CONTENT --- */}
-            <div className="px-4 md:px-0 space-y-6">
-                
-                {/* Description - Renamed for Accessories */}
-                <div className="bg-white md:rounded-2xl md:p-8 md:shadow-sm md:border border-gray-100">
-                   <Accordion title={isAccessory ? "Description" : "Description du véhicule"} defaultOpen={true} icon={FileText}>
-                      <p className="text-gray-600 leading-relaxed whitespace-pre-line text-sm md:text-base">
-                         {isAccessory 
-                            ? `Je vends cet article : ${listing.title}.\n\nÉtat : ${listing.condition}.\n\nPour plus d'informations ou des photos supplémentaires, n'hésitez pas à me contacter.`
-                            : `Bonjour, je vends ma ${listing.title} en excellent état.\n\nEntretien à jour, carnet d'entretien disponible. La révision a été faite récemment.\n\nVisible sur ${listing.location}. Prix légèrement négociable.`
-                         }
-                      </p>
-                   </Accordion>
+            {/* --- COMBINED DETAILS CARD --- */}
+            <div className="px-4 md:px-0">
+                <div className="bg-white md:rounded-2xl md:p-8 p-6 rounded-xl shadow-sm border border-gray-100 space-y-8">
+                    
+                    {/* Description Section */}
+                    <div>
+                        <h3 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+                            <FileText size={20} className="text-primary-600" />
+                            {isAccessory ? "Description" : "Description du véhicule"}
+                        </h3>
+                        <p className="text-gray-600 leading-relaxed whitespace-pre-line text-sm md:text-base">
+                            {isAccessory 
+                            ? `Je vends cet article : ${listing.title}.\nÉtat : ${listing.condition}.\nPour plus d'informations ou des photos supplémentaires, n'hésitez pas à me contacter.`
+                            : `Bonjour, je vends ma ${listing.title} en excellent état.\nEntretien à jour, carnet d'entretien disponible. La révision a été faite récemment.\nVisible sur ${listing.location}. Prix légèrement négociable.`
+                            }
+                        </p>
+                    </div>
+
+                    {!isAccessory && (
+                        <>
+                            <hr className="border-gray-100" />
+
+                            {/* Equipment Section */}
+                            <div>
+                                <h3 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+                                    <CheckCircle2 size={20} className="text-primary-600" />
+                                    Équipements & Options
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {features.length > 0 ? features.map((feature, idx) => (
+                                    <span key={idx} className="bg-gray-50 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-200">
+                                        {feature}
+                                    </span>
+                                    )) : (
+                                    <span className="text-gray-500 text-sm italic">Aucun équipement spécifié</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <hr className="border-gray-100" />
+
+                            {/* Specs / Administrative (Formerly Historique) */}
+                            <div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span className="text-gray-600 text-sm">Origine</span>
+                                        <span className="font-bold text-gray-900 text-sm">Importée</span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span className="text-gray-600 text-sm">Première main</span>
+                                        <span className="font-bold text-gray-900 text-sm">Non (2ème main)</span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span className="text-gray-600 text-sm">Carte grise</span>
+                                        <span className="font-bold text-success-600 text-sm flex items-center gap-1">
+                                            <CheckCircle2 size={14} /> À mon nom
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span className="text-gray-600 text-sm">Certificat de non-gage</span>
+                                        <span className="font-bold text-success-600 text-sm flex items-center gap-1">
+                                            <CheckCircle2 size={14} /> Disponible
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
-
-                {/* Equipments - Vehicles Only */}
-                {!isAccessory && (
-                    <div className="bg-white md:rounded-2xl md:p-8 md:shadow-sm md:border border-gray-100">
-                       <Accordion title="Équipements & Options" defaultOpen={true} icon={CheckCircle2}>
-                          <div className="flex flex-wrap gap-2 pt-2">
-                             {features.length > 0 ? features.map((feature, idx) => (
-                                <span key={idx} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium">
-                                   {feature}
-                                </span>
-                             )) : (
-                                <span className="text-gray-500 text-sm italic">Aucun équipement spécifié</span>
-                             )}
-                          </div>
-                       </Accordion>
-                    </div>
-                )}
-
-                {/* History - Vehicles Only */}
-                {!isAccessory && (
-                    <div className="bg-white md:rounded-2xl md:p-8 md:shadow-sm md:border border-gray-100">
-                       <Accordion title="Historique & Administratif" defaultOpen={false} icon={Flag}>
-                          <div className="space-y-4 pt-2">
-                             <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                                <span className="text-gray-600">Origine</span>
-                                <span className="font-bold text-gray-900">Importée (France)</span>
-                             </div>
-                             <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                                <span className="text-gray-600">Première main</span>
-                                <span className="font-bold text-gray-900">Non (2ème main)</span>
-                             </div>
-                             <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                                <span className="text-gray-600">Carte grise</span>
-                                <span className="font-bold text-success-600 flex items-center gap-1"><CheckCircle2 size={14} /> À mon nom</span>
-                             </div>
-                             <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                                <span className="text-gray-600">Certificat de non-gage</span>
-                                <span className="font-bold text-success-600 flex items-center gap-1"><CheckCircle2 size={14} /> Disponible</span>
-                             </div>
-                          </div>
-                       </Accordion>
-                    </div>
-                )}
-
             </div>
 
             {/* --- SIMILAR LISTINGS SLIDER --- */}
@@ -510,40 +506,74 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
           <div className="hidden lg:block lg:col-span-4">
              <div className="sticky top-24 space-y-6">
                 
-                {/* Seller Card */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6">
-                   <div className="mb-6">
-                      <span className="text-gray-500 text-sm font-medium">Prix</span>
-                      <div className="text-4xl font-extrabold text-primary-600">{listing.price}</div>
+                {/* ENHANCED SELLER CARD */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-6 overflow-hidden relative">
+                   {/* Decorative top border removed */}
+
+                   {/* Price Section */}
+                   <div className="mb-6 pb-6 border-b border-gray-100">
+                      <span className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1 block">Prix demandé</span>
+                      <div className="flex items-baseline gap-2">
+                         <div className="text-4xl font-extrabold text-primary-600 tracking-tight">{listing.price}</div>
+                      </div>
+                      
+                      {/* Deal Rating Badge (Desktop) */}
+                      {listing.dealRating && (
+                          <div className="flex items-center gap-2 mt-3 bg-gray-50 px-3 py-1.5 rounded-lg w-fit border border-gray-100">
+                             <div className="flex gap-1">
+                                {[1, 2, 3].map(level => (
+                                   <div key={level} className={`w-4 h-1.5 rounded-full ${listing.dealRating! >= level ? dealInfo.color : 'bg-gray-200'}`}></div>
+                                ))}
+                             </div>
+                             <span className={`text-xs font-bold uppercase tracking-wide ${dealInfo.textColor}`}>{dealInfo.label}</span>
+                          </div>
+                      )}
                    </div>
 
-                   <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 text-xl font-bold">
-                         {listing.seller.charAt(0)}
+                   {/* Seller Info - NO RATINGS */}
+                   <div className="flex items-center gap-4 mb-6">
+                      <div className="relative">
+                         <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-xl font-bold border-2 border-white shadow-sm">
+                            {listing.seller.charAt(0)}
+                         </div>
+                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-success-500 border-2 border-white rounded-full" title="En ligne"></div>
                       </div>
                       <div>
-                         <h3 className="font-bold text-lg text-gray-900">{listing.seller}</h3>
-                         <div className="flex items-center gap-2 text-sm">
-                            <span className="bg-primary-50 text-primary-700 px-2 py-0.5 rounded text-xs font-bold uppercase">{listing.sellerType}</span>
-                            <span className="text-gray-400">•</span>
-                            <div className="flex text-warning-400">
-                               {[...Array(5)].map((_, i) => <span key={i}>★</span>)}
-                            </div>
+                         <h3 className="font-bold text-gray-900 text-lg leading-tight">{listing.seller}</h3>
+                         <div className="flex items-center gap-2 text-sm mt-0.5">
+                            <span className="bg-primary-50 text-primary-700 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide">{listing.sellerType}</span>
                          </div>
-                         <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                            <MapPin size={12} /> {listing.location}
-                         </div>
+                         <p className="text-xs text-gray-400 mt-1">Membre depuis 2023</p>
                       </div>
                    </div>
 
+                   {/* CTAs */}
                    <div className="space-y-3">
-                      <a 
-                        href="tel:+21625123456"
-                        className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
-                      >
-                         <Phone size={18} />
-                         Appeler le vendeur
-                      </a>
+                      {isPhoneRevealed ? (
+                          <a 
+                            href="tel:+21625123456"
+                            className="w-full py-3.5 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-3 transition-all active:scale-95 animate-fade-in-up"
+                          >
+                             <Phone size={20} className="fill-current" />
+                             <span className="text-lg">25 123 456</span>
+                          </a>
+                      ) : (
+                          <button 
+                            onClick={handlePhoneClick}
+                            className="w-full py-3.5 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 group"
+                          >
+                             <Phone size={20} className="group-hover:rotate-12 transition-transform" />
+                             Afficher le numéro
+                          </button>
+                      )}
+                   </div>
+
+                   {/* Safety Disclaimer */}
+                   <div className="mt-6 pt-4 border-t border-gray-100 flex gap-2 items-start opacity-70 hover:opacity-100 transition-opacity">
+                      <Shield size={14} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-[10px] text-gray-500 leading-tight">
+                         <strong>Conseil sécurité :</strong> Ne versez jamais d'acompte avant d'avoir vu le véhicule.
+                      </p>
                    </div>
                 </div>
 
@@ -568,13 +598,23 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
 
       {/* MOBILE STICKY FOOTER */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 safe-area-bottom z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex gap-3">
-         <a 
-            href="tel:+21625123456"
-            className="flex-1 h-12 bg-primary-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 text-base active:scale-95 transition-transform shadow-lg"
-         >
-            <Phone size={18} />
-            <span>Appeler</span>
-         </a>
+         {isPhoneRevealed ? (
+             <a 
+                href="tel:+21625123456"
+                className="flex-1 h-12 bg-gray-900 text-white font-bold rounded-xl flex items-center justify-center gap-2 text-base active:scale-95 transition-transform shadow-lg animate-fade-in-up"
+             >
+                <Phone size={18} className="fill-current" />
+                <span>25 123 456</span>
+             </a>
+         ) : (
+             <button 
+                onClick={handlePhoneClick}
+                className="flex-1 h-12 bg-primary-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 text-base active:scale-95 transition-transform shadow-lg"
+             >
+                <Phone size={18} />
+                <span>Appeler</span>
+             </button>
+         )}
          <button className="flex-1 h-12 bg-[#25D366] text-white font-bold rounded-xl flex items-center justify-center gap-2 text-base active:scale-95 transition-transform shadow-lg">
             <MessageCircle size={18} />
             <span>WhatsApp</span>
