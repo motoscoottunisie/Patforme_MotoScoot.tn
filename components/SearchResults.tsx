@@ -312,6 +312,16 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
     onNavigate?.('listing-details', { id: listingId });
   };
 
+  // HANDLER FOR FAVORITE CLICK WITH LOGIN CHECK
+  const handleFavoriteClick = (e: React.MouseEvent, listingId: number) => {
+    e.stopPropagation();
+    if (isLoggedIn) {
+      toggleFavorite('listing', listingId);
+    } else {
+      if (onTriggerLogin) onTriggerLogin();
+    }
+  };
+
   const getBadgeStyle = (condition: string) => {
     switch (condition) {
       case 'Excellent': return 'bg-success-50 text-success-700 border-success-200'; 
@@ -611,8 +621,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                             </span>
                           </div>
                           <button 
-                            onClick={(e) => { e.stopPropagation(); toggleFavorite('listing', listing.id); }}
-                            className={`absolute top-3 right-3 p-2 backdrop-blur-sm rounded-full transition-colors shadow-sm ${!isGrid ? 'md:hidden' : ''} ${favorited ? 'bg-red-50 text-red-500' : 'bg-white/90 text-gray-400 hover:text-red-500'}`}
+                            onClick={(e) => handleFavoriteClick(e, listing.id)}
+                            className={`absolute top-3 right-3 p-2 backdrop-blur-sm rounded-full transition-colors ${!isGrid ? 'md:hidden' : ''} ${favorited ? 'bg-red-50 text-red-500' : 'bg-white/90 text-gray-400 hover:text-red-500'}`}
                           >
                               <Heart size={18} fill={favorited ? "currentColor" : "none"} />
                           </button>
@@ -693,7 +703,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                      <Phone size={16} /> Appeler
                                   </button>
                                   <button 
-                                    onClick={(e) => { e.stopPropagation(); toggleFavorite('listing', listing.id); }}
+                                    onClick={(e) => handleFavoriteClick(e, listing.id)}
                                     className={`w-full h-8 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold transition-colors ${favorited ? 'bg-red-50 text-red-500' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
                                   >
                                      <Heart size={14} fill={favorited ? "currentColor" : "none"} />
@@ -760,7 +770,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                     </select>
                  </div>
 
-                 {/* ADDED MOBILE MODEL DROPDOWN */}
+                 {/* Mobile Model Filter */}
                  <div>
                     <label className="block font-bold mb-2">Modèle</label>
                     <select value={filters.model} onChange={(e) => handleFilterChange('model', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl">
@@ -786,17 +796,62 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
               <hr className="border-gray-100" />
 
+              {/* Mobile Range Sliders */}
               {!isAccessory && (
                 <>
-                  <DualRangeSlider label="Année" min={2000} max={2026} valueMin={filters.minYear} valueMax={filters.maxYear} onChange={(min, max) => { handleFilterChange('minYear', min); handleFilterChange('maxYear', max); }} />
-                  <DualRangeSlider label="Kilométrage" min={0} max={300000} valueMin={filters.minKm} valueMax={filters.maxKm} onChange={(min, max) => { handleFilterChange('minKm', min); handleFilterChange('maxKm', max); }} />
+                  <div className="space-y-4">
+                     <DualRangeSlider 
+                        label="Année" 
+                        min={2000} 
+                        max={2026} 
+                        valueMin={filters.minYear}
+                        valueMax={filters.maxYear}
+                        onChange={(min, max) => { handleFilterChange('minYear', min); handleFilterChange('maxYear', max); }}
+                     />
+                  </div>
+                  <div className="space-y-4">
+                     <DualRangeSlider 
+                        label="Kilométrage" 
+                        min={0} 
+                        max={300000} 
+                        step={1000} 
+                        unit="km" 
+                        valueMin={filters.minKm}
+                        valueMax={filters.maxKm}
+                        onChange={(min, max) => { handleFilterChange('minKm', min); handleFilterChange('maxKm', max); }}
+                     />
+                  </div>
+                  <div className="space-y-4">
+                     <DualRangeSlider 
+                        label="Cylindrée" 
+                        min={50} 
+                        max={1650} 
+                        step={50} 
+                        unit="cc" 
+                        valueMin={filters.minCC}
+                        valueMax={filters.maxCC}
+                        onChange={(min, max) => { handleFilterChange('minCC', min); handleFilterChange('maxCC', max); }}
+                     />
+                  </div>
                 </>
               )}
-              <DualRangeSlider label="Prix" min={0} max={200000} step={100} unit="DT" valueMin={filters.minPrice} valueMax={filters.maxPrice} onChange={(min, max) => { handleFilterChange('minPrice', min); handleFilterChange('maxPrice', max); }} />
+
+              <div className="space-y-4">
+                 <DualRangeSlider 
+                    label="Prix" 
+                    min={0} 
+                    max={200000} 
+                    step={100} 
+                    unit="DT" 
+                    valueMin={filters.minPrice}
+                    valueMax={filters.maxPrice}
+                    onChange={(min, max) => { handleFilterChange('minPrice', min); handleFilterChange('maxPrice', max); }}
+                 />
+              </div>
            </div>
 
-           <div className="p-4 border-t border-gray-100 bg-white sticky bottom-0 z-20 pb-8 safe-area-bottom">
-              <button onClick={() => setIsMobileFilterOpen(false)} className="w-full bg-primary-600 text-white font-bold py-4 rounded-xl shadow-lg">
+           <div className="p-4 border-t border-gray-100 bg-white sticky bottom-0 z-20 pb-8 md:pb-4 safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+              <button onClick={() => setIsMobileFilterOpen(false)} className="w-full bg-primary-600 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-lg active:scale-[0.98] transition-transform">
                  Afficher {filteredListings.length} résultats
               </button>
            </div>

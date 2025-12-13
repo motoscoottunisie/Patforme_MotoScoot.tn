@@ -30,7 +30,7 @@ const brandLogos: Record<string, string> = {
   // Zontes and others will fallback to text if URL is invalid or missing
 };
 
-const BrandCard = ({ brand, onClick }: { brand: string, onClick: () => void }) => {
+const BrandCard: React.FC<{ brand: string, onClick: () => void }> = ({ brand, onClick }) => {
   const [imageError, setImageError] = useState(false);
   const logoUrl = brandLogos[brand];
 

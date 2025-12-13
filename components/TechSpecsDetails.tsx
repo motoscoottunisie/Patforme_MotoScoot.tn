@@ -14,6 +14,13 @@ interface TechSpecsDetailsProps {
   onLogout?: () => void;
 }
 
+const SpecItem: React.FC<{ label: string, value: string }> = ({ label, value }) => (
+  <div className="flex flex-col border-b border-gray-50 py-3 last:border-0 hover:bg-gray-50/50 transition-colors rounded-lg px-2 -mx-2">
+      <span className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">{label}</span>
+      <span className="text-gray-900 font-bold text-base">{value}</span>
+  </div>
+);
+
 const TechSpecsDetails: React.FC<TechSpecsDetailsProps> = ({ specId, onGoHome, onNavigate, onBack, isLoggedIn, onTriggerLogin, onLogout }) => {
   
   const spec = mockTechSpecs.find(s => s.id === specId) || mockTechSpecs[0];
@@ -30,13 +37,6 @@ const TechSpecsDetails: React.FC<TechSpecsDetailsProps> = ({ specId, onGoHome, o
           onBack();
       }
   };
-
-  const SpecItem = ({ label, value }: { label: string, value: string }) => (
-    <div className="flex flex-col border-b border-gray-50 py-3 last:border-0 hover:bg-gray-50/50 transition-colors rounded-lg px-2 -mx-2">
-        <span className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">{label}</span>
-        <span className="text-gray-900 font-bold text-base">{value}</span>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] font-sans pb-12">

@@ -147,98 +147,110 @@ const Header: React.FC<HeaderProps> = ({
                 
                 {isLoggedIn ? (
                   // LOGGED IN STATE
-                  <div className="relative" ref={userMenuRef}>
-                    <button 
-                      onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                      className={`flex items-center gap-3 p-1 rounded-full transition-all focus:outline-none focus:ring-2 ${isTransparent ? 'hover:bg-white/10 focus:ring-white' : 'hover:bg-gray-50 focus:ring-primary-500'}`}
+                  <>
+                    {/* Favorites Icon (Logged In Only) */}
+                    <button
+                        onClick={() => onNavigate?.('favorites')}
+                        className={`flex items-center justify-center w-10 h-10 rounded-full transition-all focus:outline-none focus:ring-2 ${isTransparent ? 'text-white hover:bg-white/10 focus:ring-white' : 'text-gray-600 hover:bg-gray-50 focus:ring-primary-500'}`}
+                        title="Mes favoris"
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold shadow-md">
-                        JD
-                      </div>
-                      <span className={`hidden md:block font-bold text-sm ${isTransparent ? 'text-white' : 'text-gray-900'}`}>
-                        John Doe
-                      </span>
+                        <div className="relative">
+                            <Heart size={20} className={favoritesCount > 0 ? "fill-current text-red-500" : ""} />
+                            {favoritesCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-white text-red-600 text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                                    {favoritesCount}
+                                </span>
+                            )}
+                        </div>
                     </button>
 
-                    {/* Dropdown Menu */}
-                    {isUserMenuOpen && (
-                      <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 animate-fade-in-up origin-top-right">
-                        <div className="px-4 py-3 border-b border-gray-50 mb-2">
-                          <p className="text-sm font-bold text-gray-900">John Doe</p>
-                          <p className="text-xs text-gray-500">john.doe@example.com</p>
+                    <div className="relative" ref={userMenuRef}>
+                      <button 
+                        onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                        className={`flex items-center gap-3 p-1 rounded-full transition-all focus:outline-none focus:ring-2 ${isTransparent ? 'hover:bg-white/10 focus:ring-white' : 'hover:bg-gray-50 focus:ring-primary-500'}`}
+                      >
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold shadow-md">
+                          JD
                         </div>
-                        
-                        <button 
-                          onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'overview' }); }}
-                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
-                        >
-                          <LayoutDashboard size={16} />
-                          Tableau de bord
-                        </button>
-                        <button 
-                          onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'listings' }); }}
-                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
-                        >
-                          <List size={16} />
-                          Mes annonces
-                        </button>
-                        <button 
-                          onClick={() => { setIsUserMenuOpen(false); onNavigate?.('favorites'); }}
-                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
-                        >
-                          <Heart size={16} />
-                          Mes favoris
-                          {favoritesCount > 0 && (
-                            <span className="ml-auto bg-primary-100 text-primary-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{favoritesCount}</span>
-                          )}
-                        </button>
-                        <button 
-                          onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'settings' }); }}
-                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
-                        >
-                          <Settings size={16} />
-                          Paramètres
-                        </button>
-                        
-                        <div className="border-t border-gray-50 mt-2 pt-2">
+                        <span className={`hidden md:block font-bold text-sm ${isTransparent ? 'text-white' : 'text-gray-900'}`}>
+                          John Doe
+                        </span>
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {isUserMenuOpen && (
+                        <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 animate-fade-in-up origin-top-right">
+                          <div className="px-4 py-3 border-b border-gray-50 mb-2">
+                            <p className="text-sm font-bold text-gray-900">John Doe</p>
+                            <p className="text-xs text-gray-500">john.doe@example.com</p>
+                          </div>
+                          
                           <button 
-                            onClick={() => { setIsUserMenuOpen(false); onLogout?.(); }}
-                            className="w-full text-left px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                            onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'overview' }); }}
+                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
                           >
-                            <LogOut size={16} />
-                            Déconnexion
+                            <LayoutDashboard size={16} />
+                            Tableau de bord
                           </button>
+                          <button 
+                            onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'listings' }); }}
+                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
+                          >
+                            <List size={16} />
+                            Mes annonces
+                          </button>
+                          <button 
+                            onClick={() => { setIsUserMenuOpen(false); onNavigate?.('favorites'); }}
+                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
+                          >
+                            <Heart size={16} />
+                            Mes favoris
+                          </button>
+                          <button 
+                            onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'settings' }); }}
+                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
+                          >
+                            <Settings size={16} />
+                            Paramètres
+                          </button>
+                          
+                          <div className="border-t border-gray-50 mt-2 pt-2">
+                            <button 
+                              onClick={() => { setIsUserMenuOpen(false); onLogout?.(); }}
+                              className="w-full text-left px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                            >
+                              <LogOut size={16} />
+                              Déconnexion
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  </>
                 ) : (
                   // VISITOR STATE
                   <div className="flex items-center gap-4">
-                     <button 
-                       onClick={() => onNavigate?.('favorites')}
-                       className={`flex items-center gap-2 text-sm font-bold ${isTransparent ? 'text-white hover:text-white/80' : 'text-gray-900 hover:text-primary-600'} transition-colors focus:outline-none group`}
-                     >
-                       <div className="relative">
-                         <Heart size={20} className={favoritesCount > 0 ? "fill-white/30" : ""} />
-                         {favoritesCount > 0 && (
-                           <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-primary-600 text-white text-[10px] rounded-full flex items-center justify-center">
-                             {favoritesCount}
-                           </span>
-                         )}
-                       </div>
-                       <span className="hidden xl:inline">Favoris</span>
-                     </button>
-
-                     <button 
-                       onClick={onTriggerLogin}
-                       className={`text-sm font-bold ${isTransparent ? 'text-white hover:text-white/80' : 'text-gray-900 hover:text-primary-600'} transition-colors focus:outline-none focus:underline`}
-                     >
-                       Se connecter
-                     </button>
+                     {/* Favorites Removed for Unauthenticated Users */}
+                     
+                     <div className="flex items-center gap-3">
+                        <button 
+                          onClick={onTriggerLogin}
+                          className={`text-sm font-bold ${isTransparent ? 'text-white hover:text-white/80' : 'text-gray-900 hover:text-primary-600'} transition-colors focus:outline-none focus:underline`}
+                        >
+                          Se connecter
+                        </button>
+                        <span className={`${isTransparent ? 'text-white/40' : 'text-gray-300'}`}>/</span>
+                        <button 
+                          onClick={onTriggerLogin}
+                          className={`text-sm font-bold ${isTransparent ? 'text-white hover:text-white/80' : 'text-gray-900 hover:text-primary-600'} transition-colors focus:outline-none focus:underline`}
+                        >
+                          S'inscrire
+                        </button>
+                     </div>
                   </div>
                 )}
 
+                {/* Primary CTA - Always Visible */}
                 <button 
                   onClick={handleDepositClick}
                   className={`flex items-center gap-2 text-sm font-bold py-2.5 px-5 rounded-full transition-all backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-primary-500/30 ${isTransparent ? 'bg-white/10 hover:bg-white/20 border border-white/20 text-white' : 'bg-primary-600 hover:bg-primary-700 text-white shadow-md hover:shadow-lg active:scale-95'}`}
@@ -337,33 +349,34 @@ const Header: React.FC<HeaderProps> = ({
               <span>Déposer une annonce</span>
             </button>
             
-            <div className="grid grid-cols-2 gap-4">
-              <button 
-                onClick={() => { setIsMobileMenuOpen(false); onNavigate?.('favorites'); }}
-                className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                 <Heart className={`w-5 h-5 ${favoritesCount > 0 ? "fill-primary-600 text-primary-600" : ""}`} />
-                 <span>Favoris {favoritesCount > 0 && `(${favoritesCount})`}</span>
-              </button>
-              
-              {isLoggedIn ? (
-                <button 
-                   onClick={() => { setIsMobileMenuOpen(false); handleNavClick('dashboard', { tab: 'overview' }); }}
-                   className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                   <LayoutDashboard className="w-5 h-5" />
-                   <span>Dashboard</span>
-                </button>
-              ) : (
+            {isLoggedIn ? (
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => { setIsMobileMenuOpen(false); onNavigate?.('favorites'); }}
+                    className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                     <Heart className={`w-5 h-5 ${favoritesCount > 0 ? "fill-primary-600 text-primary-600" : ""}`} />
+                     <span>Favoris {favoritesCount > 0 && `(${favoritesCount})`}</span>
+                  </button>
+                  
+                  <button 
+                     onClick={() => { setIsMobileMenuOpen(false); handleNavClick('dashboard', { tab: 'overview' }); }}
+                     className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                     <LayoutDashboard className="w-5 h-5" />
+                     <span>Dashboard</span>
+                  </button>
+                </div>
+            ) : (
+                // Unauthenticated Mobile Footer: Only Login Button (Full Width)
                 <button 
                   onClick={() => { setIsMobileMenuOpen(false); onTriggerLogin?.(); }}
-                  className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                    <User className="w-5 h-5" />
-                   <span>Connexion</span>
+                   <span>Se connecter / S'inscrire</span>
                 </button>
-              )}
-            </div>
+            )}
             
             {isLoggedIn && (
                <button 
