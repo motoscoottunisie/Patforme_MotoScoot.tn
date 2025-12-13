@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { mockGarages, tunisianCities, specialtiesList } from '../data/mockData';
 import Header from './layout/Header';
+import AdBanner from './common/AdBanner';
 
 interface GaragesProps {
   onGoHome?: () => void;
@@ -249,14 +250,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
                 </div>
 
                 {/* Sidebar Ad Insertion */}
-                <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-1 shadow-sm overflow-hidden">
-                    <div className="bg-gray-900 p-6 text-center">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">Publicité</span>
-                        <h4 className="text-white font-bold text-lg mb-4">Pièces détachées d'origine</h4>
-                        <p className="text-gray-400 text-xs mb-4">Large choix de pièces moto au meilleur prix.</p>
-                        <button className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-bold w-full hover:bg-primary-700 transition-colors">Découvrir</button>
-                    </div>
-                </div>
+                <AdBanner zone="garage_sidebar" variant="native" className="mt-6" />
 
              </div>
           </aside>
@@ -384,7 +378,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
         </div>
       </div>
 
-      {/* MOBILE FILTER MODAL - Z-INDEX 60 */}
+      {/* MOBILE FILTER MODAL */}
       {isMobileFilterOpen && (
         <div 
           className="fixed inset-0 z-[60] lg:hidden bg-white flex flex-col animate-fade-in-up"
@@ -392,7 +386,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
           aria-modal="true"
           aria-labelledby="mobile-filter-title"
         >
-           
+           {/* ... [Mobile filter implementation remains unchanged] ... */}
            {/* Header */}
            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white sticky top-0 z-20">
               <div className="flex items-center gap-3">

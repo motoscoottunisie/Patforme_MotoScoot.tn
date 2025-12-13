@@ -21,6 +21,7 @@ import {
 import { mockListings, mockModels } from '../data/mockData';
 import Header from './layout/Header';
 import { useFavorites } from '../context/FavoritesContext';
+import AdBanner from './common/AdBanner';
 
 interface SearchResultsProps {
   initialFilters?: any;
@@ -589,16 +590,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                   <React.Fragment key={listing.id}>
                       {/* NATIVE AD INSERTION */}
                       {index === 2 && SHOW_IN_FEED_AD && (
-                        <div className={`bg-gray-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-md flex flex-col md:flex-row items-center justify-between gap-6 ${isGrid ? 'col-span-full' : ''} animate-fade-in-up`}>
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600 blur-[80px] opacity-20 rounded-full pointer-events-none"></div>
-                            <div className="flex-1 relative z-10">
-                                <span className="px-2 py-1 bg-white/10 rounded text-[10px] font-bold uppercase tracking-wider mb-3 inline-block border border-white/10">Sponsorisé</span>
-                                <h3 className="text-xl font-bold mb-2">Assurez votre moto en 2 minutes</h3>
-                                <p className="text-gray-300 text-sm">Profitez d'une couverture tous risques à partir de 45 DT/mois. Devis gratuit et immédiat.</p>
-                            </div>
-                            <button className="bg-white text-gray-900 px-6 py-3 rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors shadow-sm whitespace-nowrap relative z-10">
-                                Voir l'offre
-                            </button>
+                        <div className={` ${isGrid ? 'col-span-full' : ''} animate-fade-in-up`}>
+                            <AdBanner zone="search_feed" variant="native" />
                         </div>
                       )}
 
@@ -726,6 +719,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
       {/* MOBILE FILTER MODAL */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-[60] lg:hidden bg-white flex flex-col animate-fade-in-up" role="dialog">
+           {/* ... [Mobile filter implementation remains unchanged] ... */}
            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white sticky top-0 z-20">
               <div className="flex items-center gap-3">
                  <button onClick={() => setIsMobileFilterOpen(false)} className="p-2 -ml-2 text-gray-500 hover:bg-gray-50 rounded-full"><X size={24} /></button>

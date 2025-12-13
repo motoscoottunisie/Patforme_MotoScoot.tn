@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { mockArticles } from '../data/mockData';
 import Header from './layout/Header';
+import AdBanner from './common/AdBanner';
 
 interface NewsProps {
   onGoHome?: () => void;
@@ -158,17 +159,8 @@ const News: React.FC<NewsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigger
           </div>
         </div>
 
-        {/* Placeholder Image (Ad Banner) */}
-        <div className="mb-12 w-full h-32 md:h-48 bg-gray-100 rounded-2xl flex items-center justify-center border border-gray-200 relative overflow-hidden group">
-            <img 
-              src="https://placehold.co/1200x200/f1f5f9/94a3b8?text=Espace+Publicitaire+(Placeholder)" 
-              alt="Advertisement Placeholder" 
-              className="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:scale-105 transition-transform duration-700" 
-            />
-            <span className="relative z-10 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg text-gray-500 font-bold uppercase tracking-widest text-xs border border-white">
-              Publicité
-            </span>
-        </div>
+        {/* Ad Banner - Dynamic */}
+        <AdBanner zone="news_top" className="mb-12 h-32 md:h-48 rounded-2xl" />
 
         {/* Article Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">

@@ -31,6 +31,7 @@ import { Listing } from '../types';
 import Header from './layout/Header';
 import { mockListings } from '../data/mockData';
 import { useFavorites } from '../context/FavoritesContext';
+import AdBanner from './common/AdBanner';
 
 interface ListingDetailsProps {
   listingId: number;
@@ -578,17 +579,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                 </div>
 
                 {/* Advertisement Card */}
-                <div className="bg-gray-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-md">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary-600 blur-[50px] opacity-30 rounded-full"></div>
-                   <div className="relative z-10">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2 block">Publicité</span>
-                      <h4 className="font-bold text-lg mb-2">Assurez cette moto en 2 min</h4>
-                      <p className="text-sm text-gray-400 mb-4">Comparateur gratuit, jusqu'à -40% sur votre assurance.</p>
-                      <button className="w-full py-3 bg-white text-gray-900 font-bold rounded-lg text-sm hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
-                         Faire un devis <ExternalLink size={14} />
-                      </button>
-                   </div>
-                </div>
+                <AdBanner zone="listing_sidebar" variant="native" />
 
              </div>
           </div>

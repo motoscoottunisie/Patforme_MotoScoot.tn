@@ -61,26 +61,12 @@ import {
 } from 'lucide-react';
 import { mockArticles, mockTips, mockGarages, popularModels, brandsMoto } from '../../data/mockData';
 import { Article, Garage, Tip, GarageService, GarageReview } from '../../types';
+import { useAds } from '../../context/AdsContext';
 
 // --- TYPES ---
 type ModalMode = 'create' | 'edit' | null;
 type EntityType = 'garage' | 'article' | 'tip' | 'brand' | 'model' | 'accessory-category' | 'ad';
 type VehicleType = 'Moto' | 'Scooter' | 'Accessoires';
-
-interface AdCampaign {
-  id: number;
-  title: string;
-  client: string;
-  zone: 'Header' | 'Sidebar' | 'In-Feed' | 'Popup' | 'Footer';
-  location: string;
-  startDate: string;
-  endDate: string;
-  mediaType: 'Image' | 'Script';
-  mediaUrl: string;
-  isActive: boolean;
-  views: number;
-  clicks: number;
-}
 
 interface AccessoryCategory {
   id: number;
@@ -339,21 +325,17 @@ const demographicData = [
   { label: '45+ ans', value: 15, color: '#9CA3AF' },
 ];
 
-const mockAds: AdCampaign[] = [
-    { id: 1, title: 'Promo Hiver Yamaha', client: 'Yamaha Tunisie', zone: 'Header', location: 'Toute la Tunisie', startDate: '2025-01-01', endDate: '2025-02-01', mediaType: 'Image', mediaUrl: '', isActive: true, views: 12500, clicks: 450 },
-    { id: 2, title: 'Assurance Moto', client: 'Comar', zone: 'Sidebar', location: 'Tunis', startDate: '2025-01-15', endDate: '2025-03-15', mediaType: 'Image', mediaUrl: '', isActive: true, views: 8200, clicks: 120 },
-    { id: 3, title: 'Casques Shark Promo', client: 'Moto Expert', zone: 'In-Feed', location: 'Sousse', startDate: '2025-02-01', endDate: '2025-02-28', mediaType: 'Image', mediaUrl: '', isActive: false, views: 4500, clicks: 80 },
-];
-
 const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onLogout }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'news' | 'tips' | 'garages' | 'ads' | 'data-moto' | 'data-scooter' | 'data-accessories'>('overview');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar toggle
   
+  // Consume Contexts
+  const { ads, addAd, updateAd, deleteAd } = useAds();
+
   // Data State
   const [garages, setGarages] = useState<Garage[]>(mockGarages);
   const [articles, setArticles] = useState<Article[]>(mockArticles);
   const [tips, setTips] = useState<Tip[]>(mockTips);
-  const [ads, setAds] = useState<AdCampaign[]>(mockAds);
   
   // Accessory Categories State
   const [accessoryCategories, setAccessoryCategories] = useState<AccessoryCategory[]>([
@@ -439,6 +421,12 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                phone: '', email: '', website: '', hours: 'Lundi-Samedi: 09h-18h', 
                specialties: [], services: [], reviewsList: []
             });
+        } else if (entity === 'ad') {
+            setSelectedItem({
+                title: '', client: '', zone: 'news_top', location: 'Toute la Tunisie', 
+                startDate: '', endDate: '', mediaType: 'Image', 
+                mediaUrl: '', linkUrl: '', description: '', ctaText: '', isActive: true
+            });
         } else {
             setSelectedItem({ type: defaultType });
         }
@@ -475,8 +463,11 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
            setAccessoryCategories(accessoryCategories.map(cat => cat.id === selectedItem.id ? { ...cat, name: formData.name } : cat));
        }
     } else if (currentEntity === 'ad') {
-       if (modalMode === 'create') setAds([{ ...formData, id: newId, views: 0, clicks: 0 }, ...ads]);
-       else setAds(ads.map(a => a.id === selectedItem.id ? { ...a, ...formData } : a));
+       if (modalMode === 'create') {
+           addAd(formData);
+       } else {
+           updateAd(selectedItem.id, formData);
+       }
     }
     
     showNotification(`${modalMode === 'create' ? 'Ajout' : 'Modification'} effectué avec succès`);
@@ -491,272 +482,165 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
       else if (entity === 'brand') setBrands(brands.filter(b => !(b.name === id && b.type === extraParam)));
       else if (entity === 'model') setModels(models.filter(m => m.id !== id));
       else if (entity === 'accessory-category') setAccessoryCategories(accessoryCategories.filter(c => c.id !== id));
-      else if (entity === 'ad') setAds(ads.filter(a => a.id !== id));
+      else if (entity === 'ad') deleteAd(id as number);
       showNotification("Élément supprimé", "success");
     }
   };
 
-  // --- RENDER FUNCTIONS ---
+  // --- RENDER FUNCTIONS FOR VIEWS ---
 
   const renderOverview = () => (
     <div className="space-y-8 animate-fade-in-up">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard label="Visiteurs Uniques (30j)" value="45.2K" change="+12.5%" icon={Users} color="text-primary-600" bg="bg-primary-50"/>
-        <StatCard label="Pages Vues" value="128K" change="+8.2%" icon={Eye} color="text-blue-600" bg="bg-blue-50"/>
-        <StatCard label="Nouvelles Annonces" value="854" change="+24%" icon={Plus} color="text-green-600" bg="bg-green-50"/>
-        <StatCard label="Taux de Rebond" value="42%" change="-2.1%" icon={Activity} color="text-purple-600" bg="bg-purple-50"/>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard label="Visiteurs Uniques" value="24.5k" change="+12%" icon={Users} color="text-primary-600" bg="bg-primary-50" />
+        <StatCard label="Taux de Rebond" value="42%" change="-5%" icon={Activity} color="text-blue-600" bg="bg-blue-50" />
+        <StatCard label="Temps Moyen" value="3m 45s" change="+8%" icon={Clock} color="text-orange-600" bg="bg-orange-50" />
+        <StatCard label="Conversions" value="1.2k" change="+15%" icon={TrendingUp} color="text-green-600" bg="bg-green-50" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-         {/* Main Chart */}
-         <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-               <h3 className="font-bold text-gray-900 text-lg">Trafic du site</h3>
-               <select className="bg-gray-50 border border-gray-200 text-xs font-bold text-gray-600 rounded-lg px-3 py-2 outline-none">
-                  <option>30 derniers jours</option>
-                  <option>7 derniers jours</option>
-                  <option>12 derniers mois</option>
-               </select>
-            </div>
-            <InteractiveAreaChart data={trafficData} />
-         </div>
-
-         {/* Device Stats */}
-         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col">
-            <h3 className="font-bold text-gray-900 text-lg mb-6">Appareils</h3>
-            <div className="space-y-6 flex-1 flex flex-col justify-center">
-               <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                     <div className="p-2 bg-gray-100 rounded-lg text-gray-600"><Smartphone size={20}/></div>
-                     <span className="font-bold text-gray-700 text-sm">Mobile</span>
-                  </div>
-                  <div className="text-right">
-                     <span className="block font-extrabold text-gray-900">65%</span>
-                     <span className="text-xs text-green-600 font-bold">+12%</span>
-                  </div>
-               </div>
-               <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden"><div className="bg-primary-600 h-full rounded-full" style={{width: '65%'}}></div></div>
-
-               <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                     <div className="p-2 bg-gray-100 rounded-lg text-gray-600"><Monitor size={20}/></div>
-                     <span className="font-bold text-gray-700 text-sm">Desktop</span>
-                  </div>
-                  <div className="text-right">
-                     <span className="block font-extrabold text-gray-900">30%</span>
-                     <span className="text-xs text-red-600 font-bold">-5%</span>
-                  </div>
-               </div>
-               <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden"><div className="bg-blue-600 h-full rounded-full" style={{width: '30%'}}></div></div>
-
-               <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                     <div className="p-2 bg-gray-100 rounded-lg text-gray-600"><Tablet size={20}/></div>
-                     <span className="font-bold text-gray-700 text-sm">Tablette</span>
-                  </div>
-                  <div className="text-right">
-                     <span className="block font-extrabold text-gray-900">5%</span>
-                     <span className="text-xs text-gray-400 font-bold">=</span>
-                  </div>
-               </div>
-               <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden"><div className="bg-purple-600 h-full rounded-full" style={{width: '5%'}}></div></div>
-            </div>
-         </div>
+      {/* Main Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-96">
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-bold text-gray-900 text-lg">Trafic du site</h3>
+            <select className="bg-gray-50 border border-gray-200 text-xs font-bold text-gray-600 rounded-lg px-3 py-2 outline-none">
+              <option>30 derniers jours</option>
+              <option>7 derniers jours</option>
+            </select>
+          </div>
+          <InteractiveAreaChart data={trafficData} />
+        </div>
+        
+        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col">
+          <h3 className="font-bold text-gray-900 text-lg mb-6">Top Régions</h3>
+          <div className="flex-1">
+             <GeoBarChart data={geoData} />
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-         {/* Demographics */}
-         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+      {/* Secondary Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
             <h3 className="font-bold text-gray-900 text-lg mb-6">Démographie</h3>
             <DonutChart data={demographicData} />
          </div>
-
-         {/* Geo Distribution */}
-         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <h3 className="font-bold text-gray-900 text-lg mb-6">Géolocalisation (Top 5)</h3>
-            <GeoBarChart data={geoData} />
-         </div>
-
-         {/* Active Users Live */}
-         <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-3xl border border-gray-800 shadow-lg text-white flex flex-col">
-            <div className="flex justify-between items-start mb-8">
-               <div>
-                  <h3 className="font-bold text-lg mb-1">Utilisateurs Actifs</h3>
-                  <p className="text-gray-400 text-xs">En temps réel</p>
-               </div>
-               <div className="relative">
-                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                  </span>
-               </div>
-            </div>
-            
-            <div className="text-center my-auto">
-               <span className="text-6xl font-black tracking-tighter block mb-2">124</span>
-               <span className="text-sm font-bold text-green-400 bg-green-400/10 px-3 py-1 rounded-full">+14 depuis 5 min</span>
-            </div>
-
-            <div className="mt-8 space-y-3">
-               <div className="flex justify-between text-xs font-medium text-gray-400 border-b border-gray-700 pb-2">
-                  <span>Page</span>
-                  <span>Utilisateurs</span>
-               </div>
-               {[{p: '/home', c: 45}, {p: '/search', c: 32}, {p: '/listing/123', c: 18}].map((u, i) => (
-                  <div key={i} className="flex justify-between text-sm font-bold">
-                     <span className="text-gray-300">{u.p}</span>
-                     <span>{u.c}</span>
+         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <h3 className="font-bold text-gray-900 text-lg mb-6">Appareils</h3>
+            <div className="space-y-4">
+               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-white rounded-lg shadow-sm"><Smartphone size={20} className="text-gray-600"/></div>
+                     <span className="font-bold text-gray-700">Mobile</span>
                   </div>
-               ))}
+                  <div className="text-right">
+                     <span className="block font-extrabold text-gray-900">65%</span>
+                     <span className="text-xs text-green-600 font-bold">+5%</span>
+                  </div>
+               </div>
+               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-white rounded-lg shadow-sm"><Monitor size={20} className="text-gray-600"/></div>
+                     <span className="font-bold text-gray-700">Desktop</span>
+                  </div>
+                  <div className="text-right">
+                     <span className="block font-extrabold text-gray-900">30%</span>
+                     <span className="text-xs text-red-600 font-bold">-2%</span>
+                  </div>
+               </div>
+               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 bg-white rounded-lg shadow-sm"><Tablet size={20} className="text-gray-600"/></div>
+                     <span className="font-bold text-gray-700">Tablette</span>
+                  </div>
+                  <div className="text-right">
+                     <span className="block font-extrabold text-gray-900">5%</span>
+                     <span className="text-xs text-gray-400 font-bold">0%</span>
+                  </div>
+               </div>
             </div>
          </div>
       </div>
     </div>
   );
 
-  const renderVehicleDataView = (vehicleType: 'Moto' | 'Scooter') => {
-    const filteredBrands = brands.filter(b => b.type === vehicleType);
-    const filteredModels = models.filter(m => m.type === vehicleType);
-
-    const searchLower = searchQuery.toLowerCase();
-    
-    const searchedBrands = filteredBrands.filter(b => 
-        b.name?.toLowerCase().includes(searchLower)
+  const renderGarageView = () => {
+    const filteredGarages = garages.filter(g => 
+        g.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        g.address?.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    const searchedModels = filteredModels.filter(m => 
-        m.name?.toLowerCase().includes(searchLower) || 
-        m.brand?.toLowerCase().includes(searchLower)
-    );
-
-    const activeData = dataSubTab === 'brands' ? searchedBrands : searchedModels;
-    const paginatedData = activeData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-    const getModelCount = (brandName: string) => {
-        return models.filter(m => m.brand === brandName && m.type === vehicleType).length;
-    };
+    const paginated = filteredGarages.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div className="space-y-6 animate-fade-in-up">
             <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm gap-4">
-               <div className="flex gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto w-full md:w-auto">
-                  <button onClick={() => setDataSubTab('brands')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 ${dataSubTab === 'brands' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
-                     <Tag size={16} /> Marques
-                  </button>
-                  <button onClick={() => setDataSubTab('models')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 ${dataSubTab === 'models' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
-                     <Database size={16} /> Modèles
-                  </button>
-               </div>
-               
-               <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                       <input 
-                         type="text" 
-                         value={searchQuery}
-                         onChange={(e) => setSearchQuery(e.target.value)}
-                         placeholder={`Rechercher ${dataSubTab === 'brands' ? 'une marque' : 'un modèle'}...`}
-                         className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
-                       />
-                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                    </div>
-                    <button onClick={() => handleOpenModal(dataSubTab === 'brands' ? 'brand' : 'model', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap">
-                        <Plus size={16} /> <span className="hidden sm:inline">Ajouter</span>
-                    </button>
-               </div>
+                <div className="relative flex-1 w-full md:w-auto">
+                   <input 
+                     type="text" 
+                     value={searchQuery}
+                     onChange={(e) => setSearchQuery(e.target.value)}
+                     placeholder="Rechercher un garage..."
+                     className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
+                   />
+                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                </div>
+                <button onClick={() => handleOpenModal('garage', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap">
+                   <Plus size={16} /> Ajouter
+                </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <table className="w-full text-left">
-                   <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      <tr>
-                          <th className="p-5">{dataSubTab === 'brands' ? 'Marque' : 'Modèle'}</th>
-                          {dataSubTab === 'models' && <th className="p-5">Marque</th>}
-                          <th className="p-5">{dataSubTab === 'brands' ? 'Nombre de modèles' : 'Prix Indicatif'}</th>
-                          <th className="p-5 text-right">Actions</th>
-                      </tr>
-                   </thead>
-                   <tbody className="divide-y divide-gray-50">
-                      {paginatedData.map((item, i) => (
-                         <tr key={i} className="hover:bg-gray-50 transition-colors group">
-                            <td className="p-5">
-                               <div className="flex items-center gap-4">
-                                   {dataSubTab === 'models' && (
-                                       <div className="w-16 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100 relative">
-                                           <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
-                                       </div>
-                                   )}
-                                   {dataSubTab === 'brands' && (
-                                       <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 font-bold border border-gray-100 text-xl shadow-sm">
-                                           {item.name?.charAt(0) || '?'}
-                                       </div>
-                                   )}
-                                   <span className="font-bold text-gray-900 text-base">{item.name || 'Nom inconnu'}</span>
-                               </div>
-                            </td>
-                            {dataSubTab === 'models' && (
-                                <td className="p-5">
-                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-bold">
-                                        {item.brand}
-                                    </span>
-                                </td>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {paginated.map(garage => (
+                    <div key={garage.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
+                        <div className="relative h-40 bg-gray-100 overflow-hidden">
+                            <img src={garage.image} alt={garage.name} className="w-full h-full object-cover" />
+                            <div className="absolute top-3 right-3 flex gap-2">
+                                <button onClick={() => handleOpenModal('garage', 'edit', garage)} className="p-2 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:text-primary-600 shadow-sm"><Edit size={14}/></button>
+                                <button onClick={() => handleDelete('garage', garage.id)} className="p-2 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:text-red-600 shadow-sm"><Trash2 size={14}/></button>
+                            </div>
+                            {garage.isVerified && (
+                                <div className="absolute bottom-3 left-3 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                                    <CheckCircle2 size={10} /> VÉRIFIÉ
+                                </div>
                             )}
-                            <td className="p-5">
-                               {dataSubTab === 'brands' ? (
-                                   <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                                      <Layers size={16} className="text-gray-400" />
-                                      {getModelCount(item.name || '')} modèles
-                                   </div>
-                               ) : (
-                                   <span className="text-sm font-bold text-primary-600">{item.price}</span>
-                               )}
-                            </td>
-                            <td className="p-5 text-right space-x-2">
-                               <button onClick={() => dataSubTab === 'brands' ? handleDelete('brand', item.name, item.type) : handleDelete('model', item.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
-                               {dataSubTab === 'models' && (
-                                   <button onClick={() => handleOpenModal('model', 'edit', item)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Edit size={14}/></button>
-                               )}
-                            </td>
-                         </tr>
-                      ))}
-                      {paginatedData.length === 0 && (
-                          <tr><td colSpan={dataSubTab === 'brands' ? 3 : 4} className="p-12 text-center text-gray-400 italic">Aucune donnée trouvée.</td></tr>
-                      )}
-                   </tbody>
-                </table>
-                <Pagination totalItems={activeData.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+                        </div>
+                        <div className="p-5">
+                            <h4 className="font-bold text-gray-900 mb-1">{garage.name}</h4>
+                            <div className="flex items-center gap-1 mb-3 text-xs text-gray-500">
+                                <MapPin size={12} /> <span className="truncate">{garage.address || garage.location}</span>
+                            </div>
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                                <div className="flex items-center gap-1">
+                                    <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                                    <span className="font-bold text-gray-900 text-sm">{garage.rating}</span>
+                                    <span className="text-gray-400 text-xs">({garage.reviewsCount})</span>
+                                </div>
+                                <span className="text-xs font-medium text-gray-500">{garage.specialty || (garage.specialties && garage.specialties[0])}</span>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
+            <Pagination totalItems={filteredGarages.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
         </div>
     );
   };
 
   const renderNewsView = () => {
-    const filteredItems = articles.filter(item => 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    const paginated = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const filteredArticles = articles.filter(a => a.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    const paginated = filteredArticles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div className="space-y-6 animate-fade-in-up">
-            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm gap-4">
-                <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                    <FileText size={20} className="text-primary-600"/> Gestion des Actualités
-                </h3>
-                
+            <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                <h3 className="font-bold text-gray-900 text-lg hidden md:block">Articles ({articles.length})</h3>
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="relative flex-1 md:w-64">
-                       <input 
-                         type="text" 
-                         value={searchQuery}
-                         onChange={(e) => setSearchQuery(e.target.value)}
-                         placeholder="Rechercher un article..."
-                         className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
-                       />
+                       <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Rechercher..." className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600" />
                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                     </div>
-                    <button onClick={() => handleOpenModal('article', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap">
-                       <Plus size={16} /> Ajouter
-                    </button>
+                    <button onClick={() => handleOpenModal('article', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap"><Plus size={16} /> Créer</button>
                 </div>
             </div>
 
@@ -765,90 +649,53 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                     <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
                         <tr>
                             <th className="p-5">Article</th>
-                            <th className="p-5">Auteur</th>
-                            <th className="p-5">Catégorie & Tags</th>
+                            <th className="p-5 hidden md:table-cell">Catégorie</th>
+                            <th className="p-5 hidden md:table-cell">Date</th>
                             <th className="p-5 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {paginated.map(item => (
-                            <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                        {paginated.map(article => (
+                            <tr key={article.id} className="hover:bg-gray-50 transition-colors group">
                                 <td className="p-5">
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-16 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                                            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="max-w-xs">
-                                            <span className="font-bold text-sm text-gray-900 line-clamp-1 mb-1">{item.title}</span>
-                                            <p className="text-xs text-gray-500 line-clamp-1">{item.summary}</p>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0"><img src={article.image} alt="" className="w-full h-full object-cover" /></div>
+                                        <div>
+                                            <span className="font-bold text-sm text-gray-900 block line-clamp-1">{article.title}</span>
+                                            <span className="text-xs text-gray-500">Par {article.author}</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="p-5">
-                                    <div className="text-xs text-gray-600">
-                                        <span className="flex items-center gap-1 font-bold"><Users size={12}/> {item.author}</span>
-                                        <span className="flex items-center gap-1 text-gray-400 mt-1"><CalendarIcon size={12}/> {item.date}</span>
-                                    </div>
-                                </td>
-                                <td className="p-5">
-                                    <div className="flex flex-col gap-2">
-                                        <span className="px-2 py-0.5 w-fit rounded text-[10px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-100">
-                                            {item.category}
-                                        </span>
-                                        {item.tags && item.tags.length > 0 && (
-                                            <div className="flex gap-1">
-                                                {item.tags.slice(0,2).map(t => (
-                                                    <span key={t} className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{t}</span>
-                                                ))}
-                                                {item.tags.length > 2 && <span className="text-[10px] text-gray-400">+{item.tags.length - 2}</span>}
-                                            </div>
-                                        )}
-                                    </div>
-                                </td>
+                                <td className="p-5 hidden md:table-cell"><span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-600">{article.category}</span></td>
+                                <td className="p-5 hidden md:table-cell"><span className="text-xs text-gray-500">{article.date}</span></td>
                                 <td className="p-5 text-right space-x-2">
-                                    <button onClick={() => handleOpenModal('article', 'edit', item)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Edit size={14}/></button>
-                                    <button onClick={() => handleDelete('article', item.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
+                                    <button onClick={() => handleOpenModal('article', 'edit', article)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Edit size={14}/></button>
+                                    <button onClick={() => handleDelete('article', article.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
                                 </td>
                             </tr>
                         ))}
-                        {paginated.length === 0 && (
-                            <tr><td colSpan={4} className="p-12 text-center text-gray-400 italic">Aucun article trouvé.</td></tr>
-                        )}
                     </tbody>
                 </table>
-                <Pagination totalItems={filteredItems.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+                <Pagination totalItems={filteredArticles.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
             </div>
         </div>
     );
   };
 
   const renderTipsView = () => {
-    const filteredItems = tips.filter(item => 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    const paginated = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const filteredTips = tips.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    const paginated = filteredTips.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div className="space-y-6 animate-fade-in-up">
-            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm gap-4">
-                <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                    <Lightbulb size={20} className="text-primary-600"/> Gestion des Conseils
-                </h3>
-                
+            <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                <h3 className="font-bold text-gray-900 text-lg hidden md:block">Conseils ({tips.length})</h3>
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="relative flex-1 md:w-64">
-                       <input 
-                         type="text" 
-                         value={searchQuery}
-                         onChange={(e) => setSearchQuery(e.target.value)}
-                         placeholder="Rechercher un conseil..."
-                         className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
-                       />
+                       <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Rechercher..." className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600" />
                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                     </div>
-                    <button onClick={() => handleOpenModal('tip', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap">
-                       <Plus size={16} /> Ajouter
-                    </button>
+                    <button onClick={() => handleOpenModal('tip', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap"><Plus size={16} /> Créer</button>
                 </div>
             </div>
 
@@ -856,193 +703,136 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                 <table className="w-full text-left">
                     <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
                         <tr>
-                            <th className="p-5">Conseil</th>
-                            <th className="p-5">Difficulté & Temps</th>
-                            <th className="p-5">Catégorie</th>
+                            <th className="p-5">Titre</th>
+                            <th className="p-5 hidden md:table-cell">Difficulté</th>
+                            <th className="p-5 hidden md:table-cell">Catégorie</th>
                             <th className="p-5 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {paginated.map(item => (
-                            <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                        {paginated.map(tip => (
+                            <tr key={tip.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="p-5">
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-16 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                                            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="max-w-xs">
-                                            <span className="font-bold text-sm text-gray-900 line-clamp-1 mb-1">{item.title}</span>
-                                            <p className="text-xs text-gray-500 line-clamp-1">{item.summary}</p>
-                                        </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0"><img src={tip.image} alt="" className="w-full h-full object-cover" /></div>
+                                        <span className="font-bold text-sm text-gray-900 block line-clamp-1">{tip.title}</span>
                                     </div>
                                 </td>
-                                <td className="p-5">
-                                    <div className="flex flex-col gap-1">
-                                        <span className={`flex items-center gap-1 text-xs font-bold ${
-                                            item.difficulty === 'Débutant' ? 'text-green-600' : 
-                                            item.difficulty === 'Intermédiaire' ? 'text-orange-600' : 'text-red-600'
-                                        }`}>
-                                            <Gauge size={12}/> {item.difficulty}
-                                        </span>
-                                        <span className="flex items-center gap-1 text-xs text-gray-500"><Clock size={12}/> {item.readTime}</span>
-                                    </div>
-                                </td>
-                                <td className="p-5">
-                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-orange-50 text-orange-700 border border-orange-100">
-                                        {item.category}
-                                    </span>
-                                </td>
+                                <td className="p-5 hidden md:table-cell"><span className={`px-2 py-1 rounded text-xs font-bold ${tip.difficulty === 'Débutant' ? 'bg-green-50 text-green-700' : tip.difficulty === 'Expert' ? 'bg-red-50 text-red-700' : 'bg-yellow-50 text-yellow-700'}`}>{tip.difficulty}</span></td>
+                                <td className="p-5 hidden md:table-cell"><span className="text-xs text-gray-500">{tip.category}</span></td>
                                 <td className="p-5 text-right space-x-2">
-                                    <button onClick={() => handleOpenModal('tip', 'edit', item)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Edit size={14}/></button>
-                                    <button onClick={() => handleDelete('tip', item.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
+                                    <button onClick={() => handleOpenModal('tip', 'edit', tip)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Edit size={14}/></button>
+                                    <button onClick={() => handleDelete('tip', tip.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
                                 </td>
                             </tr>
                         ))}
-                        {paginated.length === 0 && (
-                            <tr><td colSpan={4} className="p-12 text-center text-gray-400 italic">Aucun conseil trouvé.</td></tr>
-                        )}
                     </tbody>
                 </table>
-                <Pagination totalItems={filteredItems.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+                <Pagination totalItems={filteredTips.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
             </div>
         </div>
     );
   };
 
-  const renderGarageView = () => {
-    const filteredItems = garages.filter(item => 
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.address?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    const paginated = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const renderVehicleDataView = (type: VehicleType) => {
+    const filteredBrands = brands.filter(b => b.type === type && b.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const filteredModels = models.filter(m => m.type === type && m.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return (
         <div className="space-y-6 animate-fade-in-up">
-            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm gap-4">
-                <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                    <Wrench size={20} className="text-primary-600"/> Liste des Garages
-                </h3>
-                
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                       <input 
-                         type="text" 
-                         value={searchQuery}
-                         onChange={(e) => setSearchQuery(e.target.value)}
-                         placeholder="Rechercher un garage..."
-                         className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
-                       />
-                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                    </div>
-                    <button onClick={() => handleOpenModal('garage', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap">
-                       <Plus size={16} /> Ajouter
-                    </button>
+            {/* Sub-Navigation */}
+            <div className="flex gap-4 border-b border-gray-200 mb-6">
+                <button onClick={() => setDataSubTab('brands')} className={`pb-3 text-sm font-bold border-b-2 transition-colors ${dataSubTab === 'brands' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Marques ({filteredBrands.length})</button>
+                <button onClick={() => setDataSubTab('models')} className={`pb-3 text-sm font-bold border-b-2 transition-colors ${dataSubTab === 'models' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Modèles ({filteredModels.length})</button>
+            </div>
+
+            <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm gap-4">
+                <div className="relative flex-1 w-full md:w-auto">
+                   <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={dataSubTab === 'brands' ? "Rechercher une marque..." : "Rechercher un modèle..."} className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600" />
+                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                 </div>
+                <button onClick={() => handleOpenModal(dataSubTab === 'brands' ? 'brand' : 'model', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap"><Plus size={16} /> Ajouter</button>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <table className="w-full text-left">
                     <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
                         <tr>
-                            <th className="p-5">Garage</th>
-                            <th className="p-5">Localisation</th>
-                            <th className="p-5">Statut</th>
+                            <th className="p-5">Nom</th>
+                            {dataSubTab === 'models' && <th className="p-5">Marque</th>}
+                            {dataSubTab === 'models' && <th className="p-5">Prix Indicatif</th>}
                             <th className="p-5 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {paginated.map(item => (
-                            <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="p-5">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-16 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100 relative">
-                                            <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
-                                        </div>
-                                        <span className="font-bold text-sm text-gray-900">{item.name}</span>
-                                    </div>
-                                </td>
-                                <td className="p-5">
-                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                        <MapPin size={14} className="text-gray-400"/>
-                                        <span className="truncate max-w-[200px]">{item.address || item.location}</span>
-                                    </div>
-                                </td>
-                                <td className="p-5">
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-1">
-                                            <Star size={14} className="text-warning-500 fill-warning-500"/>
-                                            <span className="text-sm font-bold text-gray-900">{item.rating}</span>
-                                            <span className="text-xs text-gray-500">({item.reviewsCount || 0})</span>
-                                        </div>
-                                        {item.isVerified ? (
-                                            <span className="flex items-center gap-1 text-[10px] font-bold text-primary-600 uppercase">
-                                                <CheckCircle2 size={10}/> Vérifié
-                                            </span>
-                                        ) : (
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase">Standard</span>
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="p-5 text-right space-x-2">
-                                    <button onClick={() => handleOpenModal('garage', 'edit', item)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Edit size={14}/></button>
-                                    <button onClick={() => handleDelete('garage', item.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
-                                </td>
-                            </tr>
-                        ))}
-                        {paginated.length === 0 && (
-                            <tr><td colSpan={4} className="p-12 text-center text-gray-400 italic">Aucun garage trouvé.</td></tr>
+                        {dataSubTab === 'brands' ? (
+                            filteredBrands.map((brand, idx) => (
+                                <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                                    <td className="p-5 font-bold text-gray-900">{brand.name}</td>
+                                    <td className="p-5 text-right space-x-2">
+                                        <button onClick={() => handleDelete('brand', brand.name, brand.type)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            filteredModels.map((model) => (
+                                <tr key={model.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="p-5 font-bold text-gray-900">{model.name}</td>
+                                    <td className="p-5 text-sm text-gray-600">{model.brand}</td>
+                                    <td className="p-5 text-sm text-gray-600">{model.price || '-'}</td>
+                                    <td className="p-5 text-right space-x-2">
+                                        <button onClick={() => handleOpenModal('model', 'edit', model)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Edit size={14}/></button>
+                                        <button onClick={() => handleDelete('model', model.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                        {(dataSubTab === 'brands' ? filteredBrands : filteredModels).length === 0 && (
+                            <tr><td colSpan={4} className="p-12 text-center text-gray-400 italic">Aucun résultat trouvé.</td></tr>
                         )}
                     </tbody>
                 </table>
-                <Pagination totalItems={filteredItems.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
             </div>
         </div>
     );
   };
 
   const renderAccessoryCategoriesView = () => {
-    const filteredItems = accessoryCategories.filter(item => 
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    const paginated = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const filteredCategories = accessoryCategories.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-fade-in-up">
-            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-               <h3 className="font-bold text-gray-900">Catégories d'accessoires</h3>
-               <button onClick={() => handleOpenModal('accessory-category', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap">
-                   <Plus size={14} /> Ajouter
-               </button>
+        <div className="space-y-6 animate-fade-in-up">
+            <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm gap-4">
+                <div className="relative flex-1 w-full md:w-auto">
+                   <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Rechercher une catégorie..." className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600" />
+                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                </div>
+                <button onClick={() => handleOpenModal('accessory-category', 'create')} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95 whitespace-nowrap"><Plus size={16} /> Ajouter</button>
             </div>
-            <table className="w-full text-left">
-                <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    <tr>
-                        <th className="p-5">Nom de la catégorie</th>
-                        <th className="p-5">Nombre d'articles</th>
-                        <th className="p-5 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                    {paginated.map(item => (
-                        <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="p-5">
-                                <span className="font-bold text-gray-900">{item.name}</span>
-                            </td>
-                            <td className="p-5">
-                                <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded font-medium">{item.count}</span>
-                            </td>
-                            <td className="p-5 text-right space-x-2">
-                                <button onClick={() => handleOpenModal('accessory-category', 'edit', item)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Edit size={14}/></button>
-                                <button onClick={() => handleDelete('accessory-category', item.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
-                            </td>
+
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <table className="w-full text-left">
+                    <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        <tr>
+                            <th className="p-5">Nom Catégorie</th>
+                            <th className="p-5">Nombre d'articles (Estimé)</th>
+                            <th className="p-5 text-right">Actions</th>
                         </tr>
-                    ))}
-                    {paginated.length === 0 && (
-                        <tr><td colSpan={3} className="p-12 text-center text-gray-400 italic">Aucune catégorie trouvée.</td></tr>
-                    )}
-                </tbody>
-            </table>
-            <Pagination totalItems={filteredItems.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                        {filteredCategories.map((cat) => (
+                            <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="p-5 font-bold text-gray-900">{cat.name}</td>
+                                <td className="p-5 text-sm text-gray-600">{cat.count}</td>
+                                <td className="p-5 text-right space-x-2">
+                                    <button onClick={() => handleOpenModal('accessory-category', 'edit', cat)} className="p-2 text-gray-400 hover:text-primary-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Edit size={14}/></button>
+                                    <button onClick={() => handleDelete('accessory-category', cat.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow active:scale-95"><Trash2 size={14}/></button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
   };
@@ -1104,7 +894,12 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                                 </td>
                                 <td className="p-5">
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-xs font-medium text-gray-700">{item.zone}</span>
+                                        <span className="text-xs font-medium text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded w-fit">
+                                            {item.zone === 'news_top' && 'Bannière Top (News/Conseils)'}
+                                            {item.zone === 'search_feed' && 'In-Feed (Recherche)'}
+                                            {item.zone === 'garage_sidebar' && 'Sidebar (Garages)'}
+                                            {item.zone === 'listing_sidebar' && 'Sidebar (Détails)'}
+                                        </span>
                                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase w-fit ${item.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                                             <div className={`w-1.5 h-1.5 rounded-full ${item.isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
                                             {item.isActive ? 'Actif' : 'Inactif'}
@@ -1135,9 +930,11 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
   };
 
   const ModalForm = () => {
+    // ... [STATE INITIALIZATION UNCHANGED, except for ad fields in setFormData]
     const [activeModalTab, setActiveModalTab] = useState<'profile' | 'contact' | 'services' | 'reviews'>('profile');
     const [formData, setFormData] = useState<any>(
       selectedItem || {
+        // ... [GARAGE, ARTICLE, TIP, BRAND, MODEL, ACCESSORY DEFAULTS UNCHANGED] ...
         ...(currentEntity === 'garage' && { 
             name: '', address: '', description: '', isVerified: false, image: '', 
             phone: '', email: '', website: '', hours: 'Lundi-Samedi: 09h-18h', 
@@ -1148,7 +945,22 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
         ...(currentEntity === 'brand' && { name: '', type: selectedItem?.type || 'Moto' }),
         ...(currentEntity === 'model' && { name: '', brand: '', price: '', image: '', type: selectedItem?.type || 'Moto' }),
         ...(currentEntity === 'accessory-category' && { name: '' }),
-        ...(currentEntity === 'ad' && { title: '', client: '', zone: 'Header', location: 'Toute la Tunisie', startDate: '', endDate: '', mediaType: 'Image', isActive: true })
+        
+        // AD DEFAULTS
+        ...(currentEntity === 'ad' && { 
+            title: '', 
+            client: '', 
+            zone: 'news_top', 
+            location: 'Toute la Tunisie', 
+            startDate: '', 
+            endDate: '', 
+            mediaType: 'Image', 
+            mediaUrl: '',
+            linkUrl: '',
+            description: '',
+            ctaText: 'Voir plus',
+            isActive: true 
+        })
       }
     );
     const [tagInput, setTagInput] = useState(""); 
@@ -1165,10 +977,16 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
       if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
         const imageUrl = URL.createObjectURL(file);
-        setFormData({ ...formData, image: imageUrl });
+        // For Ad: update mediaUrl
+        if (currentEntity === 'ad') {
+            setFormData({ ...formData, mediaUrl: imageUrl });
+        } else {
+            setFormData({ ...formData, image: imageUrl });
+        }
       }
     };
 
+    // ... [HELPER FUNCTIONS: handleAddListType, handleRemoveListType, handleAddService, handleRemoveService] ...
     // Generic Tag/Tool Handler
     const handleAddListType = (field: string) => {
        if (tagInput.trim() !== "") {
@@ -1228,36 +1046,17 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
           {/* Garage Tabs */}
           {isGarage && (
               <div className="flex border-b border-gray-100 px-8 bg-gray-50/50 overflow-x-auto no-scrollbar">
-                  <button 
-                    onClick={() => setActiveModalTab('profile')} 
-                    className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeModalTab === 'profile' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}
-                  >
-                      Profil
-                  </button>
-                  <button 
-                    onClick={() => setActiveModalTab('contact')} 
-                    className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeModalTab === 'contact' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}
-                  >
-                      Contact & Horaires
-                  </button>
-                  <button 
-                    onClick={() => setActiveModalTab('services')} 
-                    className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeModalTab === 'services' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}
-                  >
-                      Prestations & Prix
-                  </button>
-                  <button 
-                    onClick={() => setActiveModalTab('reviews')} 
-                    className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeModalTab === 'reviews' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}
-                  >
-                      Avis ({formData.reviewsList?.length || 0})
-                  </button>
+                  {/* ... tabs implementation ... */}
+                  <button onClick={() => setActiveModalTab('profile')} className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeModalTab === 'profile' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}>Profil</button>
+                  <button onClick={() => setActiveModalTab('contact')} className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeModalTab === 'contact' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}>Contact & Horaires</button>
+                  <button onClick={() => setActiveModalTab('services')} className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeModalTab === 'services' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}>Prestations & Prix</button>
+                  <button onClick={() => setActiveModalTab('reviews')} className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeModalTab === 'reviews' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}>Avis ({formData.reviewsList?.length || 0})</button>
               </div>
           )}
 
           <div className="p-8 space-y-6 overflow-y-auto">
              
-             {/* Common Image Uploader for most entities */}
+             {/* Common Image Uploader for most entities EXCEPT AD (Ad has special layout below) */}
              {(currentEntity !== 'brand' && currentEntity !== 'ad' && currentEntity !== 'accessory-category' && !isGarage) && (
                 <div className="flex gap-6 items-start">
                    <div onClick={() => fileInputRef.current?.click()} className="w-32 h-24 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center cursor-pointer hover:border-primary-400 transition-colors overflow-hidden flex-shrink-0 relative group">
@@ -1276,7 +1075,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                 </div>
              )}
              
-             {/* GARAGE FORM - TABBED */}
+             {/* ... [GARAGE FORM SECTIONS REMAIN UNCHANGED] ... */}
              {isGarage && activeModalTab === 'profile' && (
                 <div className="space-y-6 animate-fade-in-up">
                    <div className="flex gap-6 items-start">
@@ -1317,7 +1116,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                    </div>
                 </div>
              )}
-
+             {/* ... [GARAGE CONTACT, SERVICES, REVIEWS SECTIONS UNCHANGED] ... */}
              {isGarage && activeModalTab === 'contact' && (
                 <div className="space-y-6 animate-fade-in-up">
                    <div className="grid grid-cols-2 gap-4">
@@ -1348,7 +1147,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                    </div>
                 </div>
              )}
-
              {isGarage && activeModalTab === 'services' && (
                 <div className="space-y-6 animate-fade-in-up">
                     <div className="flex gap-2 items-end bg-gray-50 p-4 rounded-xl border border-gray-100">
@@ -1381,7 +1179,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                     </div>
                 </div>
              )}
-
              {isGarage && activeModalTab === 'reviews' && (
                 <div className="space-y-4 animate-fade-in-up">
                     {formData.reviewsList?.map((review: GarageReview) => (
@@ -1407,7 +1204,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                 </div>
              )}
              
-             {/* CONTENT BLOG FORM (News & Tips) */}
+             {/* ... [CONTENT BLOG FORM SECTIONS UNCHANGED] ... */}
              {isContentEntity && (
                 <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
@@ -1500,7 +1297,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                 </div>
              )}
              
-             {/* BRAND FORM */}
+             {/* ... [BRAND, ACCESSORY CATEGORY, MODEL FORMS UNCHANGED] ... */}
              {(currentEntity === 'brand') && (
                  <div className="space-y-4">
                     <div className="space-y-2">
@@ -1517,7 +1314,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                  </div>
              )}
 
-             {/* ACCESSORY CATEGORY FORM */}
              {(currentEntity === 'accessory-category') && (
                  <div className="space-y-4">
                     <div className="space-y-2">
@@ -1527,7 +1323,6 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                  </div>
              )}
 
-             {/* MODEL FORM */}
              {(currentEntity === 'model') && (
                  <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
@@ -1546,21 +1341,71 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
                  </div>
              )}
 
-             {/* ADS FORM */}
+             {/* ADS FORM - UPDATED */}
              {currentEntity === 'ad' && (
                  <div className="space-y-4">
-                    <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Titre de la campagne" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm font-bold" />
-                    <input type="text" name="client" value={formData.client} onChange={handleChange} placeholder="Client" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
                     <div className="grid grid-cols-2 gap-4">
-                        <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
-                        <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase">Titre Campagne</label>
+                            <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Titre interne" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm font-bold" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase">Client</label>
+                            <input type="text" name="client" value={formData.client} onChange={handleChange} placeholder="Client" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
+                        </div>
                     </div>
-                    <select name="zone" value={formData.zone} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm">
-                        <option value="Header">Header</option>
-                        <option value="Sidebar">Sidebar</option>
-                        <option value="In-Feed">In-Feed</option>
-                        <option value="Popup">Popup</option>
-                    </select>
+                    
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-500 uppercase">Zone d'affichage</label>
+                        <select name="zone" value={formData.zone} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm">
+                            <option value="news_top">Top Banner (Actualités & Conseils)</option>
+                            <option value="search_feed">In-Feed (Résultats de recherche)</option>
+                            <option value="garage_sidebar">Sidebar (Liste Garages)</option>
+                            <option value="listing_sidebar">Sidebar (Détail Annonce)</option>
+                        </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase">Début</label>
+                            <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase">Fin</label>
+                            <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-500 uppercase">URL de l'image (ou Upload ci-dessus)</label>
+                        <div className="flex gap-2">
+                            <input type="text" name="mediaUrl" value={formData.mediaUrl} onChange={handleChange} placeholder="https://..." className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
+                            <div onClick={() => fileInputRef.current?.click()} className="p-3 bg-gray-100 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-200">
+                                <ImageIcon size={20} className="text-gray-500" />
+                            </div>
+                            <input type="file" ref={fileInputRef} className="hidden" onChange={handleImageUpload} />
+                        </div>
+                    </div>
+
+                    {/* Specific fields for Native Ads */}
+                    {(formData.zone === 'search_feed' || formData.zone === 'listing_sidebar' || formData.zone === 'garage_sidebar') && (
+                        <>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Description (Pour format natif)</label>
+                                <textarea name="description" value={formData.description} onChange={handleChange} rows={2} className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm resize-none"></textarea>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase">Texte Bouton</label>
+                                    <input type="text" name="ctaText" value={formData.ctaText} onChange={handleChange} placeholder="Ex: Voir l'offre" className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase">Lien destination</label>
+                                    <input type="text" name="linkUrl" value={formData.linkUrl} onChange={handleChange} placeholder="https://..." className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 outline-none text-sm" />
+                                </div>
+                            </div>
+                        </>
+                    )}
                  </div>
              )}
 
@@ -1574,6 +1419,7 @@ const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onGoHome, onL
     );
   };
 
+  // ... [SIDEBAR ITEM & RENDER RETURN UNCHANGED] ...
   const SidebarItem = ({ id, label, icon: Icon }: any) => (
       <button 
         onClick={() => { setActiveTab(id); setIsSidebarOpen(false); }}

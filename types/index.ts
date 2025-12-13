@@ -149,3 +149,21 @@ export interface TechSpec {
   consumption?: string;
   topSpeed?: string;
 }
+
+export interface AdCampaign {
+  id: number;
+  title: string;
+  client: string;
+  zone: 'news_top' | 'search_feed' | 'garage_sidebar' | 'listing_sidebar';
+  location: string;
+  startDate: string;
+  endDate: string;
+  mediaType: 'Image' | 'Script';
+  mediaUrl: string; // URL of the image or content
+  linkUrl: string; // Where the ad links to
+  ctaText?: string; // Button text
+  description?: string; // For text-based ads
+  isActive: boolean;
+  views: number;
+  clicks: number;
+}
