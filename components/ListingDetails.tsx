@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Heart, 
@@ -25,7 +24,8 @@ import {
   Fuel,
   ExternalLink,
   Shield,
-  AlertTriangle
+  AlertTriangle,
+  User
 } from 'lucide-react';
 import { Listing } from '../types';
 import Header from './layout/Header';
@@ -244,8 +244,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* LEFT COLUMN: Main Content (8 cols) */}
-          {/* Changed from space-y to flex gap to fix alignment issue caused by hidden elements receiving top margin */}
-          <div className="lg:col-span-8 flex flex-col gap-4 md:gap-8">
+          <div className="lg:col-span-8 flex flex-col gap-4 md:gap-6">
             
             {/* --- GALLERY SECTION --- */}
             
@@ -295,9 +294,8 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                 </div>
             </div>
 
-            {/* --- HEADER INFO SECTION --- */}
+            {/* --- HEADER INFO SECTION (TITLE & PRICE ONLY) --- */}
             <div className="px-4 md:px-0">
-               {/* Mobile Layout: Flex Row for Title + Price, then Gauge below */}
                <div className="flex justify-between items-start md:block mb-2 md:mb-4 gap-4">
                   <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight md:mb-0 flex-1">
                      {listing.title}
@@ -309,9 +307,9 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                   </span>
                </div>
 
-               {/* Mobile Deal Gauge - Under Title/Price */}
+               {/* Mobile Deal Gauge */}
                {listing.dealRating && (
-                  <div className="md:hidden mb-4">
+                  <div className="md:hidden mb-2">
                       <div className="inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                          <div className="flex gap-0.5">
                             {[1, 2, 3].map(level => (
@@ -322,10 +320,13 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                       </div>
                   </div>
                )}
+            </div>
 
-               {/* Mobile Quick Specs Grid (Visible without scroll) */}
+            {/* --- SPECS GRID (MOVED UP - BEFORE DESCRIPTION) --- */}
+            <div className="px-4 md:px-0 mt-2">
+               {/* Mobile Quick Specs Grid */}
                {isAccessory ? (
-                 <div className="md:hidden mb-6 bg-gray-50 p-4 rounded-xl flex items-center gap-4">
+                 <div className="md:hidden mb-6 bg-gray-50 p-4 rounded-xl flex items-center gap-4 border border-gray-100">
                     <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary-600 shadow-sm border border-gray-100">
                         <CheckCircle2 size={24} />
                     </div>
@@ -335,7 +336,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                     </div>
                  </div>
                ) : (
-                 <div className="md:hidden grid grid-cols-2 gap-3 mb-6 bg-gray-50 p-4 rounded-xl">
+                 <div className="md:hidden grid grid-cols-2 gap-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
                     <div className="flex flex-col">
                        <span className="text-xs text-gray-500 font-medium">Année</span>
                        <span className="text-sm font-bold text-gray-900">{listing.year}</span>
@@ -349,17 +350,17 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                        <span className="text-sm font-bold text-gray-900">{listing.cc}</span>
                     </div>
                     <div className="flex flex-col">
-                       <span className="text-xs text-gray-500 font-medium">Boîte</span>
-                       <span className="text-sm font-bold text-gray-900">Manuelle</span>
+                       <span className="text-xs text-gray-500 font-medium">État général</span>
+                       <span className="text-sm font-bold text-gray-900">{listing.condition}</span>
                     </div>
                  </div>
                )}
 
                {/* Desktop Specs Grid */}
                {isAccessory ? (
-                  <div className="hidden md:grid grid-cols-4 gap-4 mb-8">
+                  <div className="hidden md:grid grid-cols-4 gap-4 mb-4">
                      <div className="bg-white border border-gray-100 p-4 rounded-xl flex items-center gap-3 shadow-sm">
-                        <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">
+                        <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-primary-600">
                            <CheckCircle2 size={20} />
                         </div>
                         <div>
@@ -369,15 +370,15 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                      </div>
                   </div>
                ) : (
-                  <div className="hidden md:grid grid-cols-4 gap-4 mb-8">
+                  <div className="hidden md:grid grid-cols-4 gap-4 mb-4">
                       {[
                          { label: 'Année', value: listing.year, icon: Calendar },
                          { label: 'Kilométrage', value: listing.mileage, icon: Gauge },
                          { label: 'Cylindrée', value: listing.cc, icon: Info },
-                         { label: 'Boîte', value: 'Manuelle', icon: Fuel },
+                         { label: 'État général', value: listing.condition, icon: CheckCircle2 },
                       ].map((item, idx) => (
                          <div key={idx} className="bg-white border border-gray-100 p-4 rounded-xl flex items-center gap-3 shadow-sm">
-                            <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">
+                            <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-primary-600">
                                <item.icon size={20} />
                             </div>
                             <div>
@@ -428,34 +429,6 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                                     )}
                                 </div>
                             </div>
-
-                            <hr className="border-gray-100" />
-
-                            {/* Specs / Administrative (Formerly Historique) */}
-                            <div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className="text-gray-600 text-sm">Origine</span>
-                                        <span className="font-bold text-gray-900 text-sm">Importée</span>
-                                    </div>
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className="text-gray-600 text-sm">Première main</span>
-                                        <span className="font-bold text-gray-900 text-sm">Non (2ème main)</span>
-                                    </div>
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className="text-gray-600 text-sm">Carte grise</span>
-                                        <span className="font-bold text-success-600 text-sm flex items-center gap-1">
-                                            <CheckCircle2 size={14} /> À mon nom
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className="text-gray-600 text-sm">Certificat de non-gage</span>
-                                        <span className="font-bold text-success-600 text-sm flex items-center gap-1">
-                                            <CheckCircle2 size={14} /> Disponible
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
                         </>
                     )}
                 </div>
@@ -463,7 +436,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
 
             {/* --- SIMILAR LISTINGS SLIDER --- */}
             {similarListings.length > 0 && (
-                <div className="px-4 md:px-0 py-8">
+                <div className="px-4 md:px-0 py-4">
                    <div className="flex justify-between items-end mb-4">
                         <h3 className="text-xl font-bold text-gray-900">Annonces similaires</h3>
                         
@@ -509,8 +482,6 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                 
                 {/* ENHANCED SELLER CARD */}
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-6 overflow-hidden relative">
-                   {/* Decorative top border removed */}
-
                    {/* Price Section */}
                    <div className="mb-6 pb-6 border-b border-gray-100">
                       <span className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1 block">Prix demandé</span>
@@ -531,7 +502,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                       )}
                    </div>
 
-                   {/* Seller Info - NO RATINGS */}
+                   {/* Seller Info */}
                    <div className="flex items-center gap-4 mb-6">
                       <div className="relative">
                          <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-xl font-bold border-2 border-white shadow-sm">
