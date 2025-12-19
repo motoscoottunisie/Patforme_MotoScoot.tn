@@ -58,11 +58,11 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <div>
             <h3 className="font-bold text-lg mb-6 text-white">Informations</h3>
             <ul className="space-y-4 text-sm text-gray-300">
-              <li><a href="#" className="hover:text-white transition-colors focus:outline-none focus:underline">À propos de nous</a></li>
-              <li><a href="#" className="hover:text-white transition-colors focus:outline-none focus:underline">Conditions Générales</a></li>
-              <li><a href="#" className="hover:text-white transition-colors focus:outline-none focus:underline">Confidentialité</a></li>
-              <li><a href="#" className="hover:text-white transition-colors focus:outline-none focus:underline">Cookies</a></li>
-              <li><a href="#" className="hover:text-white transition-colors focus:outline-none focus:underline">FAQ</a></li>
+              <li><button onClick={() => onNavigate?.('about')} className="hover:text-white transition-colors focus:outline-none focus:underline">À propos de nous</button></li>
+              <li><button onClick={() => onNavigate?.('terms')} className="hover:text-white transition-colors focus:outline-none focus:underline">Conditions Générales</button></li>
+              <li><button onClick={() => onNavigate?.('legal')} className="hover:text-white transition-colors focus:outline-none focus:underline text-left">Confidentialité</button></li>
+              <li><button onClick={() => onNavigate?.('cookies')} className="hover:text-white transition-colors focus:outline-none focus:underline">Cookies</button></li>
+              <li><button onClick={() => onNavigate?.('faq')} className="hover:text-white transition-colors focus:outline-none focus:underline text-left">FAQ</button></li>
             </ul>
           </div>
 
@@ -76,7 +76,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </li>
               <li className="flex items-center gap-4">
                 <Phone className="w-5 h-5 text-primary-500 shrink-0" aria-hidden="true" />
-                <a href="tel:+21671123456" className="font-medium hover:text-white cursor-pointer focus:outline-none focus:underline">+216 71 123 456</a>
+                <a href="tel:+21621719109" className="font-medium hover:text-white cursor-pointer focus:outline-none focus:underline">+216 21 719 109</a>
               </li>
               <li className="flex items-center gap-4">
                 <Mail className="w-5 h-5 text-primary-500 shrink-0" aria-hidden="true" />
@@ -87,14 +87,17 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-          <p className="text-gray-500 text-center md:text-left">
-            © {new Date().getFullYear()} MotoScoot. Tous droits réservés.
-          </p>
+        <div className="pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-6 text-sm">
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-gray-500 text-center md:text-left">
+            <p>© {new Date().getFullYear()} MotoScoot. Tous droits réservés.</p>
+            <p className="md:border-l md:border-neutral-800 md:pl-6">
+              Cette plateforme a été réalisée par <a href="https://magma-studio.tn" target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:text-primary-400 font-bold transition-colors">magma-studio.tn</a>
+            </p>
+          </div>
           <div className="flex flex-wrap justify-center gap-6 text-gray-500">
-             <a href="#" className="hover:text-white transition-colors focus:outline-none focus:underline">Plan du site</a>
-             <a href="#" className="hover:text-white transition-colors focus:outline-none focus:underline">Mentions légales</a>
-             <a href="#" className="hover:text-white transition-colors focus:outline-none focus:underline">Sécurité</a>
+             <button onClick={() => onNavigate?.('sitemap')} className="hover:text-white transition-colors focus:outline-none focus:underline">Plan du site</button>
+             <button onClick={() => onNavigate?.('legal')} className="hover:text-white transition-colors focus:outline-none focus:underline">Mentions légales</button>
+             <button onClick={() => onNavigate?.('security')} className="hover:text-white transition-colors focus:outline-none focus:underline">Sécurité</button>
           </div>
         </div>
       </div>

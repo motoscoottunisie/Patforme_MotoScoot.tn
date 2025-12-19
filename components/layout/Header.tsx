@@ -1,17 +1,28 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Plus, Heart, User, Filter, LogOut, Settings, LayoutDashboard, List, ChevronDown } from 'lucide-react';
+import { 
+  Menu, 
+  X, 
+  Plus, 
+  Heart, 
+  User, 
+  Filter, 
+  LogOut, 
+  Settings, 
+  LayoutDashboard, 
+  List, 
+  ChevronDown,
+  LogIn,
+  UserPlus
+} from 'lucide-react';
 import { useFavorites } from '../../context/FavoritesContext';
 
 interface HeaderProps {
   variant?: 'transparent' | 'white';
   onNavigate?: (view: string, params?: any) => void;
   onGoHome?: () => void;
-  onMobileFilterOpen?: () => void; // Optional for SearchResults
+  onMobileFilterOpen?: () => void;
   showMobileFilter?: boolean;
   hideSellButton?: boolean;
-  
-  // Auth Props
   isLoggedIn?: boolean;
   onTriggerLogin?: () => void;
   onLogout?: () => void;
@@ -34,10 +45,10 @@ const Header: React.FC<HeaderProps> = ({
   const userMenuRef = useRef<HTMLDivElement>(null);
   const newsMenuRef = useRef<HTMLDivElement>(null);
   
-  // Get favorites count
+  // Hook Favoris
   const { favoritesCount } = useFavorites();
 
-  // Prevent body scroll when mobile menu is open
+  // Bloquer le scroll quand le menu mobile est ouvert
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -49,7 +60,7 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, [isMobileMenuOpen]);
 
-  // Close dropdown when clicking outside
+  // Fermer les dropdowns au clic extérieur
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -81,8 +92,16 @@ const Header: React.FC<HeaderProps> = ({
 
   const isTransparent = variant === 'transparent';
   const textColor = isTransparent ? 'text-white' : 'text-primary-600';
-  const navTextColor = isTransparent ? 'text-white' : 'text-gray-600';
-  const navHoverColor = isTransparent ? 'hover:text-white/80' : 'hover:text-primary-600';
+  
+  // Classes de base pour les liens de navigation
+  const linkBaseClasses = `font-bold text-sm transition-colors focus:outline-none focus:underline ${
+    isTransparent ? 'text-white hover:text-white/80' : 'text-gray-600 hover:text-primary-600'
+  }`;
+
+  // Classes pour les boutons icones du header
+  const headerIconButtonClasses = `flex items-center justify-center w-10 h-10 rounded-full transition-all focus:outline-none focus:ring-2 ${
+    isTransparent ? 'text-white hover:bg-white/10 focus:ring-white' : 'text-gray-600 hover:bg-gray-50 focus:ring-primary-500'
+  }`;
 
   return (
     <>
@@ -91,12 +110,13 @@ const Header: React.FC<HeaderProps> = ({
         role="banner"
       >
         <div className="px-6 md:px-20 lg:px-32">
-          <div className="w-full max-w-7xl mx-auto flex justify-between items-center py-6 md:py-8">
+          <div className="w-full max-w-7xl mx-auto flex justify-between items-center py-3 md:py-4">
+            
             {/* Logo */}
             <button 
               className="flex items-center cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-xl p-1" 
               onClick={onGoHome}
-              aria-label="MotoScoot.tn - Retour à l'accueil"
+              aria-label="Retour à l'accueil"
             >
               <span className={`${textColor} font-extrabold text-2xl tracking-tight`}>
                 MotoScoot.tn
@@ -104,30 +124,37 @@ const Header: React.FC<HeaderProps> = ({
             </button>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8" aria-label="Navigation principale">
+            <nav className="hidden lg:flex items-center gap-8">
               <div className="flex items-center gap-6">
-                <button onClick={() => onNavigate?.('search')} className={`${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}>Annonces</button>
+                <button onClick={() => onNavigate?.('search')} className={linkBaseClasses}>
+                  Annonces
+                </button>
                 
                 {/* News Dropdown */}
                 <div className="relative" ref={newsMenuRef}>
                     <button 
                         onClick={() => setIsNewsMenuOpen(!isNewsMenuOpen)}
-                        className={`flex items-center gap-1 ${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}
+                        className={`flex items-center gap-1 ${linkBaseClasses}`}
                     >
-                        Actualités <ChevronDown size={14} className={`transition-transform duration-200 ${isNewsMenuOpen ? 'rotate-180' : ''}`} />
+                        Actualités 
+                        <ChevronDown 
+                          size={14} 
+                          className={`transition-transform duration-200 ${isNewsMenuOpen ? 'rotate-180' : ''}`} 
+                          strokeWidth={3} 
+                        />
                     </button>
                     
                     {isNewsMenuOpen && (
-                        <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-fade-in-up origin-top-left overflow-hidden">
+                        <div className="absolute left-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-fade-in-up origin-top-left overflow-hidden z-20">
                             <button 
                                 onClick={() => handleNavClick('news')}
-                                className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors block"
+                                className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors block"
                             >
                                 Actualités & Essais
                             </button>
                             <button 
                                 onClick={() => handleNavClick('tech-specs-brands')}
-                                className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors block"
+                                className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors block"
                             >
                                 Fiches Techniques
                             </button>
@@ -135,23 +162,33 @@ const Header: React.FC<HeaderProps> = ({
                     )}
                 </div>
 
-                <button onClick={() => onNavigate?.('garages')} className={`${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}>Garages</button>
-                <button onClick={() => onNavigate?.('tips')} className={`${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}>Conseils</button>
-                <button onClick={() => onNavigate?.('contact')} className={`${navTextColor} font-medium text-sm ${navHoverColor} transition-colors focus:outline-none focus:underline`}>Contact</button>
+                <button onClick={() => onNavigate?.('garages')} className={linkBaseClasses}>
+                  Garages
+                </button>
+                <button onClick={() => onNavigate?.('tips')} className={linkBaseClasses}>
+                  Conseils
+                </button>
+                <button onClick={() => onNavigate?.('contact')} className={linkBaseClasses}>
+                  Contact
+                </button>
               </div>
 
-              {isTransparent ? <div className="h-6 w-px bg-white/30" aria-hidden="true"></div> : <div className="h-6 w-px bg-gray-200" aria-hidden="true"></div>}
+              {/* Séparateur Vertical */}
+              {isTransparent ? (
+                <div className="h-6 w-px bg-white/30" aria-hidden="true"></div>
+              ) : (
+                <div className="h-6 w-px bg-gray-200" aria-hidden="true"></div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex items-center gap-6">
                 
                 {isLoggedIn ? (
-                  // LOGGED IN STATE
+                  // --- UTILISATEUR CONNECTÉ ---
                   <>
-                    {/* Favorites Icon (Logged In Only) */}
                     <button
                         onClick={() => onNavigate?.('favorites')}
-                        className={`flex items-center justify-center w-10 h-10 rounded-full transition-all focus:outline-none focus:ring-2 ${isTransparent ? 'text-white hover:bg-white/10 focus:ring-white' : 'text-gray-600 hover:bg-gray-50 focus:ring-primary-500'}`}
+                        className={headerIconButtonClasses}
                         title="Mes favoris"
                     >
                         <div className="relative">
@@ -169,7 +206,7 @@ const Header: React.FC<HeaderProps> = ({
                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                         className={`flex items-center gap-3 p-1 rounded-full transition-all focus:outline-none focus:ring-2 ${isTransparent ? 'hover:bg-white/10 focus:ring-white' : 'hover:bg-gray-50 focus:ring-primary-500'}`}
                       >
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold shadow-md">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold shadow-md text-xs">
                           JD
                         </div>
                         <span className={`hidden md:block font-bold text-sm ${isTransparent ? 'text-white' : 'text-gray-900'}`}>
@@ -177,50 +214,30 @@ const Header: React.FC<HeaderProps> = ({
                         </span>
                       </button>
 
-                      {/* Dropdown Menu */}
+                      {/* User Dropdown */}
                       {isUserMenuOpen && (
-                        <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 animate-fade-in-up origin-top-right">
+                        <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 animate-fade-in-up origin-top-right z-50">
                           <div className="px-4 py-3 border-b border-gray-50 mb-2">
                             <p className="text-sm font-bold text-gray-900">John Doe</p>
                             <p className="text-xs text-gray-500">john.doe@example.com</p>
                           </div>
                           
-                          <button 
-                            onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'overview' }); }}
-                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
-                          >
-                            <LayoutDashboard size={16} />
-                            Tableau de bord
+                          <button onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'overview' }); }} className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors">
+                            <LayoutDashboard size={16} /> Tableau de bord
                           </button>
-                          <button 
-                            onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'listings' }); }}
-                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
-                          >
-                            <List size={16} />
-                            Mes annonces
+                          <button onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'listings' }); }} className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors">
+                            <List size={16} /> Mes annonces
                           </button>
-                          <button 
-                            onClick={() => { setIsUserMenuOpen(false); onNavigate?.('favorites'); }}
-                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
-                          >
-                            <Heart size={16} />
-                            Mes favoris
+                          <button onClick={() => { setIsUserMenuOpen(false); onNavigate?.('favorites'); }} className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors">
+                            <Heart size={16} /> Mes favoris
                           </button>
-                          <button 
-                            onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'settings' }); }}
-                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors"
-                          >
-                            <Settings size={16} />
-                            Paramètres
+                          <button onClick={() => { setIsUserMenuOpen(false); onNavigate?.('dashboard', { tab: 'settings' }); }} className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 flex items-center gap-2 transition-colors">
+                            <Settings size={16} /> Paramètres
                           </button>
                           
                           <div className="border-t border-gray-50 mt-2 pt-2">
-                            <button 
-                              onClick={() => { setIsUserMenuOpen(false); onLogout?.(); }}
-                              className="w-full text-left px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
-                            >
-                              <LogOut size={16} />
-                              Déconnexion
+                            <button onClick={() => { setIsUserMenuOpen(false); onLogout?.(); }} className="w-full text-left px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors">
+                              <LogOut size={16} /> Déconnexion
                             </button>
                           </div>
                         </div>
@@ -228,29 +245,26 @@ const Header: React.FC<HeaderProps> = ({
                     </div>
                   </>
                 ) : (
-                  // VISITOR STATE
-                  <div className="flex items-center gap-4">
-                     {/* Favorites Removed for Unauthenticated Users */}
-                     
-                     <div className="flex items-center gap-3">
-                        <button 
-                          onClick={onTriggerLogin}
-                          className={`text-sm font-bold ${isTransparent ? 'text-white hover:text-white/80' : 'text-gray-900 hover:text-primary-600'} transition-colors focus:outline-none focus:underline`}
-                        >
-                          Se connecter
-                        </button>
-                        <span className={`${isTransparent ? 'text-white/40' : 'text-gray-300'}`}>/</span>
-                        <button 
-                          onClick={onTriggerLogin}
-                          className={`text-sm font-bold ${isTransparent ? 'text-white hover:text-white/80' : 'text-gray-900 hover:text-primary-600'} transition-colors focus:outline-none focus:underline`}
-                        >
-                          S'inscrire
-                        </button>
-                     </div>
+                  // --- VISITEUR - TEXTE REMPLACÉ PAR DES ICÔNES ---
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={onTriggerLogin}
+                      className={headerIconButtonClasses}
+                      title="Se connecter"
+                    >
+                      <LogIn size={20} />
+                    </button>
+                    <button 
+                      onClick={onTriggerLogin}
+                      className={headerIconButtonClasses}
+                      title="S'inscrire"
+                    >
+                      <UserPlus size={20} />
+                    </button>
                   </div>
                 )}
 
-                {/* Primary CTA - Always Visible */}
+                {/* Bouton CTA Principal */}
                 <button 
                   onClick={handleDepositClick}
                   className={`flex items-center gap-2 text-sm font-bold py-2.5 px-5 rounded-full transition-all backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-primary-500/30 ${isTransparent ? 'bg-white/10 hover:bg-white/20 border border-white/20 text-white' : 'bg-primary-600 hover:bg-primary-700 text-white shadow-md hover:shadow-lg active:scale-95'}`}
@@ -261,32 +275,29 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             </nav>
 
-            {/* Mobile/Tablet Buttons */}
+            {/* --- BOUTONS MOBILE --- */}
             <div className="flex items-center gap-2 lg:hidden">
                 {showMobileFilter && (
                     <button 
                       onClick={onMobileFilterOpen}
                       className="p-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      aria-label="Ouvrir les filtres"
                     >
                       <Filter className="w-6 h-6" />
                     </button>
                 )}
                 
-                {/* Mobile Quick Sell Button (Text Version) */}
-                {!hideSellButton && (
-                  <button 
-                    onClick={handleDepositClick}
-                    className="bg-white text-primary-600 px-3 py-2 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-white mr-1 whitespace-nowrap"
-                  >
-                    Vendre
-                  </button>
+                {!isLoggedIn && (
+                   <button 
+                     onClick={onTriggerLogin}
+                     className={headerIconButtonClasses}
+                     title="Connexion"
+                   >
+                     <User size={24} />
+                   </button>
                 )}
 
                 <button 
                   className={`${isTransparent ? 'text-white hover:bg-white/10' : 'text-gray-500 hover:text-gray-900'} p-2 rounded-full transition-colors focus:outline-none focus:ring-2 ${isTransparent ? 'focus:ring-white' : 'focus:ring-primary-500'}`} 
-                  aria-label="Ouvrir le menu"
-                  aria-expanded={isMobileMenuOpen}
                   onClick={() => setIsMobileMenuOpen(true)}
                 >
                   <Menu className="w-8 h-8 md:w-9 md:h-9" />
@@ -296,16 +307,15 @@ const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* --- MENU MOBILE OVERLAY --- */}
       {isMobileMenuOpen && (
         <div 
           className="fixed inset-0 z-[60] bg-white flex flex-col animate-fade-in-up overflow-hidden" 
           role="dialog" 
           aria-modal="true" 
-          aria-label="Menu principal"
         >
-          {/* Menu Header */}
-          <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100 bg-white shadow-sm z-10">
+          {/* Header Mobile Menu */}
+          <div className="flex justify-between items-center px-6 py-3 md:py-4 border-b border-gray-100 bg-white shadow-sm z-10">
             <button 
               className="flex items-center cursor-pointer focus:outline-none" 
               onClick={() => { setIsMobileMenuOpen(false); onGoHome?.(); }}
@@ -317,33 +327,31 @@ const Header: React.FC<HeaderProps> = ({
             <button 
               onClick={() => setIsMobileMenuOpen(false)}
               className="p-2 -mr-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-primary-500"
-              aria-label="Fermer le menu"
             >
               <X className="w-7 h-7" />
             </button>
           </div>
 
-          {/* Scrollable Navigation Links */}
-          <nav className="flex-1 overflow-y-auto py-8 px-6 flex flex-col gap-6 justify-center items-center">
-             <button onClick={() => { handleNavClick('home'); onGoHome?.(); }} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.1s`, opacity: 0 }}>Accueil</button>
-             <button onClick={() => handleNavClick('search')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.2s`, opacity: 0 }}>Annonces</button>
+          {/* Navigation Mobile */}
+          <nav className="flex-1 overflow-y-auto py-8 px-6 flex flex-col gap-5 justify-center items-center">
+             <button onClick={() => { handleNavClick('home'); onGoHome?.(); }} className="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center animate-fade-in-up delay-75">Accueil</button>
+             <button onClick={() => handleNavClick('search')} className="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center animate-fade-in-up delay-100">Annonces</button>
              
-             {/* Mobile News Split */}
-             <div className="flex flex-col gap-4 w-full items-center">
-                 <button onClick={() => handleNavClick('news')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.3s`, opacity: 0 }}>Actualités</button>
-                 <button onClick={() => handleNavClick('tech-specs-brands')} className="text-lg font-bold text-gray-500 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.35s`, opacity: 0 }}>Fiches Techniques</button>
+             <div className="flex flex-col gap-3 w-full items-center animate-fade-in-up delay-150">
+                 <button onClick={() => handleNavClick('news')} className="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center">Actualités</button>
+                 <button onClick={() => handleNavClick('tech-specs-brands')} className="text-base font-semibold text-gray-500 hover:text-primary-600 transition-colors block text-center">Fiches Techniques</button>
              </div>
 
-             <button onClick={() => handleNavClick('garages')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.4s`, opacity: 0 }}>Garages</button>
-             <button onClick={() => handleNavClick('tips')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.45s`, opacity: 0 }}>Conseils</button>
-             <button onClick={() => handleNavClick('contact')} className="text-3xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center focus:outline-none focus:text-primary-600" style={{ animation: `fadeInUp 0.5s ease-out forwards 0.5s`, opacity: 0 }}>Contact</button>
+             <button onClick={() => handleNavClick('garages')} className="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center animate-fade-in-up delay-200">Garages</button>
+             <button onClick={() => handleNavClick('tips')} className="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center animate-fade-in-up delay-300">Conseils</button>
+             <button onClick={() => handleNavClick('contact')} className="text-xl font-bold text-gray-900 hover:text-primary-600 transition-colors block text-center animate-fade-in-up delay-500">Contact</button>
           </nav>
 
-          {/* Sticky Footer Actions */}
+          {/* Footer Mobile */}
           <div className="p-6 bg-gray-50 border-t border-gray-100 space-y-4 safe-area-bottom">
             <button 
               onClick={() => { setIsMobileMenuOpen(false); handleDepositClick(); }}
-              className="w-full flex items-center justify-center gap-3 bg-primary-600 hover:bg-primary-700 text-white font-bold text-lg py-4 rounded-xl shadow-lg active:scale-95 transition-all focus:outline-none focus:ring-4 focus:ring-primary-500/30"
+              className="w-full flex items-center justify-center gap-3 bg-primary-600 hover:bg-primary-700 text-white font-bold text-lg py-3.5 rounded-xl shadow-lg active:scale-95 transition-all"
             >
               <Plus className="w-5 h-5" />
               <span>Déposer une annonce</span>
@@ -353,7 +361,7 @@ const Header: React.FC<HeaderProps> = ({
                 <div className="grid grid-cols-2 gap-4">
                   <button 
                     onClick={() => { setIsMobileMenuOpen(false); onNavigate?.('favorites'); }}
-                    className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50"
                   >
                      <Heart className={`w-5 h-5 ${favoritesCount > 0 ? "fill-primary-600 text-primary-600" : ""}`} />
                      <span>Favoris {favoritesCount > 0 && `(${favoritesCount})`}</span>
@@ -361,21 +369,29 @@ const Header: React.FC<HeaderProps> = ({
                   
                   <button 
                      onClick={() => { setIsMobileMenuOpen(false); handleNavClick('dashboard', { tab: 'overview' }); }}
-                     className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                     className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50"
                   >
                      <LayoutDashboard className="w-5 h-5" />
                      <span>Dashboard</span>
                   </button>
                 </div>
             ) : (
-                // Unauthenticated Mobile Footer: Only Login Button (Full Width)
-                <button 
-                  onClick={() => { setIsMobileMenuOpen(false); onTriggerLogin?.(); }}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                   <User className="w-5 h-5" />
-                   <span>Se connecter / S'inscrire</span>
-                </button>
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => { setIsMobileMenuOpen(false); onTriggerLogin?.(); }}
+                    className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50"
+                  >
+                    <LogIn className="w-5 h-5" />
+                    <span>Connexion</span>
+                  </button>
+                  <button 
+                    onClick={() => { setIsMobileMenuOpen(false); onTriggerLogin?.(); }}
+                    className="flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm active:bg-gray-50"
+                  >
+                    <UserPlus className="w-5 h-5" />
+                    <span>S'inscrire</span>
+                  </button>
+                </div>
             )}
             
             {isLoggedIn && (

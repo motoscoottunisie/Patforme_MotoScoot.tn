@@ -10,6 +10,13 @@ import News from './components/News';
 import Garages from './components/Garages';
 import Tips from './components/Tips';
 import Contact from './components/Contact';
+import FAQ from './components/FAQ';
+import About from './components/About';
+import Sitemap from './components/Sitemap';
+import Legal from './components/Legal';
+import Security from './components/Security';
+import Terms from './components/Terms';
+import Cookies from './components/Cookies';
 import LoginModal from './components/auth/LoginModal';
 import ListingDetails from './components/ListingDetails';
 import ArticleDetails from './components/ArticleDetails';
@@ -25,7 +32,7 @@ import TechSpecsDetails from './components/TechSpecsDetails';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { AdsProvider } from './context/AdsContext';
 
-type ViewState = 'home' | 'search' | 'news' | 'garages' | 'tips' | 'contact' | 'listing-details' | 'article-details' | 'tip-details' | 'deposit' | 'garage-details' | 'favorites' | 'dashboard' | 'super-admin' | 'tech-specs-brands' | 'tech-specs-models' | 'tech-specs-details';
+type ViewState = 'home' | 'search' | 'news' | 'garages' | 'tips' | 'contact' | 'faq' | 'about' | 'sitemap' | 'legal' | 'security' | 'terms' | 'cookies' | 'listing-details' | 'article-details' | 'tip-details' | 'deposit' | 'garage-details' | 'favorites' | 'dashboard' | 'super-admin' | 'tech-specs-brands' | 'tech-specs-models' | 'tech-specs-details';
 
 const App: React.FC = () => {
   // Initialize state from history to handle refreshes correctly
@@ -242,6 +249,83 @@ const App: React.FC = () => {
             ) : currentView === 'contact' ? (
               <>
                 <Contact 
+                  onGoHome={() => navigateTo('home')} 
+                  onNavigate={(view) => navigateTo(view as ViewState)}
+                  isLoggedIn={isLoggedIn}
+                  onTriggerLogin={openLoginModal}
+                  onLogout={handleLogout}
+                />
+                <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+              </>
+            ) : currentView === 'faq' ? (
+              <>
+                <FAQ 
+                  onGoHome={() => navigateTo('home')} 
+                  onNavigate={(view) => navigateTo(view as ViewState)}
+                  isLoggedIn={isLoggedIn}
+                  onTriggerLogin={openLoginModal}
+                  onLogout={handleLogout}
+                />
+                <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+              </>
+            ) : currentView === 'about' ? (
+              <>
+                <About 
+                  onGoHome={() => navigateTo('home')} 
+                  onNavigate={(view) => navigateTo(view as ViewState)}
+                  isLoggedIn={isLoggedIn}
+                  onTriggerLogin={openLoginModal}
+                  onLogout={handleLogout}
+                />
+                <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+              </>
+            ) : currentView === 'sitemap' ? (
+              <>
+                <Sitemap 
+                  onGoHome={() => navigateTo('home')} 
+                  onNavigate={(view) => navigateTo(view as ViewState)}
+                  isLoggedIn={isLoggedIn}
+                  onTriggerLogin={openLoginModal}
+                  onLogout={handleLogout}
+                />
+                <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+              </>
+            ) : currentView === 'legal' ? (
+              <>
+                <Legal 
+                  onGoHome={() => navigateTo('home')} 
+                  onNavigate={(view) => navigateTo(view as ViewState)}
+                  isLoggedIn={isLoggedIn}
+                  onTriggerLogin={openLoginModal}
+                  onLogout={handleLogout}
+                />
+                <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+              </>
+            ) : currentView === 'security' ? (
+              <>
+                <Security 
+                  onGoHome={() => navigateTo('home')} 
+                  onNavigate={(view) => navigateTo(view as ViewState)}
+                  isLoggedIn={isLoggedIn}
+                  onTriggerLogin={openLoginModal}
+                  onLogout={handleLogout}
+                />
+                <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+              </>
+            ) : currentView === 'terms' ? (
+              <>
+                <Terms 
+                  onGoHome={() => navigateTo('home')} 
+                  onNavigate={(view) => navigateTo(view as ViewState)}
+                  isLoggedIn={isLoggedIn}
+                  onTriggerLogin={openLoginModal}
+                  onLogout={handleLogout}
+                />
+                <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+              </>
+            ) : currentView === 'cookies' ? (
+              <>
+                <Cookies 
                   onGoHome={() => navigateTo('home')} 
                   onNavigate={(view) => navigateTo(view as ViewState)}
                   isLoggedIn={isLoggedIn}

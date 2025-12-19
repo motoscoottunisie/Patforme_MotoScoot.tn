@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   LayoutGrid,
   List as ListIcon,
-  /* Import User icon to fix line 619 error */
   User
 } from 'lucide-react';
 import { mockListings, mockModels } from '../data/mockData';
@@ -307,12 +306,27 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       
-      <div className="relative w-full h-[35vh] md:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
+      {/* HERO SECTION - Centrage optimisé */}
+      <div className="relative w-full h-[35vh] md:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 font-sans overflow-hidden bg-primary-50">
         
+        {/* Background Container */}
         <div className="absolute inset-0 overflow-hidden z-0" aria-hidden="true">
-          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden" style={{ backgroundImage: "url('https://www.magma-studio.tn/portfolio2/hero_section-background_mobile.webp')" }} />
-          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block" style={{ backgroundImage: "url('https://magma-studio.tn/portfolio2/-hero-background.webp')" }} />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(-180deg, #AF2E13 0%, #E65100 100%)', opacity: 0.95, mixBlendMode: 'multiply' }} />
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
+            style={{ backgroundImage: "url('https://www.magma-studio.tn/portfolio2/hero_section-background_mobile.webp')" }}
+          />
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block"
+            style={{ backgroundImage: "url('https://magma-studio.tn/portfolio2/-hero-background.webp')" }}
+          />
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(-180deg, #AF2E13 0%, #E65100 100%)',
+              opacity: 0.95,
+              mixBlendMode: 'multiply',
+            }}
+          />
         </div>
 
         <Header 
@@ -326,13 +340,14 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
           onLogout={onLogout}
         />
 
-        <div className="relative z-10 flex flex-col justify-center items-center w-full max-w-7xl mx-auto md:space-y-6 h-full pt-20">
-          <div className="text-center px-4 md:mt-32">
-            <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-4 drop-shadow-sm tracking-tight leading-tight">
+        {/* Hero Content - pt-0 et mt-0 pour un centrage parfait dans le h-[35vh/45vh] */}
+        <div className="relative z-10 flex flex-col justify-center items-center w-full max-w-7xl mx-auto h-full pt-4">
+          <div className="text-center px-4">
+            <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-4 drop-shadow-sm tracking-tight leading-tight animate-fade-in-up">
               Résultats
             </h1>
-            <p className="text-white text-lg md:text-xl font-normal max-w-2xl mx-auto">
-              {filteredListings.length} annonces trouvées
+            <p className="text-white/90 text-lg md:text-xl font-medium max-w-2xl mx-auto animate-fade-in-up opacity-90" style={{ animationDelay: '100ms' }}>
+              {filteredListings.length} annonces trouvées pour votre recherche
             </p>
           </div>
         </div>
@@ -369,155 +384,164 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           
           <aside className="hidden lg:block lg:w-72 xl:w-80 flex-shrink-0">
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 sticky top-24 shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-primary-600" />
-                    Filtrer
-                </h3>
-                <button onClick={resetFilters} className="text-xs font-bold text-primary-600 hover:underline">Réinitialiser</button>
-              </div>
+            <div className="flex flex-col gap-6 sticky top-24">
+              <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                      <Filter className="w-5 h-5 text-primary-600" />
+                      Filtrer
+                  </h3>
+                  <button onClick={resetFilters} className="text-xs font-bold text-primary-600 hover:underline">Réinitialiser</button>
+                </div>
 
-              <div className="mb-6">
-                 <label className="text-sm font-bold text-gray-700 mb-2 block">Recherche</label>
-                 <div className="relative">
-                    <input 
-                      type="text"
-                      value={filters.search}
-                      onChange={(e) => handleFilterChange('search', e.target.value)}
-                      placeholder="Modèle, mot-clé..."
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-primary-600 outline-none transition-all"
+                <div className="mb-6">
+                   <label className="text-sm font-bold text-gray-700 mb-2 block">Recherche</label>
+                   <div className="relative">
+                      <input 
+                        type="text"
+                        value={filters.search}
+                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                        placeholder="Modèle, mot-clé..."
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-primary-600 outline-none transition-all"
+                      />
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                   </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="text-sm font-bold text-gray-700 mb-2 block">Type</label>
+                  <div className="relative">
+                    <select 
+                      value={filters.type}
+                      onChange={(e) => handleFilterChange('type', e.target.value)}
+                      className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
+                    >
+                      <option>Tous les types</option>
+                      <option>Moto</option>
+                      <option>Scooter</option>
+                      <option>Accessoires</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="text-sm font-bold text-gray-700 mb-2 block">Marque</label>
+                  <div className="relative">
+                    <select 
+                      value={filters.brand}
+                      onChange={(e) => handleFilterChange('brand', e.target.value)}
+                      className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
+                    >
+                      <option>Toutes les marques</option>
+                      <option>Yamaha</option>
+                      <option>Honda</option>
+                      <option>BMW</option>
+                      <option>Kawasaki</option>
+                      <option>KTM</option>
+                      <option>Suzuki</option>
+                      <option>Ducati</option>
+                      <option>Triumph</option>
+                      <option>Piaggio</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="text-sm font-bold text-gray-700 mb-2 block">Modèle</label>
+                  <div className="relative">
+                    <select 
+                      value={filters.model}
+                      onChange={(e) => handleFilterChange('model', e.target.value)}
+                      className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
+                    >
+                      <option>Tous les modèles</option>
+                      {mockModels.map((model) => (
+                        <option key={model} value={model}>{model}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="text-sm font-bold text-gray-700 mb-2 block">Localisation</label>
+                  <div className="relative">
+                    <select 
+                      value={filters.location}
+                      onChange={(e) => handleFilterChange('location', e.target.value)}
+                      className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
+                    >
+                      <option>Toutes les régions</option>
+                      <option>Tunis</option>
+                      <option>Sousse</option>
+                      <option>Sfax</option>
+                      <option>Nabeul</option>
+                      <option>Bizerte</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <hr className="border-gray-100 mb-6" />
+
+                {!isAccessory && (
+                  <>
+                    <DualRangeSlider 
+                      label="Année" 
+                      min={2000} 
+                      max={2026} 
+                      valueMin={filters.minYear}
+                      valueMax={filters.maxYear}
+                      onChange={(min, max) => { handleFilterChange('minYear', min); handleFilterChange('maxYear', max); }}
                     />
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                 </div>
+                    <DualRangeSlider 
+                      label="Kilométrage" 
+                      min={0} 
+                      max={300000} 
+                      step={1000} 
+                      unit="km" 
+                      valueMin={filters.minKm}
+                      valueMax={filters.maxKm}
+                      onChange={(min, max) => { handleFilterChange('minKm', min); handleFilterChange('maxKm', max); }}
+                    />
+                    <DualRangeSlider 
+                      label="Cylindrée" 
+                      min={50} 
+                      max={1650} 
+                      step={50} 
+                      unit="cc" 
+                      valueMin={filters.minCC}
+                      valueMax={filters.maxCC}
+                      onChange={(min, max) => { handleFilterChange('minCC', min); handleFilterChange('maxCC', max); }}
+                    />
+                  </>
+                )}
+                
+                <DualRangeSlider 
+                  label="Prix" 
+                  min={0} 
+                  max={200000} 
+                  step={100} 
+                  unit="DT" 
+                  valueMin={filters.minPrice}
+                  valueMax={filters.maxPrice}
+                  onChange={(min, max) => { handleFilterChange('minPrice', min); handleFilterChange('maxPrice', max); }}
+                />
+
               </div>
 
-              <div className="mb-6">
-                <label className="text-sm font-bold text-gray-700 mb-2 block">Type</label>
-                <div className="relative">
-                  <select 
-                    value={filters.type}
-                    onChange={(e) => handleFilterChange('type', e.target.value)}
-                    className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
-                  >
-                    <option>Tous les types</option>
-                    <option>Moto</option>
-                    <option>Scooter</option>
-                    <option>Accessoires</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <label className="text-sm font-bold text-gray-700 mb-2 block">Marque</label>
-                <div className="relative">
-                  <select 
-                    value={filters.brand}
-                    onChange={(e) => handleFilterChange('brand', e.target.value)}
-                    className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
-                  >
-                    <option>Toutes les marques</option>
-                    <option>Yamaha</option>
-                    <option>Honda</option>
-                    <option>BMW</option>
-                    <option>Kawasaki</option>
-                    <option>KTM</option>
-                    <option>Suzuki</option>
-                    <option>Ducati</option>
-                    <option>Triumph</option>
-                    <option>Piaggio</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <label className="text-sm font-bold text-gray-700 mb-2 block">Modèle</label>
-                <div className="relative">
-                  <select 
-                    value={filters.model}
-                    onChange={(e) => handleFilterChange('model', e.target.value)}
-                    className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
-                  >
-                    <option>Tous les modèles</option>
-                    {mockModels.map((model) => (
-                      <option key={model} value={model}>{model}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <label className="text-sm font-bold text-gray-700 mb-2 block">Localisation</label>
-                <div className="relative">
-                  <select 
-                    value={filters.location}
-                    onChange={(e) => handleFilterChange('location', e.target.value)}
-                    className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
-                  >
-                    <option>Toutes les régions</option>
-                    <option>Tunis</option>
-                    <option>Sousse</option>
-                    <option>Sfax</option>
-                    <option>Nabeul</option>
-                    <option>Bizerte</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <hr className="border-gray-100 mb-6" />
-
-              {!isAccessory && (
-                <>
-                  <DualRangeSlider 
-                    label="Année" 
-                    min={2000} 
-                    max={2026} 
-                    valueMin={filters.minYear}
-                    valueMax={filters.maxYear}
-                    onChange={(min, max) => { handleFilterChange('minYear', min); handleFilterChange('maxYear', max); }}
-                  />
-                  <DualRangeSlider 
-                    label="Kilométrage" 
-                    min={0} 
-                    max={300000} 
-                    step={1000} 
-                    unit="km" 
-                    valueMin={filters.minKm}
-                    valueMax={filters.maxKm}
-                    onChange={(min, max) => { handleFilterChange('minKm', min); handleFilterChange('maxKm', max); }}
-                  />
-                  <DualRangeSlider 
-                    label="Cylindrée" 
-                    min={50} 
-                    max={1650} 
-                    step={50} 
-                    unit="cc" 
-                    valueMin={filters.minCC}
-                    valueMax={filters.maxCC}
-                    onChange={(min, max) => { handleFilterChange('minCC', min); handleFilterChange('maxCC', max); }}
-                  />
-                </>
-              )}
-              
-              <DualRangeSlider 
-                label="Prix" 
-                min={0} 
-                max={200000} 
-                step={100} 
-                unit="DT" 
-                valueMin={filters.minPrice}
-                valueMax={filters.maxPrice}
-                onChange={(min, max) => { handleFilterChange('minPrice', min); handleFilterChange('maxPrice', max); }}
+              {/* Sidebar Ad Section - Square format */}
+              <AdBanner 
+                zone="listing_sidebar" 
+                variant="native" 
+                className="w-full aspect-square" 
               />
-
             </div>
           </aside>
 
-          <main className="flex-1">
+          <main className="flex-1 w-full">
             
             {filteredListings.length === 0 ? (
                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm text-center">
@@ -531,7 +555,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                   </button>
                </div>
             ) : (
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6' : 'flex flex-col gap-6'}>
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6' : 'flex flex-col gap-6'}>
                 {filteredListings.map((listing, index) => {
                    const isGrid = viewMode === 'grid';
                    const dealInfo = getDealInfo(listing.dealRating);
@@ -540,19 +564,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                    
                    return (
                   <React.Fragment key={listing.id}>
-                      {index === 3 && SHOW_IN_FEED_AD && (
-                        <div className={` ${isGrid ? 'col-span-full' : ''} animate-fade-in-up`}>
-                            <AdBanner zone="search_feed" variant="native" />
-                        </div>
-                      )}
-
                       <article 
                         onClick={() => handleCardClick(listing.id)}
-                        className={`group bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex animate-fade-in-up cursor-pointer ${isGrid ? 'flex-col rounded-2xl' : 'flex-col md:flex-row rounded-2xl md:rounded-xl md:min-h-[250px]'}`}
+                        className={`group bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex animate-fade-in-up cursor-pointer ${isGrid ? 'flex-col rounded-2xl h-full' : 'flex-col md:flex-row rounded-2xl md:rounded-xl md:min-h-[220px] md:max-h-[260px]'}`}
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                       
-                      <div className={`relative flex-shrink-0 bg-gray-100 overflow-hidden ${isGrid ? 'w-full h-56' : 'w-full h-56 md:w-72 md:h-auto md:absolute md:top-0 md:left-0 md:bottom-0 md:relative'}`}>
+                      <div className={`relative flex-shrink-0 bg-gray-100 overflow-hidden ${isGrid ? 'w-full aspect-[4/3]' : 'w-full aspect-[16/9] md:aspect-auto md:w-56 lg:w-72'}`}>
                           <img 
                             src={listing.image} 
                             alt={listing.title} 
@@ -571,9 +589,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                           </button>
                       </div>
 
-                      <div className={`flex flex-1 ${isGrid ? 'flex-col p-5' : 'flex-col md:flex-row'}`}>
+                      <div className={`flex flex-1 flex-col ${isGrid ? 'p-5' : 'md:flex-row min-w-0'}`}>
                           
-                          <div className={`flex flex-col ${isGrid ? 'gap-3' : 'flex-1 p-5 gap-1 justify-center'}`}>
+                          <div className={`flex flex-col flex-grow min-w-0 ${isGrid ? 'gap-3' : 'p-5 gap-1 justify-center'}`}>
                             <div className="mb-1">
                               <div className="flex justify-between items-start gap-2">
                                 <h3 className="text-lg md:text-xl font-extrabold text-gray-900 group-hover:text-primary-600 transition-colors leading-tight line-clamp-2 flex-1">
@@ -583,15 +601,15 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                     {listing.price}
                                 </span>
                               </div>
-                              <div className="flex items-center text-sm text-gray-500 font-medium mt-1">
+                              <div className="flex items-center text-xs md:text-sm text-gray-500 font-medium mt-1">
                                   <MapPin size={14} className="mr-1 text-gray-400" />
-                                  <span className="truncate max-w-[150px]">{listing.location}</span>
+                                  <span className="truncate max-w-[120px] md:max-w-[180px]">{listing.location}</span>
                                   <span className="mx-2 text-gray-300">•</span>
-                                  <span>{listing.date}</span>
+                                  <span className="whitespace-nowrap">{listing.date}</span>
                               </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-sm font-semibold text-gray-700 my-2">
+                            <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs md:text-sm font-semibold text-gray-700 my-2">
                                {isItemAccessory ? (
                                   <div className="flex items-center gap-1.5"><Info size={16} className="text-gray-400" /> <span>{listing.condition}</span></div>
                                ) : (
@@ -599,8 +617,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                     <div className="flex items-center gap-1.5"><Calendar size={16} className="text-gray-400" /> <span>{listing.year}</span></div>
                                     <span className="text-gray-300 hidden md:inline">•</span>
                                     <div className="flex items-center gap-1.5"><Gauge size={16} className="text-gray-400" /> <span>{listing.mileage}</span></div>
-                                    <span className="text-gray-300 hidden md:inline">•</span>
-                                    <div className="flex items-center gap-1.5"><Info size={16} className="text-gray-400" /> <span>{listing.cc}</span></div>
+                                    <span className="text-gray-300 hidden lg:inline">•</span>
+                                    <div className="hidden lg:flex items-center gap-1.5"><Info size={16} className="text-gray-400" /> <span>{listing.cc}</span></div>
                                   </>
                                )}
                             </div>
@@ -616,7 +634,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                               </div>
                             )}
 
-                            <div className={`mt-auto pt-4 ${isGrid ? 'border-t border-gray-50' : 'md:border-0 md:pt-3'} flex items-center gap-2`}>
+                            <div className={`mt-auto pt-4 ${isGrid ? 'border-t border-gray-50' : 'md:pt-3'} flex items-center gap-2`}>
                                 {listing.sellerType === 'Pro' ? (
                                   <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold flex-shrink-0"><ShieldCheck size={14} /></div>
                                 ) : (
@@ -628,7 +646,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                 </div>
                             </div>
 
-                            {/* Appeler Button for Desktop Grid View */}
                             {isGrid && (
                               <div className="hidden md:block mt-4">
                                 <button className="w-full h-10 rounded-xl bg-primary-600 text-white font-bold text-sm shadow-sm hover:bg-primary-700 transition-all flex items-center justify-center gap-2 active:scale-95">
@@ -639,23 +656,23 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                           </div>
 
                           {!isGrid && (
-                            <div className="hidden md:flex flex-col justify-between items-end p-6 border-l border-gray-100 w-64 flex-shrink-0 bg-gray-50/50">
+                            <div className="hidden md:flex flex-col justify-between items-end p-6 border-l border-gray-100 w-40 lg:w-64 flex-shrink-0 bg-gray-50/50">
                                <div className="text-right w-full">
                                   <span className="block text-[10px] font-bold uppercase text-gray-400 mb-1">Prix demandé</span>
-                                  <span className="block text-3xl font-black text-primary-600 leading-none mb-4">{listing.price}</span>
+                                  <span className="block text-xl lg:text-3xl font-black text-primary-600 leading-none mb-4 truncate">{listing.price}</span>
                                   {listing.dealRating && (
                                     <div className="flex flex-col items-end gap-1.5">
-                                        <div className="flex gap-1 w-20">
+                                        <div className="flex gap-1 w-12 lg:w-20">
                                             {[1, 2, 3].map(level => (
                                                 <div key={level} className={`h-1.5 flex-1 rounded-full ${listing.dealRating! >= level ? dealInfo.color : 'bg-gray-200'}`}></div>
                                             ))}
                                         </div>
-                                        <span className={`text-[10px] font-black uppercase tracking-tight ${dealInfo.textColor}`}>{dealInfo.label}</span>
+                                        <span className={`text-[9px] lg:text-[10px] font-black uppercase tracking-tight ${dealInfo.textColor}`}>{dealInfo.label}</span>
                                     </div>
                                   )}
                                </div>
                                <div className="w-full flex flex-col gap-2 mt-4">
-                                  <button className="w-full h-11 rounded-xl bg-primary-600 text-white font-bold text-sm shadow-md hover:bg-primary-700 transition-all flex items-center justify-center gap-2">
+                                  <button className="w-full h-10 lg:h-11 rounded-xl bg-primary-600 text-white font-bold text-xs lg:text-sm shadow-md hover:bg-primary-700 transition-all flex items-center justify-center gap-2">
                                      <Phone size={16} /> Appeler
                                   </button>
                                   <button 
@@ -663,14 +680,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                     className={`w-full h-8 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase transition-colors ${favorited ? 'bg-red-50 text-red-500' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
                                   >
                                      <Heart size={14} fill={favorited ? "currentColor" : "none"} />
-                                     {favorited ? "Sauvegardé" : "Sauvegarder"}
+                                     <span className="hidden lg:inline">{favorited ? "Sauvegardé" : "Sauvegarder"}</span>
                                   </button>
                                </div>
                             </div>
                           )}
                       </div>
 
-                      {/* Appeler Button for Mobile View */}
                       <div className="md:hidden px-5 pb-5">
                          <button 
                            onClick={(e) => { e.stopPropagation(); }}
@@ -681,6 +697,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                          </button>
                       </div>
                       </article>
+
+                      {/* Encart Pub In-Feed après la 6ème annonce (index 5) */}
+                      {index === 5 && SHOW_IN_FEED_AD && (
+                        <div className={`mt-6 ${isGrid ? 'col-span-full' : ''} animate-fade-in-up`}>
+                            <AdBanner zone="search_feed" variant="native" />
+                        </div>
+                      )}
                   </React.Fragment>
                 );})}
               </div>

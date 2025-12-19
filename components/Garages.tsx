@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
@@ -124,13 +123,13 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
         />
 
         {/* Hero Main Content */}
-        <div className="relative z-10 flex flex-col justify-center items-center w-full max-w-7xl mx-auto md:space-y-6 h-full pt-20">
+        <div className="relative z-10 flex flex-col justify-center items-center w-full max-w-7xl mx-auto h-full pt-20">
           <div className="text-center px-4 md:mt-32">
             <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-4 drop-shadow-sm tracking-tight leading-tight animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               Garages & Ateliers
             </h1>
             <p className="text-white text-lg md:text-xl font-normal max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              Trouvez les meilleurs professionnels de confiance pour l'entretien de votre moto.
+              De Tunis à Tataouine, trouvez des garages près de chez vous en un clic.
             </p>
           </div>
         </div>
@@ -260,47 +259,51 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
              
              {/* Vertical List of Horizontal Cards */}
              <div className="flex flex-col gap-6">
-              {filteredGarages.map((garage, index) => (
+              {filteredGarages.map((garage, index) => {
+                // Get only city/zone for the list card
+                const zone = garage.location || garage.address?.split(',').pop()?.trim() || "Tunisie";
+                
+                return (
                 <article 
                   key={garage.id}
                   onClick={() => handleGarageClick(garage.id)}
-                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col md:flex-row animate-fade-in-up cursor-pointer"
+                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col md:flex-row md:h-72 lg:h-64 animate-fade-in-up cursor-pointer relative"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  {/* Image - Left on Desktop (Fixed Size Homogeneous) */}
-                  <div className="relative w-full md:w-72 lg:w-80 h-48 md:h-64 flex-shrink-0 bg-gray-100 overflow-hidden">
+                  {/* Image - Left on Desktop (Takes full card height, fixed width) */}
+                  <div className="relative w-full md:w-72 lg:w-80 h-48 md:h-auto self-stretch flex-shrink-0 bg-gray-100 overflow-hidden">
                     <img 
                       src={garage.image} 
                       alt={`Photo de ${garage.name}`}
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
                     />
-                    
-                    {/* Badge Container */}
-                    <div className="absolute top-3 left-3">
-                        <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold shadow-sm">
-                           <Star size={12} className="text-warning-500 fill-warning-500" aria-hidden="true" />
-                           <span aria-label={`Note de ${garage.rating} sur 5`}>{garage.rating}</span>
-                           <span className="text-gray-500 font-normal">({garage.reviewsCount})</span>
-                        </div>
-                    </div>
+                  </div>
+
+                  {/* Ratings Badge - Repositioned to TOP RIGHT with Flat style */}
+                  <div className="absolute top-4 right-4 z-10">
+                      <div className="bg-white border border-gray-200 px-2 py-1 rounded-lg flex items-center gap-1 text-[11px] font-bold">
+                         <Star size={12} className="text-warning-500 fill-warning-500" aria-hidden="true" />
+                         <span className="text-gray-900" aria-label={`Note de ${garage.rating} sur 5`}>{garage.rating}</span>
+                         <span className="text-gray-400 font-medium">({garage.reviewsCount})</span>
+                      </div>
                   </div>
 
                   {/* Body - Right on Desktop */}
-                  <div className="p-5 flex-1 flex flex-col">
+                  <div className="p-6 flex-1 flex flex-col min-w-0">
                     
                     {/* Header: Title & Verified */}
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <h2 className="text-xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
+                            <h2 className="text-xl font-black text-gray-900 group-hover:text-primary-600 transition-colors pr-16 md:pr-0 truncate">
                                 {garage.name}
                             </h2>
                             {garage.isVerified && (
-                                <CheckCircle2 size={18} className="text-primary-600 fill-primary-50" aria-label="Vérifié" />
+                                <CheckCircle2 size={18} className="text-primary-600 fill-primary-50 shrink-0" aria-label="Vérifié" />
                             )}
                         </div>
                         {garage.isVerified && (
-                            <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-md border border-primary-100 inline-block">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-primary-600 bg-primary-50 px-2 py-0.5 rounded-md border border-primary-100 inline-block">
                                 Garage Certifié
                             </span>
                         )}
@@ -312,49 +315,49 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
                     </p>
 
                     {/* Specialties Badges */}
-                    <div className="flex flex-wrap gap-2 mb-5">
-                      {garage.specialties?.slice(0, 4).map(specialty => (
-                        <span key={specialty} className="px-2.5 py-1 rounded-lg bg-gray-50 text-gray-600 text-xs font-semibold border border-gray-100">
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {garage.specialties?.slice(0, 3).map(specialty => (
+                        <span key={specialty} className="px-2.5 py-1 rounded-lg bg-gray-50 text-gray-600 text-[11px] font-bold border border-gray-100 uppercase tracking-tight">
                           {specialty}
                         </span>
                       ))}
-                      {(garage.specialties?.length || 0) > 4 && (
-                        <span className="px-2.5 py-1 rounded-lg bg-gray-50 text-gray-500 text-xs font-semibold border border-gray-100">
-                          +{(garage.specialties?.length || 0) - 4}
+                      {(garage.specialties?.length || 0) > 3 && (
+                        <span className="px-2.5 py-1 rounded-lg bg-gray-50 text-gray-400 text-[11px] font-bold border border-gray-100">
+                          +{(garage.specialties?.length || 0) - 3}
                         </span>
                       )}
                     </div>
 
                     {/* Footer Row: Info & Buttons */}
                     <div className="mt-auto flex flex-col md:flex-row md:items-end justify-between gap-4 pt-4 border-t border-gray-50">
-                        {/* Info List */}
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <MapPin className="w-4 h-4 text-gray-400 shrink-0" aria-hidden="true" />
-                            <span className="truncate max-w-[200px] font-medium">{garage.address}</span>
+                        {/* Info List - Only City/Zone */}
+                        <div className="space-y-1.5 overflow-hidden">
+                          <div className="flex items-center gap-2 text-sm">
+                            <MapPin className="w-4 h-4 text-primary-500 shrink-0" aria-hidden="true" />
+                            <span className="font-bold text-gray-900 truncate">{zone}</span>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
                             <Clock className="w-4 h-4 text-gray-400 shrink-0" aria-hidden="true" />
-                            <span className="truncate max-w-[200px]">{garage.hours}</span>
+                            <span className="truncate font-medium">{garage.hours}</span>
                           </div>
                         </div>
 
                         {/* Buttons */}
-                        <div className="flex gap-3 w-full md:w-auto">
-                            <button className="flex-1 md:flex-none px-4 py-2.5 bg-white border border-gray-200 hover:border-primary-600 text-gray-700 hover:text-primary-600 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center justify-center gap-2 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                <Phone size={16} aria-hidden="true" />
+                        <div className="flex gap-2 w-full md:w-auto shrink-0">
+                            <button className="flex-1 md:flex-none px-4 py-2.5 bg-white border border-gray-200 hover:border-primary-600 text-gray-700 hover:text-primary-600 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <Phone size={14} aria-hidden="true" />
                                 <span className="md:hidden lg:inline">Appeler</span>
                             </button>
-                            <button className="flex-1 md:flex-none px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 hover:shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                            <button className="flex-1 md:flex-none px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 hover:shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500">
                                 <span>Voir détails</span>
-                                <ArrowRight size={16} aria-hidden="true" />
+                                <ArrowRight size={14} aria-hidden="true" />
                             </button>
                         </div>
                     </div>
 
                   </div>
                 </article>
-              ))}
+              );})}
 
               {/* Empty State */}
               {filteredGarages.length === 0 && (
@@ -386,7 +389,6 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
           aria-modal="true"
           aria-labelledby="mobile-filter-title"
         >
-           {/* ... [Mobile filter implementation remains unchanged] ... */}
            {/* Header */}
            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white sticky top-0 z-20">
               <div className="flex items-center gap-3">
