@@ -25,17 +25,14 @@ const About: React.FC<AboutProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigg
   return (
     <div className="min-h-screen bg-white font-sans overflow-x-hidden">
       
-      {/* HERO SECTION - EXACT STYLE FROM SPECIFICATION */}
-      <div className="relative w-full h-[50vh] md:h-[60vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 font-sans overflow-hidden bg-primary-50">
+      {/* HERO SECTION */}
+      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[60vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 font-sans overflow-hidden bg-primary-50">
         
-        {/* Le conteneur de fond absolu (background-wrapper) */}
         <div className="absolute inset-0 overflow-hidden z-0">
-          {/* L'image de fond (Style commun / bg-image) */}
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: "url('https://magma-studio.tn/portfolio2/-hero-background.webp')" }}
           />
-          {/* L'Overlay (Le filtre rouge/orange / overlay-gradient) */}
           <div 
             className="absolute inset-0"
             style={{
@@ -55,7 +52,6 @@ const About: React.FC<AboutProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigg
           onLogout={onLogout}
         />
 
-        {/* Hero Content - Minimalist approach */}
         <div className="relative z-10 flex flex-col justify-center items-center w-full max-w-7xl mx-auto h-full pt-8">
           <div className="text-center px-4">
             <h1 className="text-4xl md:text-7xl font-black text-white mb-6 drop-shadow-sm tracking-tight leading-tight animate-fade-in-up">
@@ -68,7 +64,7 @@ const About: React.FC<AboutProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigg
         </div>
       </div>
 
-      {/* MANIFESTO SECTION - APPLE STYLE */}
+      {/* MANIFESTO SECTION */}
       <section className="py-24 md:py-32 bg-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
             <h2 className="text-xs font-black text-primary-600 uppercase tracking-[0.3em] mb-12 animate-fade-in-up">Notre Manifeste</h2>
@@ -84,7 +80,7 @@ const About: React.FC<AboutProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigg
         <div className="max-w-7xl mx-auto px-6 md:px-12">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 
-                {/* Confidence Card (Large) */}
+                {/* Confidence Card */}
                 <div className="md:col-span-2 lg:col-span-2 bg-white rounded-[2.5rem] p-8 md:p-12 border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-xl transition-all duration-500 overflow-hidden relative">
                     <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                     <div className="w-14 h-14 bg-primary-600 text-white rounded-2xl flex items-center justify-center mb-12 shadow-lg shadow-primary-600/20">
@@ -121,7 +117,7 @@ const About: React.FC<AboutProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigg
                     </div>
                 </div>
 
-                {/* Community Card (Wide) */}
+                {/* Community Card */}
                 <div className="md:col-span-3 lg:col-span-2 bg-white rounded-[2.5rem] p-8 md:p-12 border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-12 group hover:shadow-xl transition-all duration-500">
                     <div className="flex-1">
                         <Users className="text-gray-900 mb-8" size={32} />
@@ -175,7 +171,7 @@ const About: React.FC<AboutProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigg
         </div>
       </section>
 
-      {/* FINAL CALL TO ACTION - APPLE STYLE */}
+      {/* FINAL CALL TO ACTION */}
       <section className="py-32 md:py-48 bg-[#f5f5f7]">
         <div className="max-w-4xl mx-auto px-6 text-center animate-fade-in-up">
             <h2 className="text-5xl md:text-8xl font-bold text-black leading-[1.05] tracking-tighter mb-8">
@@ -201,7 +197,6 @@ const About: React.FC<AboutProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigg
         </div>
       </section>
 
-      {/* BREADCRUMBS FOOTER */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <nav className="flex items-center text-sm text-gray-400">
             <button onClick={onGoHome} className="hover:text-primary-600 transition-colors">Accueil</button>

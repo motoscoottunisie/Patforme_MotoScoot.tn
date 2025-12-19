@@ -89,7 +89,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
     <div className="min-h-screen bg-gray-50 font-sans">
       
       {/* HERO SECTION */}
-      <div className="relative w-full h-[35vh] md:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
+      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
         
         {/* Background Container */}
         <div className="absolute inset-0 overflow-hidden z-0" aria-hidden="true">
@@ -129,7 +129,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
               Garages & Ateliers
             </h1>
             <p className="text-white text-lg md:text-xl font-normal max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              De Tunis à Tataouine, trouvez des garages près de chez vous en un clic.
+              De Tunis à Tataouine, trouvez des garages près de chez vous <br/> en un clic.
             </p>
           </div>
         </div>
@@ -144,7 +144,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
               <Home className="w-4 h-4 mr-1" aria-hidden="true" />
               <span>Accueil</span>
             </button>
-            <ChevronRight className="w-4 h-4 mx-2 text-gray-300 flex-shrink-0" aria-hidden="true" />
+            <ChevronRight className="w-4 h-4 mx-2 text-gray-300" aria-hidden="true" />
             <span className="font-semibold text-gray-900 flex-shrink-0" aria-current="page">Garages & Ateliers</span>
           </nav>
 
@@ -166,10 +166,10 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
                 <div className="flex items-center justify-between mb-6">
                    <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
                      <Filter className="w-5 h-5 text-primary-600" aria-hidden="true" />
-                     Filtrer
+                     FILTRER
                    </h3>
                    {hasActiveFilters && (
-                     <button onClick={resetFilters} className="text-xs font-bold text-primary-600 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1">
+                     <button onClick={resetFilters} className="text-xs font-bold text-primary-600 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1 uppercase">
                         Réinitialiser
                      </button>
                    )}
@@ -177,7 +177,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
 
                 {/* Search Input */}
                 <div className="mb-6">
-                   <label htmlFor="desktop-search" className="text-sm font-bold text-gray-700 mb-2 block">Recherche</label>
+                   <label htmlFor="desktop-search" className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">RECHERCHE</label>
                    <div className="relative">
                       <input 
                         id="desktop-search"
@@ -193,7 +193,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
 
                 {/* City Filter */}
                 <div className="mb-6">
-                   <label htmlFor="desktop-city" className="text-sm font-bold text-gray-700 mb-2 block">Ville / Région</label>
+                   <label htmlFor="desktop-city" className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">VILLE / RÉGION</label>
                    <div className="relative">
                       <select 
                         id="desktop-city"
@@ -212,7 +212,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
 
                 {/* Specialty Filter */}
                 <div className="mb-6">
-                   <label htmlFor="desktop-specialty" className="text-sm font-bold text-gray-700 mb-2 block">Spécialité</label>
+                   <label htmlFor="desktop-specialty" className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">SPÉCIALITÉ</label>
                    <div className="relative">
                       <select 
                         id="desktop-specialty"
@@ -242,8 +242,8 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
                          <div className={`block w-12 h-7 rounded-full transition-colors ${isVerifiedOnly ? 'bg-primary-600' : 'bg-gray-200'}`}></div>
                          <div className={`dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform ${isVerifiedOnly ? 'transform translate-x-5' : ''}`}></div>
                       </div>
-                      <div className="ml-3 text-sm font-medium text-gray-700 group-hover:text-primary-600 transition-colors">
-                         Garages vérifiés uniquement
+                      <div className="ml-3 text-xs font-black text-gray-400 uppercase tracking-widest group-hover:text-primary-600 transition-colors">
+                         Vérifiés uniquement
                       </div>
                    </label>
                 </div>
@@ -310,23 +310,9 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
                       </div>
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                    <p className="text-sm text-gray-600 mb-6 line-clamp-3 leading-relaxed">
                       {garage.description}
                     </p>
-
-                    {/* Specialties Badges */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {garage.specialties?.slice(0, 3).map(specialty => (
-                        <span key={specialty} className="px-2.5 py-1 rounded-lg bg-gray-50 text-gray-600 text-[11px] font-bold border border-gray-100 uppercase tracking-tight">
-                          {specialty}
-                        </span>
-                      ))}
-                      {(garage.specialties?.length || 0) > 3 && (
-                        <span className="px-2.5 py-1 rounded-lg bg-gray-50 text-gray-400 text-[11px] font-bold border border-gray-100">
-                          +{(garage.specialties?.length || 0) - 3}
-                        </span>
-                      )}
-                    </div>
 
                     {/* Footer Row: Info & Buttons */}
                     <div className="mt-auto flex flex-col md:flex-row md:items-end justify-between gap-4 pt-4 border-t border-gray-50">
@@ -399,11 +385,11 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
                  >
                     <X className="w-6 h-6" aria-hidden="true" />
                  </button>
-                 <h3 id="mobile-filter-title" className="font-bold text-xl text-gray-900">Filtres</h3>
+                 <h3 id="mobile-filter-title" className="font-bold text-xl text-gray-900">FILTRES</h3>
               </div>
               <button 
                 onClick={resetFilters}
-                className="text-sm font-semibold text-primary-600 hover:text-primary-700 px-2 py-1 focus:outline-none focus:underline"
+                className="text-sm font-semibold text-primary-600 hover:text-primary-700 px-2 py-1 focus:outline-none focus:underline uppercase"
               >
                  Réinitialiser
               </button>
@@ -414,7 +400,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
               
               {/* Search */}
               <div>
-                 <label htmlFor="mobile-search" className="text-base font-bold text-gray-900 mb-3 block">Recherche</label>
+                 <label htmlFor="mobile-search" className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">RECHERCHE</label>
                  <div className="relative">
                     <input 
                       id="mobile-search"
@@ -432,7 +418,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
 
               {/* City */}
               <div>
-                 <label htmlFor="mobile-city" className="text-base font-bold text-gray-900 mb-3 block">Ville / Région</label>
+                 <label htmlFor="mobile-city" className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">VILLE / RÉGION</label>
                  <div className="relative">
                     <select 
                       id="mobile-city"
@@ -451,7 +437,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
 
               {/* Specialty */}
               <div>
-                 <label htmlFor="mobile-specialty" className="text-base font-bold text-gray-900 mb-3 block">Spécialité</label>
+                 <label htmlFor="mobile-specialty" className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">SPÉCIALITÉ</label>
                  <div className="relative">
                     <select 
                       id="mobile-specialty"
@@ -473,9 +459,9 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
               {/* Verified Toggle */}
               <div>
                  <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 active:bg-gray-100 transition-colors cursor-pointer">
-                    <span className="font-bold text-gray-900 flex items-center gap-2">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
                        <CheckCircle2 size={18} className="text-primary-600" aria-hidden="true" />
-                       Garages vérifiés uniquement
+                       Vérifiés uniquement
                     </span>
                     <div className="relative">
                        <input 

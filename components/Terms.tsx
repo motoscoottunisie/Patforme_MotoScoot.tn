@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Home, ChevronRight, Gavel, Scale, FileCheck, AlertCircle, UserCheck, ShieldCheck } from 'lucide-react';
 import Header from './layout/Header';
@@ -15,10 +14,9 @@ const Terms: React.FC<TermsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigg
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-16">
       
-      {/* HERO SECTION - Identique à la page Garages */}
-      <div className="relative w-full h-[35vh] md:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
+      {/* HERO SECTION */}
+      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
         
-        {/* Background Container */}
         <div className="absolute inset-0 overflow-hidden z-0" aria-hidden="true">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
@@ -61,7 +59,6 @@ const Terms: React.FC<TermsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigg
 
       <div className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
         
-        {/* Breadcrumbs */}
         <nav className="flex items-center text-sm text-gray-500 mb-12">
             <button onClick={onGoHome} className="flex items-center hover:text-primary-600 transition-colors">
               <Home className="w-4 h-4 mr-1" />

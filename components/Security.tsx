@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Home, ChevronRight, ShieldCheck, AlertTriangle, UserCheck, Smartphone, Eye, Mail } from 'lucide-react';
 import Header from './layout/Header';
@@ -15,10 +14,9 @@ const Security: React.FC<SecurityProps> = ({ onGoHome, onNavigate, isLoggedIn, o
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-16">
       
-      {/* HERO SECTION - Identique à la page Garages */}
-      <div className="relative w-full h-[35vh] md:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
+      {/* HERO SECTION */}
+      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
         
-        {/* Background Container */}
         <div className="absolute inset-0 overflow-hidden z-0" aria-hidden="true">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
@@ -61,7 +59,6 @@ const Security: React.FC<SecurityProps> = ({ onGoHome, onNavigate, isLoggedIn, o
 
       <div className="max-w-4xl mx-auto px-6 md:px-8 py-12 md:py-16">
         
-        {/* Breadcrumbs */}
         <nav className="flex items-center text-sm text-gray-500 mb-12">
             <button onClick={onGoHome} className="flex items-center hover:text-primary-600 transition-colors">
               <Home className="w-4 h-4 mr-1" />
@@ -73,7 +70,6 @@ const Security: React.FC<SecurityProps> = ({ onGoHome, onNavigate, isLoggedIn, o
 
         <div className="space-y-8">
             
-            {/* Section 1: Acheteurs */}
             <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-sm">
                 <div className="flex items-center gap-3 text-primary-600 mb-6">
                     <UserCheck size={28} />
@@ -95,7 +91,6 @@ const Security: React.FC<SecurityProps> = ({ onGoHome, onNavigate, isLoggedIn, o
                 </ul>
             </div>
 
-            {/* Section 2: Vendeurs */}
             <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-sm">
                 <div className="flex items-center gap-3 text-primary-600 mb-6">
                     <Smartphone size={28} />
@@ -117,7 +112,6 @@ const Security: React.FC<SecurityProps> = ({ onGoHome, onNavigate, isLoggedIn, o
                 </ul>
             </div>
 
-            {/* Section 3: Signalement */}
             <div className="bg-neutral-900 p-8 md:p-12 rounded-[2.5rem] text-white relative overflow-hidden shadow-xl">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-primary-600/20 blur-[80px] rounded-full"></div>
                 <div className="relative z-10">

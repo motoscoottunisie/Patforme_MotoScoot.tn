@@ -111,8 +111,8 @@ const FAQ: React.FC<FAQProps> = ({ onGoHome, onNavigate, isLoggedIn, onTriggerLo
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-12">
       
-      {/* HERO SECTION - UNIFIED DESIGN SYSTEM STYLE */}
-      <div className="relative w-full h-[35vh] md:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 font-sans overflow-hidden bg-primary-50">
+      {/* HERO SECTION */}
+      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 font-sans overflow-hidden bg-primary-50">
         <div className="absolute inset-0 overflow-hidden z-0">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
@@ -155,7 +155,6 @@ const FAQ: React.FC<FAQProps> = ({ onGoHome, onNavigate, isLoggedIn, onTriggerLo
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
         
-        {/* Breadcrumbs & Search Area (Matching News/Tips style) */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <nav className="flex items-center text-sm text-gray-500 overflow-x-auto whitespace-nowrap no-scrollbar">
               <button onClick={onGoHome} className="flex items-center hover:text-primary-600 transition-colors">
@@ -180,7 +179,6 @@ const FAQ: React.FC<FAQProps> = ({ onGoHome, onNavigate, isLoggedIn, onTriggerLo
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           
-          {/* CATEGORIES SIDEBAR */}
           <aside className="lg:col-span-3">
              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sticky top-24">
                 <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 px-4">Catégories</h3>
@@ -212,7 +210,6 @@ const FAQ: React.FC<FAQProps> = ({ onGoHome, onNavigate, isLoggedIn, onTriggerLo
              </div>
           </aside>
 
-          {/* QUESTIONS LIST */}
           <div className="lg:col-span-9 space-y-4">
              {filteredFaqs.length > 0 ? filteredFaqs.map((item, index) => (
                <div 
@@ -262,7 +259,6 @@ const FAQ: React.FC<FAQProps> = ({ onGoHome, onNavigate, isLoggedIn, onTriggerLo
                </div>
              )}
 
-             {/* HELP CALLOUT */}
              <div className="mt-12 bg-gradient-to-r from-gray-900 to-gray-800 rounded-4xl p-8 md:p-12 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600/20 blur-[100px] rounded-full pointer-events-none"></div>
                 <div className="relative z-10 max-w-xl text-center md:text-left">

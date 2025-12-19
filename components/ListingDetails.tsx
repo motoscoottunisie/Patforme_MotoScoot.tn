@@ -538,6 +538,21 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                              Afficher le numéro
                           </button>
                       )}
+
+                      {/* Partager et Sauvegarder Buttons */}
+                      <div className="flex gap-3">
+                        <button className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 flex items-center justify-center gap-2 text-sm">
+                           <Share2 size={18} />
+                           Partager
+                        </button>
+                        <button
+                          onClick={() => toggleFavorite('listing', listing.id)}
+                          className={`flex-1 py-3 bg-white border font-bold rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 text-sm ${favorited ? 'text-red-500 border-red-100 bg-red-50' : 'text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
+                        >
+                           <Heart size={18} fill={favorited ? "currentColor" : "none"} />
+                           {favorited ? 'Sauvegardé' : 'Sauvegarder'}
+                        </button>
+                      </div>
                    </div>
 
                    {/* Safety Disclaimer */}

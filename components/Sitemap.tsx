@@ -86,10 +86,9 @@ const Sitemap: React.FC<SitemapProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-16">
       
-      {/* HERO SECTION - Identique à la page Garages */}
-      <div className="relative w-full h-[35vh] md:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
+      {/* HERO SECTION */}
+      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
         
-        {/* Background Container */}
         <div className="absolute inset-0 overflow-hidden z-0" aria-hidden="true">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
@@ -132,7 +131,6 @@ const Sitemap: React.FC<SitemapProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
 
       <div className="max-w-7xl mx-auto px-6 md:px-8 py-12 md:py-16">
         
-        {/* Breadcrumbs */}
         <nav className="flex items-center text-sm text-gray-500 mb-12">
             <button onClick={onGoHome} className="flex items-center hover:text-primary-600 transition-colors">
               <Home className="w-4 h-4 mr-1" />
@@ -142,7 +140,6 @@ const Sitemap: React.FC<SitemapProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
             <span className="font-semibold text-gray-900">Plan du site</span>
         </nav>
 
-        {/* Sitemap Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {sections.map((section, idx) => (
                 <div key={idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
@@ -156,7 +153,6 @@ const Sitemap: React.FC<SitemapProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
             ))}
         </div>
 
-        {/* Legal Section Footer Area */}
         <div className="mt-16 pt-12 border-t border-gray-200">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                 <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12">

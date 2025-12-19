@@ -306,8 +306,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       
-      {/* HERO SECTION - Centrage optimisé */}
-      <div className="relative w-full h-[35vh] md:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 font-sans overflow-hidden bg-primary-50">
+      {/* HERO SECTION */}
+      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 font-sans overflow-hidden bg-primary-50">
         
         {/* Background Container */}
         <div className="absolute inset-0 overflow-hidden z-0" aria-hidden="true">
@@ -340,7 +340,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
           onLogout={onLogout}
         />
 
-        {/* Hero Content - pt-0 et mt-0 pour un centrage parfait dans le h-[35vh/45vh] */}
+        {/* Hero Content */}
         <div className="relative z-10 flex flex-col justify-center items-center w-full max-w-7xl mx-auto h-full pt-4">
           <div className="text-center px-4">
             <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-4 drop-shadow-sm tracking-tight leading-tight animate-fade-in-up">
@@ -357,7 +357,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
         
         <div className="flex flex-wrap md:flex-nowrap items-center justify-between mb-8 gap-4">
           <nav aria-label="Fil d'ariane" className="flex items-center text-sm text-gray-500 overflow-x-auto whitespace-nowrap no-scrollbar mr-auto">
-            <button className="flex items-center hover:text-primary-600 cursor-pointer transition-colors flex-shrink-0 focus:outline-none focus:underline" onClick={onGoHome}>
+            <button className="flex items-center hover:text-primary-600 transition-colors flex-shrink-0 focus:outline-none focus:underline" onClick={onGoHome}>
               <Home className="w-4 h-4 mr-1" aria-hidden="true" />
               <span>Accueil</span>
             </button>
@@ -555,7 +555,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                   </button>
                </div>
             ) : (
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6' : 'flex flex-col gap-6'}>
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6' : 'flex flex-col md:grid md:grid-cols-3 lg:flex lg:flex-col gap-6'}>
                 {filteredListings.map((listing, index) => {
                    const isGrid = viewMode === 'grid';
                    const dealInfo = getDealInfo(listing.dealRating);
@@ -566,11 +566,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                   <React.Fragment key={listing.id}>
                       <article 
                         onClick={() => handleCardClick(listing.id)}
-                        className={`group bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex animate-fade-in-up cursor-pointer ${isGrid ? 'flex-col rounded-2xl h-full' : 'flex-col md:flex-row rounded-2xl md:rounded-xl md:min-h-[220px] md:max-h-[260px]'}`}
+                        className={`group bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex animate-fade-in-up cursor-pointer ${isGrid ? 'flex-col rounded-2xl h-full' : 'flex-col md:flex-col lg:flex-row rounded-2xl lg:rounded-xl md:min-h-0 lg:min-h-[220px] lg:max-h-[260px]'}`}
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                       
-                      <div className={`relative flex-shrink-0 bg-gray-100 overflow-hidden ${isGrid ? 'w-full aspect-[4/3]' : 'w-full aspect-[16/9] md:aspect-auto md:w-56 lg:w-72'}`}>
+                      <div className={`relative flex-shrink-0 bg-gray-100 overflow-hidden ${isGrid ? 'w-full aspect-[4/3]' : 'w-full aspect-[16/9] md:aspect-[4/3] lg:aspect-auto lg:w-56 xl:w-72'}`}>
                           <img 
                             src={listing.image} 
                             alt={listing.title} 
@@ -583,21 +583,25 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                           </div>
                           <button 
                             onClick={(e) => handleFavoriteClick(e, listing.id)}
-                            className={`absolute top-3 right-3 p-2 backdrop-blur-md bg-white/70 rounded-full transition-colors ${!isGrid ? 'md:hidden' : ''} ${favorited ? 'bg-red-50 text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                            className={`absolute top-3 right-3 p-2 backdrop-blur-md bg-white/70 rounded-full transition-colors ${!isGrid ? 'lg:hidden' : ''} ${favorited ? 'bg-red-50 text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                           >
                               <Heart size={18} fill={favorited ? "currentColor" : "none"} />
                           </button>
                       </div>
 
-                      <div className={`flex flex-1 flex-col ${isGrid ? 'p-5' : 'md:flex-row min-w-0'}`}>
+                      <div className={`flex flex-1 flex-col ${isGrid ? 'p-5' : 'md:p-5 lg:p-0 lg:flex-row min-w-0'}`}>
                           
-                          <div className={`flex flex-col flex-grow min-w-0 ${isGrid ? 'gap-3' : 'p-5 gap-1 justify-center'}`}>
+                          <div className={`flex flex-col flex-grow min-w-0 ${isGrid ? 'gap-3' : 'lg:p-5 gap-1 justify-center'}`}>
                             <div className="mb-1">
                               <div className="flex justify-between items-start gap-2">
                                 <h3 className="text-lg md:text-xl font-extrabold text-gray-900 group-hover:text-primary-600 transition-colors leading-tight line-clamp-2 flex-1">
                                     {listing.title}
                                 </h3>
-                                <span className={`text-lg md:text-xl font-bold text-primary-600 whitespace-nowrap pt-0.5 ${!isGrid ? 'md:hidden' : ''}`}>
+                                <span className={`text-lg md:text-xl font-bold text-primary-600 whitespace-nowrap pt-0.5 ${!isGrid ? 'lg:hidden' : ''}`}>
+                                    {listing.price}
+                                </span>
+                                {/* Price visible on tablet portrait even if not in grid mode explicitly, because we force the grid style */}
+                                <span className={`text-lg font-bold text-primary-600 whitespace-nowrap pt-0.5 hidden md:block lg:hidden`}>
                                     {listing.price}
                                 </span>
                               </div>
@@ -623,8 +627,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                )}
                             </div>
 
-                            {listing.dealRating && isGrid && (
-                              <div className="flex items-center gap-3 mt-2">
+                            {(listing.dealRating && (isGrid || true)) && (
+                              <div className="flex items-center gap-3 mt-2 lg:mt-2">
                                  <div className="flex items-center gap-1 w-24">
                                      {[1, 2, 3].map(level => (
                                        <div key={level} className={`h-1.5 flex-1 rounded-full ${listing.dealRating! >= level ? dealInfo.color : 'bg-gray-200'}`}></div>
@@ -634,7 +638,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                               </div>
                             )}
 
-                            <div className={`mt-auto pt-4 ${isGrid ? 'border-t border-gray-50' : 'md:pt-3'} flex items-center gap-2`}>
+                            <div className={`mt-auto pt-4 ${isGrid ? 'border-t border-gray-50' : 'md:pt-4 lg:pt-3 lg:border-t-0'} flex items-center gap-2`}>
                                 {listing.sellerType === 'Pro' ? (
                                   <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold flex-shrink-0"><ShieldCheck size={14} /></div>
                                 ) : (
@@ -646,17 +650,16 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                 </div>
                             </div>
 
-                            {isGrid && (
-                              <div className="hidden md:block mt-4">
+                            {/* CTA visible on Grid OR Tablet portrait Grid-alike */}
+                            <div className="mt-4 md:block lg:hidden">
                                 <button className="w-full h-10 rounded-xl bg-primary-600 text-white font-bold text-sm shadow-sm hover:bg-primary-700 transition-all flex items-center justify-center gap-2 active:scale-95">
                                   <Phone size={16} /> Appeler
                                 </button>
-                              </div>
-                            )}
+                            </div>
                           </div>
 
                           {!isGrid && (
-                            <div className="hidden md:flex flex-col justify-between items-end p-6 border-l border-gray-100 w-40 lg:w-64 flex-shrink-0 bg-gray-50/50">
+                            <div className="hidden lg:flex flex-col justify-between items-end p-6 border-l border-gray-100 w-40 lg:w-64 flex-shrink-0 bg-gray-50/50">
                                <div className="text-right w-full">
                                   <span className="block text-[10px] font-bold uppercase text-gray-400 mb-1">Prix demandé</span>
                                   <span className="block text-xl lg:text-3xl font-black text-primary-600 leading-none mb-4 truncate">{listing.price}</span>
@@ -700,7 +703,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
                       {/* Encart Pub In-Feed après la 6ème annonce (index 5) */}
                       {index === 5 && SHOW_IN_FEED_AD && (
-                        <div className={`mt-6 ${isGrid ? 'col-span-full' : ''} animate-fade-in-up`}>
+                        <div className={`mt-6 col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-full animate-fade-in-up`}>
                             <AdBanner zone="search_feed" variant="native" />
                         </div>
                       )}

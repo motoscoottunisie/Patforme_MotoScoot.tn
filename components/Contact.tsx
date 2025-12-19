@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Home, 
@@ -29,7 +28,7 @@ const Contact: React.FC<ContactProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
     contactName: '',
     email: '',
     phone: '',
-    subject: '',
+    subject: 'General',
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -39,7 +38,7 @@ const Contact: React.FC<ContactProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
     // Simulate form submission
     setIsSubmitted(true);
     setTimeout(() => setIsSubmitted(false), 5000);
-    setFormData({ garageName: '', contactName: '', email: '', phone: '', subject: '', message: '' });
+    setFormData({ garageName: '', contactName: '', email: '', phone: '', subject: 'General', message: '' });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -52,8 +51,8 @@ const Contact: React.FC<ContactProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       
-      {/* HERO SECTION - Matches Tips.tsx / News.tsx */}
-      <div className="relative w-full h-[35vh] md:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
+      {/* HERO SECTION - Updated for Tablet Portrait */}
+      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
         
         {/* Background Container */}
         <div className="absolute inset-0 overflow-hidden z-0">
@@ -169,174 +168,147 @@ const Contact: React.FC<ContactProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
                <ul className="space-y-4">
                   <li className="flex gap-3">
                      <CheckCircle2 className="w-5 h-5 text-primary-500 flex-shrink-0" />
-                     <span className="text-sm text-gray-300">Visibilité accrue auprès de milliers de motards tunisiens.</span>
+                     <span className="text-sm text-gray-300">Visibilité accrue auprès de milliers de motards actifs chaque jour.</span>
                   </li>
                   <li className="flex gap-3">
                      <CheckCircle2 className="w-5 h-5 text-primary-500 flex-shrink-0" />
-                     <span className="text-sm text-gray-300">Page garage dédiée avec vos horaires, services et photos.</span>
+                     <span className="text-sm text-gray-300">Gestion simplifiée de vos prestations et de vos avis clients.</span>
                   </li>
                   <li className="flex gap-3">
                      <CheckCircle2 className="w-5 h-5 text-primary-500 flex-shrink-0" />
-                     <span className="text-sm text-gray-300">Gestion simplifiée des prises de rendez-vous (bientôt disponible).</span>
+                     <span className="text-sm text-gray-300">Statistiques détaillées sur la fréquentation de votre fiche garage.</span>
                   </li>
                   <li className="flex gap-3">
                      <CheckCircle2 className="w-5 h-5 text-primary-500 flex-shrink-0" />
-                     <span className="text-sm text-gray-300">Badge "Garage Vérifié" pour rassurer vos clients.</span>
+                     <span className="text-sm text-gray-300">Badge "Garage Vérifié" pour renforcer la confiance de vos clients.</span>
                   </li>
                </ul>
             </div>
-
           </div>
 
           {/* Right Column: Contact Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl p-8 md:p-10 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-               <div className="mb-8">
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">Envoyez-nous un message</h2>
-                  <p className="text-gray-500">Remplissez le formulaire ci-dessous pour référencer votre garage ou poser une question.</p>
-               </div>
-
-               {isSubmitted ? (
-                 <div className="bg-success-50 border border-success-200 rounded-2xl p-8 text-center animate-fade-in-up">
-                    <div className="w-16 h-16 bg-success-100 text-success-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                       <CheckCircle2 size={32} />
+            <div className="bg-white rounded-3xl p-8 md:p-12 border border-gray-100 shadow-sm relative">
+                {isSubmitted ? (
+                  <div className="py-12 text-center animate-fade-in-up">
+                    <div className="w-20 h-20 bg-success-50 text-success-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle2 size={40} />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Message envoyé avec succès !</h3>
-                    <p className="text-gray-600">Notre équipe commerciale vous recontactera sous 24h ouvrables.</p>
-                 </div>
-               ) : (
-                 <form onSubmit={handleSubmit} className="space-y-6">
-                    
-                    {/* Row 1: Garage Name & Contact Name */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div className="space-y-2">
-                          <label className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                             <Wrench size={16} className="text-gray-400" />
-                             Nom du Garage
-                          </label>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Message envoyé !</h3>
+                    <p className="text-gray-500">Merci de nous avoir contacté. Notre équipe pro vous répondra dans les plus brefs délais.</p>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+                      <Send size={24} className="text-primary-600" />
+                      Envoyez-nous un message
+                    </h3>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label htmlFor="contactName" className="text-sm font-bold text-gray-700">Nom complet</label>
                           <input 
-                            type="text"
-                            name="garageName"
-                            required
-                            placeholder="Ex: Garage Moto Performance" 
-                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all"
-                            value={formData.garageName}
-                            onChange={handleChange}
-                          />
-                       </div>
-                       <div className="space-y-2">
-                          <label className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                             <Users size={16} className="text-gray-400" />
-                             Nom du Responsable
-                          </label>
-                          <input 
-                            type="text"
-                            name="contactName"
-                            required
-                            placeholder="Votre nom complet" 
-                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all"
+                            type="text" 
+                            id="contactName" 
+                            name="contactName" 
+                            required 
                             value={formData.contactName}
                             onChange={handleChange}
+                            placeholder="Votre nom"
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all"
                           />
-                       </div>
-                    </div>
-
-                    {/* Row 2: Email & Phone */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div className="space-y-2">
-                          <label className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                             <Mail size={16} className="text-gray-400" />
-                             Email Professionnel
-                          </label>
+                        </div>
+                        <div className="space-y-2">
+                          <label htmlFor="garageName" className="text-sm font-bold text-gray-700">Nom du garage (Optionnel)</label>
                           <input 
-                            type="email"
-                            name="email"
-                            required
-                            placeholder="contact@votre-garage.tn" 
-                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all"
+                            type="text" 
+                            id="garageName" 
+                            name="garageName" 
+                            value={formData.garageName}
+                            onChange={handleChange}
+                            placeholder="Votre établissement"
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label htmlFor="email" className="text-sm font-bold text-gray-700">Email professionnel</label>
+                          <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
                             value={formData.email}
                             onChange={handleChange}
+                            placeholder="contact@exemple.com"
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all"
                           />
-                       </div>
-                       <div className="space-y-2">
-                          <label className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                             <Phone size={16} className="text-gray-400" />
-                             Téléphone
-                          </label>
+                        </div>
+                        <div className="space-y-2">
+                          <label htmlFor="phone" className="text-sm font-bold text-gray-700">Téléphone</label>
                           <input 
-                            type="tel"
-                            name="phone"
-                            required
-                            placeholder="+216" 
-                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all"
+                            type="tel" 
+                            id="phone" 
+                            name="phone" 
+                            required 
                             value={formData.phone}
                             onChange={handleChange}
+                            placeholder="22 123 456"
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all"
                           />
-                       </div>
-                    </div>
+                        </div>
+                      </div>
 
-                    {/* Subject */}
-                    <div className="space-y-2">
-                       <label className="text-sm font-bold text-gray-900">Sujet de la demande</label>
-                       <div className="relative">
-                          <select 
-                            name="subject"
-                            required
-                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all appearance-none cursor-pointer"
-                            value={formData.subject}
-                            onChange={handleChange}
-                          >
-                             <option value="" disabled>Sélectionnez un sujet</option>
-                             <option value="listing">Référencer mon garage (Gratuit)</option>
-                             <option value="update">Mettre à jour mes informations</option>
-                             <option value="partnership">Partenariat / Publicité</option>
-                             <option value="support">Support technique</option>
-                             <option value="other">Autre demande</option>
-                          </select>
-                          <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
-                       </div>
-                    </div>
+                      <div className="space-y-2">
+                        <label htmlFor="subject" className="text-sm font-bold text-gray-700">Sujet</label>
+                        <select 
+                          id="subject" 
+                          name="subject" 
+                          value={formData.subject}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all"
+                        >
+                          <option value="General">Demande d'information</option>
+                          <option value="Partnership">Devenir partenaire</option>
+                          <option value="Support">Support technique</option>
+                          <option value="Advertising">Publicité sur le site</option>
+                          <option value="Other">Autre</option>
+                        </select>
+                      </div>
 
-                    {/* Message */}
-                    <div className="space-y-2">
-                       <label className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                          <MessageSquare size={16} className="text-gray-400" />
-                          Message
-                       </label>
-                       <textarea 
-                         name="message"
-                         required
-                         rows={5}
-                         placeholder="Décrivez votre demande ou les services proposés par votre garage..." 
-                         className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all resize-none"
-                         value={formData.message}
-                         onChange={handleChange}
-                       />
-                    </div>
+                      <div className="space-y-2">
+                        <label htmlFor="message" className="text-sm font-bold text-gray-700">Votre message</label>
+                        <textarea 
+                          id="message" 
+                          name="message" 
+                          rows={6} 
+                          required 
+                          value={formData.message}
+                          onChange={handleChange}
+                          placeholder="Comment pouvons-nous vous aider ?"
+                          className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all resize-none"
+                        ></textarea>
+                      </div>
 
-                    {/* Submit Button */}
-                    <button 
-                      type="submit"
-                      className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold text-lg py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-[0.99]"
-                    >
-                       <Send className="w-5 h-5" />
-                       Envoyer ma demande
-                    </button>
-                    
-                    <p className="text-xs text-center text-gray-400">
-                       En envoyant ce formulaire, vous acceptez d'être recontacté par l'équipe MotoScoot.
-                    </p>
-                 </form>
-               )}
+                      <button 
+                        type="submit" 
+                        className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                      >
+                        Envoyer le message
+                        <Send size={18} />
+                      </button>
+                    </form>
+                  </>
+                )}
             </div>
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 };
 
+// Fix for App.tsx line 12: Added missing default export
 export default Contact;

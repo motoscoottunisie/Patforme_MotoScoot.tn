@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
@@ -128,7 +127,7 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
   const isAccessoryMode = type === 'Accessoires';
 
   return (
-    <div className="relative w-full h-[100dvh] md:h-[80vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
+    <div className="relative w-full h-[100dvh] md:h-[50vh] lg:h-[80vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
       
       {/* Background Container */}
       <div className="absolute inset-0 overflow-hidden z-0">

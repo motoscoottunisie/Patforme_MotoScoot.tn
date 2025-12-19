@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Calendar, 
@@ -38,8 +37,8 @@ const Tips: React.FC<TipsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigger
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       
-      {/* HERO SECTION - Matches News.tsx */}
-      <div className="relative w-full h-[35vh] md:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
+      {/* HERO SECTION - Updated for Tablet Portrait */}
+      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
         
         {/* Background Container */}
         <div className="absolute inset-0 overflow-hidden z-0">
