@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Hero from './components/Hero';
 import PopularModels from './components/PopularModels';
@@ -25,6 +24,7 @@ import DepositAd from './components/DepositAd';
 import GarageDetails from './components/GarageDetails';
 import Favorites from './components/Favorites';
 import Dashboard from './components/Dashboard';
+import DashboardPro from './components/DashboardPro';
 import SuperAdminDashboard from './components/admin/SuperAdminDashboard';
 import TechSpecsBrands from './components/TechSpecsBrands';
 import TechSpecsModels from './components/TechSpecsModels';
@@ -32,7 +32,7 @@ import TechSpecsDetails from './components/TechSpecsDetails';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { AdsProvider } from './context/AdsContext';
 
-type ViewState = 'home' | 'search' | 'news' | 'garages' | 'tips' | 'contact' | 'faq' | 'about' | 'sitemap' | 'legal' | 'security' | 'terms' | 'cookies' | 'listing-details' | 'article-details' | 'tip-details' | 'deposit' | 'garage-details' | 'favorites' | 'dashboard' | 'super-admin' | 'tech-specs-brands' | 'tech-specs-models' | 'tech-specs-details';
+type ViewState = 'home' | 'search' | 'news' | 'garages' | 'tips' | 'contact' | 'faq' | 'about' | 'sitemap' | 'legal' | 'security' | 'terms' | 'cookies' | 'listing-details' | 'article-details' | 'tip-details' | 'deposit' | 'garage-details' | 'favorites' | 'dashboard' | 'dashboard-pro' | 'super-admin' | 'tech-specs-brands' | 'tech-specs-models' | 'tech-specs-details';
 
 const App: React.FC = () => {
   // Initialize state from history to handle refreshes correctly
@@ -101,7 +101,7 @@ const App: React.FC = () => {
             setSelectedTechBrand(event.state.brand);
         }
         // Restore Dashboard Tab
-        if (event.state.view === 'dashboard' && event.state.tab) {
+        if ((event.state.view === 'dashboard' || event.state.view === 'dashboard-pro') && event.state.tab) {
             setDashboardTab(event.state.tab);
         } else {
             setDashboardTab('overview');
@@ -133,8 +133,8 @@ const App: React.FC = () => {
     if (view === 'tech-specs-models' && params?.brand) setSelectedTechBrand(params.brand);
     if (view === 'tech-specs-details' && params?.id) setSelectedTechSpecId(params.id);
     
-    if (view === 'dashboard' && params?.tab) setDashboardTab(params.tab);
-    else if (view === 'dashboard') setDashboardTab('overview');
+    if ((view === 'dashboard' || view === 'dashboard-pro') && params?.tab) setDashboardTab(params.tab);
+    else if (view === 'dashboard' || view === 'dashboard-pro') setDashboardTab('overview');
     
     setCurrentView(view);
 
@@ -411,6 +411,18 @@ const App: React.FC = () => {
             ) : currentView === 'dashboard' ? (
               <>
                 <Dashboard
+                  initialTab={dashboardTab}
+                  onGoHome={() => navigateTo('home')}
+                  onNavigate={(view, params) => navigateTo(view as ViewState, params)}
+                  isLoggedIn={isLoggedIn}
+                  onTriggerLogin={openLoginModal}
+                  onLogout={handleLogout}
+                />
+                <Footer onNavigate={(view) => navigateTo(view as ViewState)} />
+              </>
+            ) : currentView === 'dashboard-pro' ? (
+              <>
+                <DashboardPro
                   initialTab={dashboardTab}
                   onGoHome={() => navigateTo('home')}
                   onNavigate={(view, params) => navigateTo(view as ViewState, params)}

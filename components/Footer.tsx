@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Facebook, Instagram, Linkedin, MapPin, Mail, Phone, Twitter } from 'lucide-react';
 
@@ -51,6 +50,12 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li><button onClick={() => onNavigate?.('news')} className="hover:text-primary-500 transition-colors flex items-center gap-2 focus:outline-none focus:underline"><span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>Actualités</button></li>
               <li><button onClick={() => onNavigate?.('garages')} className="hover:text-primary-500 transition-colors flex items-center gap-2 focus:outline-none focus:underline"><span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>Garages</button></li>
               <li><button onClick={() => onNavigate?.('contact')} className="hover:text-primary-500 transition-colors flex items-center gap-2 focus:outline-none focus:underline"><span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>Contact</button></li>
+              <li className="pt-2 border-t border-neutral-800">
+                <button onClick={() => onNavigate?.('dashboard-pro')} className="text-primary-500 font-bold hover:text-primary-400 transition-colors flex items-center gap-2 focus:outline-none focus:underline">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                  Espace Pro
+                </button>
+              </li>
             </ul>
           </div>
 
