@@ -35,7 +35,7 @@ interface ListingDetailsProps {
 const SimilarListingCard: React.FC<{ listing: Listing, onClick: () => void, className?: string }> = ({ listing, onClick, className = "" }) => (
     <div 
       onClick={onClick}
-      className={`bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-none hover:border-primary-100 transition-all cursor-pointer group flex-shrink-0 ${className}`}
+      className={`bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-none hover:border-primary-100 transition-all duration-300 cursor-pointer group flex-shrink-0 ${className}`}
     >
         <div className="relative h-40 overflow-hidden">
             <img src={listing.image} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" alt={listing.title} />
@@ -87,22 +87,22 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
     "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80"
   ];
 
-  const getDealInfo = (rating?: number) => {
-      switch (rating) {
-          case 3: return { label: 'Super affaire', color: 'bg-success-500', textColor: 'text-success-600' };
-          case 2: return { label: 'Bonne affaire', color: 'bg-primary-500', textColor: 'text-primary-600' };
-          default: return { label: 'Prix du marché', color: 'bg-gray-300', textColor: 'text-gray-400' };
-      }
-  };
-
-  const dealInfo = getDealInfo(listing.dealRating);
-
   const handleScroll = () => {
     if (scrollContainerRef.current) {
       const index = Math.round(scrollContainerRef.current.scrollLeft / scrollContainerRef.current.offsetWidth);
       setActiveImageIndex(index);
     }
   };
+
+  const getDealInfo = (rating?: number) => {
+      switch (rating) {
+          case 3: return { label: 'SUPER AFFAIRE', color: 'bg-success-500', textColor: 'text-success-600', bgColor: 'bg-success-50' };
+          case 2: return { label: 'BONNE AFFAIRE', color: 'bg-primary-500', textColor: 'text-primary-600', bgColor: 'bg-primary-50' };
+          default: return { label: 'PRIX DU MARCHÉ', color: 'bg-gray-300', textColor: 'text-gray-400', bgColor: 'bg-gray-50' };
+      }
+  };
+
+  const dealInfo = getDealInfo(listing.dealRating);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -120,8 +120,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
         onLogout={onLogout}
       />
 
-      {/* Ajustement du padding supérieur pour compenser l'absence de Hero */}
-      <main className="max-w-7xl mx-auto px-0 md:px-8 pt-24 md:pt-32">
+      <main className="max-w-7xl mx-auto px-0 md:px-8 pt-28 md:pt-28">
         
         {/* Breadcrumb (Desktop) */}
         <nav className="hidden md:flex items-center gap-2 mb-8 text-xs font-black uppercase tracking-widest text-gray-400">
@@ -132,7 +131,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
            <span>{listing.title}</span>
         </nav>
 
-        {/* MOBILE: SECTION TITRE MINIMALISTE */}
+        {/* MOBILE: TITRE */}
         <div className="md:hidden px-5 mb-6 animate-fade-in-up">
            <div className="flex items-center gap-2 mb-2">
               <span className="px-2 py-0.5 bg-primary-50 text-primary-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-primary-100">{listing.type}</span>
@@ -148,7 +147,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
           {/* LEFT: CONTENT */}
           <div className="lg:col-span-8 space-y-6 md:space-y-8">
             
-            {/* Gallery Section - Carte Flat Apple */}
+            {/* Gallery Section */}
             <div className="relative group px-4 md:px-0">
                 <div className="md:hidden relative h-[45vh] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-none">
                    <div 
@@ -207,10 +206,11 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                      </h1>
                   </div>
 
-                  <div className="flex flex-col md:items-end gap-2">
+                  {/* Le prix et le badge sur la même ligne en mobile */}
+                  <div className="lg:hidden flex flex-row items-center justify-between gap-2">
                      <span className="text-3xl md:text-5xl font-black text-primary-600 tracking-tighter leading-none">{listing.price}</span>
                      {listing.dealRating && (
-                        <div className="inline-flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-gray-100 w-fit">
+                        <div className="inline-flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-gray-100 w-fit shrink-0">
                            <div className="flex gap-1">
                               {[1, 2, 3].map(lvl => (
                                 <div key={lvl} className={`h-1 w-4 rounded-full ${listing.dealRating! >= lvl ? dealInfo.color : 'bg-gray-100'}`} />
@@ -299,45 +299,83 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
             </div>
           </div>
 
-          {/* RIGHT: DESKTOP SIDEBAR */}
+          {/* RIGHT: SIDEBAR (Desktop & Tablet) - Affiné et harmonisé */}
           <div className="hidden lg:block lg:col-span-4">
              <div className="sticky top-32 space-y-6">
-                <div className="bg-white rounded-3xl p-8 border border-gray-100 space-y-8">
+                
+                {/* CARTE VENDEUR COMPACTE */}
+                <div className="bg-white rounded-[2rem] p-7 border border-gray-100 shadow-sm space-y-6 animate-fade-in-up">
+                   
+                   {/* Prix Header - Réduit */}
+                   <div className="space-y-2">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">PRIX DEMANDÉ</p>
+                      <h2 className="text-4xl font-black text-primary-600 tracking-tight leading-none">
+                         {listing.price}
+                      </h2>
+                      
+                      {listing.dealRating && (
+                         <div className="inline-flex items-center gap-2.5 bg-success-50 px-3.5 py-1.5 rounded-lg border border-success-100/50">
+                            <div className="flex gap-1">
+                               {[1, 2, 3].map(lvl => (
+                                 <div key={lvl} className={`h-1 w-4 rounded-full ${listing.dealRating! >= lvl ? 'bg-success-500' : 'bg-gray-200'}`} />
+                               ))}
+                            </div>
+                            <span className="text-[10px] font-black text-success-600 uppercase tracking-wider">{dealInfo.label}</span>
+                         </div>
+                      )}
+                   </div>
+
+                   <hr className="border-gray-100" />
+
+                   {/* Section Vendeur - Redimensionnée */}
                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 font-black text-xl">
-                        {listing.seller.charAt(0)}
+                      <div className="relative">
+                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 font-black text-2xl border border-gray-50 shadow-inner">
+                           {listing.seller.charAt(0)}
+                         </div>
+                         {/* Statut En Ligne - Plus petit */}
+                         <div className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-success-500 border-[3px] border-white rounded-full"></div>
                       </div>
-                      <div>
-                        <h4 className="font-black text-gray-900 text-lg">{listing.seller}</h4>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{listing.sellerType}</p>
+                      <div className="space-y-0.5">
+                        <h4 className="font-black text-gray-900 text-lg tracking-tight leading-tight">{listing.seller}</h4>
+                        <div className="inline-block px-2 py-0.5 bg-primary-50 text-primary-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-primary-100">
+                           {listing.sellerType}
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-400">Membre depuis 2023</p>
                       </div>
                    </div>
 
-                   <div className="space-y-3">
+                   {/* Boutons d'action - Tailles réduites */}
+                   <div className="space-y-3 pt-1">
                       {isPhoneRevealed ? (
-                        <a href={`tel:${listing.id}`} className="w-full py-4 bg-gray-900 text-white rounded-2xl font-black flex items-center justify-center gap-3 animate-fade-in-up">
-                           <Phone size={20} /> 25 123 456
+                        <a href={`tel:${listing.id}`} className="w-full h-14 bg-gray-900 text-white rounded-xl font-black text-base flex items-center justify-center gap-3 animate-fade-in-up active:scale-95 transition-all shadow-md">
+                           <Phone size={20} fill="currentColor" /> 25 123 456
                         </a>
                       ) : (
-                        <button onClick={() => setIsPhoneRevealed(true)} className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-black flex items-center justify-center gap-3 transition-all active:scale-95">
+                        <button onClick={() => setIsPhoneRevealed(true)} className="w-full h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-black text-base flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-primary-600/10">
                            <Phone size={20} /> Afficher le numéro
                         </button>
                       )}
                       
                       <div className="grid grid-cols-2 gap-3">
-                         <button onClick={() => toggleFavorite('listing', listing.id)} className={`py-3 rounded-xl border font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${favorited ? 'bg-red-50 border-red-100 text-red-500' : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'}`}>
-                            <Heart size={16} fill={favorited ? "currentColor" : "none"} /> {favorited ? 'Enregistré' : 'Favoris'}
+                         <button className="h-12 bg-white border border-gray-100 rounded-xl font-black text-gray-700 text-xs hover:bg-gray-50 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-sm">
+                            <Share2 size={16} className="text-gray-400" /> Partager
                          </button>
-                         <button className="py-3 bg-white border border-gray-100 rounded-xl font-black text-xs uppercase tracking-widest text-gray-500 hover:bg-gray-50 flex items-center justify-center gap-2">
-                            <Share2 size={16} /> Partager
+                         <button 
+                           onClick={() => toggleFavorite('listing', listing.id)} 
+                           className={`h-12 rounded-xl border transition-all flex items-center justify-center gap-2 active:scale-95 shadow-sm font-black text-xs ${favorited ? 'bg-red-50 border-red-100 text-red-500' : 'bg-white border-gray-100 text-gray-700 hover:bg-gray-50'}`}
+                         >
+                            <Heart size={16} fill={favorited ? "currentColor" : "none"} className={favorited ? "text-red-500" : "text-gray-400"} /> 
+                            {favorited ? 'Sauvegardé' : 'Sauvegarder'}
                          </button>
                       </div>
                    </div>
 
-                   <div className="pt-6 border-t border-gray-50 flex gap-3">
-                      <Shield size={16} className="text-gray-300 shrink-0" />
-                      <p className="text-[10px] font-bold text-gray-400 leading-relaxed uppercase tracking-tight">
-                        MotoScoot protège vos échanges. Ne versez jamais d'acompte à distance.
+                   {/* Footer Sécurité - Très discret */}
+                   <div className="pt-4 border-t border-gray-100 flex gap-3 items-start">
+                      <Shield size={16} className="text-gray-300 shrink-0 mt-0.5" />
+                      <p className="text-[10px] font-bold text-gray-400 leading-normal">
+                        <strong className="text-gray-500 font-black">Conseil sécurité :</strong> Ne versez jamais d'acompte avant d'avoir vu le véhicule.
                       </p>
                    </div>
                 </div>
@@ -348,32 +386,32 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
         </div>
       </main>
 
-      {/* MOBILE STICKY FOOTER - SPLIT 50/50 */}
+      {/* MOBILE STICKY FOOTER */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-100 p-4 safe-area-bottom z-40 flex items-center gap-3">
          <button 
             onClick={() => toggleFavorite('listing', listing.id)}
-            className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 border font-black uppercase text-xs tracking-widest ${favorited ? 'bg-red-50 border-red-100 text-red-500' : 'bg-gray-50 border-gray-100 text-gray-400'}`}
+            className={`w-1/2 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 border font-black uppercase text-[10px] tracking-widest ${favorited ? 'bg-red-50 border-red-100 text-red-500' : 'bg-gray-50 border-gray-100 text-gray-400'}`}
          >
-            <Heart size={20} fill={favorited ? "currentColor" : "none"} />
+            <Heart size={18} fill={favorited ? "currentColor" : "none"} />
             <span>{favorited ? 'Enregistré' : 'Favoris'}</span>
          </button>
          
-         <div className="flex-1">
+         <div className="w-1/2">
             {isPhoneRevealed ? (
                 <a 
                     href={`tel:${listing.id}`}
                     className="w-full h-14 bg-gray-900 text-white rounded-2xl font-black flex items-center justify-center gap-3 active:scale-95 transition-all animate-fade-in-up"
                 >
-                    <Phone size={20} fill="currentColor" />
-                    <span className="text-lg tabular-nums tracking-tighter">25 123 456</span>
+                    <Phone size={18} fill="currentColor" />
+                    <span className="text-base tabular-nums tracking-tighter">25 123 456</span>
                 </a>
             ) : (
                 <button 
                     onClick={() => setIsPhoneRevealed(true)}
                     className="w-full h-14 bg-primary-600 text-white rounded-2xl font-black flex items-center justify-center gap-3 active:scale-95 transition-all shadow-none"
                 >
-                    <Phone size={20} />
-                    <span className="uppercase tracking-widest text-xs">Appeler</span>
+                    <Phone size={18} />
+                    <span className="uppercase tracking-widest text-[10px]">Appeler</span>
                 </button>
             )}
          </div>
