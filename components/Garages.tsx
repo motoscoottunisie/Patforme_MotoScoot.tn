@@ -255,7 +255,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
                     <article 
                       key={garage.id}
                       onClick={() => handleGarageClick(garage.id)}
-                      className={`group bg-white rounded-2xl border border-gray-100 shadow-none hover:border-primary-100 transition-all duration-300 overflow-hidden flex animate-fade-in-up cursor-pointer relative ${isGrid ? 'flex-col h-full' : 'flex-col md:flex-row md:min-h-[220px] lg:h-64'}`}
+                      className={`group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer flex animate-fade-in-up relative ${isGrid ? 'flex-col h-full' : 'flex-col md:flex-row md:min-h-[220px] lg:h-64'}`}
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       {/* Image Section */}

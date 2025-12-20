@@ -35,7 +35,7 @@ const Tips: React.FC<TipsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigger
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-50 font-sans pb-12">
       
       {/* HERO SECTION - Updated for Tablet Portrait */}
       <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
@@ -116,7 +116,7 @@ const Tips: React.FC<TipsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigger
         <div className="mb-12 animate-fade-in-up">
           <div 
             onClick={() => handleTipClick(featuredTip.id)}
-            className="group grid grid-cols-1 lg:grid-cols-2 gap-0 bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow transition-all duration-300 border border-gray-100 cursor-pointer lg:h-[340px]"
+            className="group grid grid-cols-1 lg:grid-cols-2 gap-0 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer lg:h-[340px]"
           >
              <div className="relative h-60 lg:h-full overflow-hidden w-full">
                <img 
@@ -170,7 +170,7 @@ const Tips: React.FC<TipsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigger
              <article 
                key={tip.id} 
                onClick={() => handleTipClick(tip.id)}
-               className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow transition-all duration-300 cursor-pointer animate-fade-in-up"
+               className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer animate-fade-in-up"
                style={{ animationDelay: `${index * 100}ms` }}
              >
                 <div className="relative h-56 overflow-hidden">

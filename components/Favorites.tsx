@@ -94,7 +94,7 @@ const Favorites: React.FC<FavoritesProps> = ({ onGoHome, onNavigate, isLoggedIn,
                 <article 
                   key={listing.id}
                   onClick={() => onNavigate?.('listing-details', { id: listing.id })}
-                  className="group bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col cursor-pointer animate-fade-in-up"
+                  className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer flex flex-col animate-fade-in-up"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   {/* Image Section */}

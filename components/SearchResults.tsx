@@ -15,9 +15,11 @@ import {
   ShieldCheck,
   LayoutGrid,
   List as ListIcon,
-  User
+  User,
+  Zap
 } from 'lucide-react';
-import { mockListings, mockModels } from '../data/mockData';
+// Added brandsMoto to the import list below
+import { mockListings, mockModels, brandsMoto } from '../data/mockData';
 import Header from './layout/Header';
 import { useFavorites } from '../context/FavoritesContext';
 import AdBanner from './common/AdBanner';
@@ -52,9 +54,6 @@ const DualRangeSlider = ({
 }) => {
   const [minVal, setMinVal] = useState(valueMin ?? min);
   const [maxVal, setMaxVal] = useState(valueMax ?? max);
-  
-  const minValRef = useRef(min);
-  const maxValRef = useRef(max);
   const range = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,36 +64,27 @@ const DualRangeSlider = ({
     if (valueMax !== undefined) setMaxVal(valueMax);
   }, [valueMax]);
 
+  const getPercent = useCallback(
+    (value: number) => Math.round(((value - min) / (max - min)) * 100),
+    [min, max]
+  );
+
+  // RÉPARATION DU GAUGE (Barre orange entre les handles)
+  useEffect(() => {
+    if (range.current) {
+      const minPercent = getPercent(minVal);
+      const maxPercent = getPercent(maxVal);
+      range.current.style.left = `${minPercent}%`;
+      range.current.style.width = `${maxPercent - minPercent}%`;
+    }
+  }, [minVal, maxVal, getPercent]);
+
   useEffect(() => {
     const handler = setTimeout(() => {
       if (onChange) onChange(minVal, maxVal);
     }, 300);
     return () => clearTimeout(handler);
   }, [minVal, maxVal, onChange]);
-
-  const getPercent = useCallback(
-    (value: number) => Math.round(((value - min) / (max - min)) * 100),
-    [min, max]
-  );
-
-  useEffect(() => {
-    const minPercent = getPercent(minVal);
-    const maxPercent = getPercent(maxValRef.current);
-
-    if (range.current) {
-      range.current.style.left = `${minPercent}%`;
-      range.current.style.width = `${maxPercent - minPercent}%`;
-    }
-  }, [minVal, getPercent]);
-
-  useEffect(() => {
-    const minPercent = getPercent(minValRef.current);
-    const maxPercent = getPercent(maxVal);
-
-    if (range.current) {
-      range.current.style.width = `${maxPercent - minPercent}%`;
-    }
-  }, [maxVal, getPercent]);
 
   return (
     <div className="mb-8">
@@ -112,9 +102,8 @@ const DualRangeSlider = ({
           onChange={(event) => {
             const value = Math.min(Number(event.target.value), maxVal - step);
             setMinVal(value);
-            minValRef.current = value;
           }}
-          className={`absolute pointer-events-none appearance-none z-20 h-2 w-full bg-transparent 
+          className="absolute pointer-events-none appearance-none z-20 h-2 w-full bg-transparent 
             [&::-webkit-slider-thumb]:pointer-events-auto 
             [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:h-7 
             [&::-webkit-slider-thumb]:appearance-none 
@@ -123,7 +112,7 @@ const DualRangeSlider = ({
             [&::-webkit-slider-thumb]:border-2 
             [&::-webkit-slider-thumb]:border-white 
             [&::-webkit-slider-thumb]:shadow-md 
-            [&::-webkit-slider-thumb]:cursor-pointer`}
+            [&::-webkit-slider-thumb]:cursor-pointer"
           style={{ zIndex: minVal > min + (max - min) / 2 ? 50 : 20 }}
         />
         <input
@@ -135,9 +124,8 @@ const DualRangeSlider = ({
           onChange={(event) => {
             const value = Math.max(Number(event.target.value), minVal + step);
             setMaxVal(value);
-            maxValRef.current = value;
           }}
-          className={`absolute pointer-events-none appearance-none z-30 h-2 w-full bg-transparent 
+          className="absolute pointer-events-none appearance-none z-30 h-2 w-full bg-transparent 
             [&::-webkit-slider-thumb]:pointer-events-auto 
             [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:h-7 
             [&::-webkit-slider-thumb]:appearance-none 
@@ -146,7 +134,7 @@ const DualRangeSlider = ({
             [&::-webkit-slider-thumb]:border-2 
             [&::-webkit-slider-thumb]:border-white 
             [&::-webkit-slider-thumb]:shadow-md 
-            [&::-webkit-slider-thumb]:cursor-pointer`}
+            [&::-webkit-slider-thumb]:cursor-pointer"
         />
 
         <div className="relative w-full h-2 bg-gray-200 rounded-full z-10 pointer-events-none">
@@ -164,7 +152,7 @@ const DualRangeSlider = ({
               type="number"
               value={minVal}
               readOnly
-              className="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 text-center"
+              className="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 text-center shadow-none outline-none"
             />
             {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium">{unit}</span>}
           </div>
@@ -175,7 +163,7 @@ const DualRangeSlider = ({
               type="number"
               value={maxVal}
               readOnly
-              className="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 text-center"
+              className="w-full px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 text-center shadow-none outline-none"
             />
             {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium">{unit}</span>}
           </div>
@@ -311,7 +299,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
       <div className="max-w-7xl mx-auto px-6 md:px-8 pt-24 md:pt-32 pb-8 md:py-12">
         
-        {/* Section de titre "Claire" sans Hero */}
+        {/* Section de titre "Claire" */}
         <div className="mb-10 animate-fade-in-up">
             <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter mb-2">
               Résultats de recherche
@@ -380,7 +368,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                     <select 
                       value={filters.type}
                       onChange={(e) => handleFilterChange('type', e.target.value)}
-                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer"
+                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer shadow-none"
                     >
                       <option>Tous les types</option>
                       <option>Moto</option>
@@ -397,18 +385,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                     <select 
                       value={filters.brand}
                       onChange={(e) => handleFilterChange('brand', e.target.value)}
-                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer"
+                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer shadow-none"
                     >
                       <option>Toutes les marques</option>
-                      <option>Yamaha</option>
-                      <option>Honda</option>
-                      <option>BMW</option>
-                      <option>Kawasaki</option>
-                      <option>KTM</option>
-                      <option>Suzuki</option>
-                      <option>Ducati</option>
-                      <option>Triumph</option>
-                      <option>Piaggio</option>
+                      {brandsMoto.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
@@ -420,7 +400,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                     <select 
                       value={filters.model}
                       onChange={(e) => handleFilterChange('model', e.target.value)}
-                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer"
+                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer shadow-none"
                     >
                       <option>Tous les modèles</option>
                       {mockModels.map((model) => (
@@ -437,7 +417,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                     <select 
                       value={filters.location}
                       onChange={(e) => handleFilterChange('location', e.target.value)}
-                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer"
+                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer shadow-none"
                     >
                       <option>Toutes les régions</option>
                       <option>Tunis</option>
@@ -498,7 +478,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
               </div>
 
-              {/* Sidebar Ad Section */}
               <AdBanner 
                 zone="listing_sidebar" 
                 variant="native" 
@@ -510,7 +489,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
           <main className="flex-1 w-full">
             
             {filteredListings.length === 0 ? (
-               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 text-center">
+               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 text-center shadow-none animate-fade-in-up">
                   <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                      <Search className="w-10 h-10 text-gray-200" />
                   </div>
@@ -532,11 +511,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                   <React.Fragment key={listing.id}>
                       <article 
                         onClick={() => handleCardClick(listing.id)}
-                        className={`group bg-white border border-gray-100 shadow-none hover:border-primary-100 transition-all duration-300 overflow-hidden flex animate-fade-in-up cursor-pointer ${isGrid ? 'flex-col rounded-2xl h-full' : 'flex-col md:flex-col lg:flex-row rounded-2xl lg:rounded-xl md:min-h-0 lg:min-h-[220px] lg:max-h-[260px]'}`}
+                        className={`group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer flex animate-fade-in-up ${isGrid ? 'flex-col h-full' : 'flex-col md:flex-col lg:flex-row lg:rounded-xl md:min-h-0 lg:min-h-[220px] lg:max-h-[260px]'}`}
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                       
-                      <div className={`relative flex-shrink-0 bg-gray-100 overflow-hidden ${isGrid ? 'w-full aspect-[4/3]' : 'w-full aspect-[16/9] md:aspect-[4/3] lg:aspect-auto lg:w-56 xl:w-72'}`}>
+                      <div className={`relative flex-shrink-0 bg-gray-100 overflow-hidden ${isGrid ? 'w-full aspect-[4/3]' : 'w-full aspect-[16/9] md:aspect-[4/3] lg:aspect-[4/3] lg:w-72'}`}>
                           <img 
                             src={listing.image} 
                             alt={listing.title} 
@@ -561,9 +540,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                 <span className={`text-lg md:text-xl font-black text-primary-600 whitespace-nowrap pt-0.5 tracking-tighter ${!isGrid ? 'lg:hidden' : ''}`}>
                                     {listing.price}
                                 </span>
-                                <span className={`text-lg font-black text-primary-600 whitespace-nowrap pt-0.5 hidden md:block lg:hidden tracking-tighter`}>
-                                    {listing.price}
-                                </span>
                               </div>
                               <div className="flex items-center text-xs text-gray-500 font-bold uppercase mt-2 tracking-wide">
                                   <MapPin size={12} className="mr-1 text-gray-300" />
@@ -580,7 +556,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                   <>
                                     <div className="flex items-center gap-1.5"><Calendar size={14} className="text-gray-300" /> <span>{listing.year}</span></div>
                                     <div className="flex items-center gap-1.5"><Gauge size={14} className="text-gray-300" /> <span>{listing.mileage}</span></div>
-                                    <div className="flex items-center gap-1.5"><Info size={14} className="text-gray-300" /> <span>{listing.cc}</span></div>
+                                    <div className="flex items-center gap-1.5"><Zap size={14} className="text-gray-300" /> <span>{listing.cc}</span></div>
                                   </>
                                )}
                             </div>
@@ -615,7 +591,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                   )}
                                </div>
                                <div className="w-full flex flex-col gap-2 mt-4">
-                                  <button className="w-full h-10 lg:h-11 rounded-xl bg-primary-600 text-white font-black text-xs lg:text-sm shadow-none hover:bg-primary-700 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
+                                  <button className="w-full h-10 lg:h-11 rounded-xl bg-[#E6580B] text-white font-black text-xs lg:text-sm shadow-none hover:opacity-90 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
                                      <Phone size={16} /> Appeler
                                   </button>
                                   <button 
@@ -633,7 +609,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                       <div className="block md:hidden px-6 pb-6">
                          <button 
                            onClick={(e) => { e.stopPropagation(); }}
-                           className="w-full h-12 bg-gray-900 hover:bg-primary-600 text-white font-black rounded-xl shadow-none flex items-center justify-center gap-2 transition-all active:scale-[0.98] uppercase text-xs tracking-widest"
+                           className="w-full h-12 bg-[#E6580B] hover:opacity-90 text-white font-black rounded-xl shadow-none flex items-center justify-center gap-2 transition-all active:scale-[0.98] uppercase text-xs tracking-widest"
                          >
                             <Phone size={18} />
                             Appeler
@@ -642,7 +618,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                       </article>
 
                       {index === 5 && SHOW_IN_FEED_AD && (
-                        <div className={`mt-6 col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-full animate-fade-in-up`}>
+                        <div className="mt-6 col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-full animate-fade-in-up">
                             <AdBanner zone="search_feed" variant="native" className="shadow-none border border-gray-100" />
                         </div>
                       )}
@@ -677,7 +653,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
               <div className="space-y-6">
                  <div>
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Type</label>
-                    <select value={filters.type} onChange={(e) => handleFilterChange('type', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold">
+                    <select value={filters.type} onChange={(e) => handleFilterChange('type', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold shadow-none">
                        <option>Tous les types</option>
                        <option>Moto</option>
                        <option>Scooter</option>
@@ -687,23 +663,15 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                  
                  <div>
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Marque</label>
-                    <select value={filters.brand} onChange={(e) => handleFilterChange('brand', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold">
+                    <select value={filters.brand} onChange={(e) => handleFilterChange('brand', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold shadow-none">
                        <option>Toutes les marques</option>
-                       <option>Yamaha</option>
-                       <option>Honda</option>
-                       <option>BMW</option>
-                       <option>Kawasaki</option>
-                       <option>KTM</option>
-                       <option>Suzuki</option>
-                       <option>Ducati</option>
-                       <option>Triumph</option>
-                       <option>Piaggio</option>
+                       {brandsMoto.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                  </div>
 
                  <div>
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Modèle</label>
-                    <select value={filters.model} onChange={(e) => handleFilterChange('model', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold">
+                    <select value={filters.model} onChange={(e) => handleFilterChange('model', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold shadow-none">
                        <option>Tous les modèles</option>
                        {mockModels.map((model) => (
                          <option key={model} value={model}>{model}</option>
@@ -713,7 +681,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
                  <div>
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Localisation</label>
-                    <select value={filters.location} onChange={(e) => handleFilterChange('location', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold">
+                    <select value={filters.location} onChange={(e) => handleFilterChange('location', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold shadow-none">
                        <option>Toutes les régions</option>
                        <option>Tunis</option>
                        <option>Sousse</option>
@@ -779,8 +747,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
               </div>
            </div>
 
-           <div className="p-4 border-t border-gray-100 bg-white sticky bottom-0 z-20 pb-8 md:pb-4 safe-area-bottom">
-              <button onClick={() => setIsMobileFilterOpen(false)} className="w-full bg-gray-900 text-white font-black py-4 rounded-xl shadow-none flex items-center justify-center gap-2 text-sm active:scale-[0.98] uppercase tracking-widest">
+           <div className="p-4 border-t border-gray-100 bg-white sticky bottom-0 z-20 pb-8 md:pb-4 safe-area-bottom shadow-none">
+              <button onClick={() => setIsMobileFilterOpen(false)} className="w-full bg-gray-900 text-white font-black py-4 rounded-xl flex items-center justify-center gap-2 text-sm active:scale-[0.98] uppercase tracking-widest shadow-none">
                  Afficher {filteredListings.length} résultats
               </button>
            </div>

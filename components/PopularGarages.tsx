@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, MapPin, Star, Wrench } from 'lucide-react';
 import { popularGarages } from '../data/mockData';

@@ -14,7 +14,8 @@ import {
   FileText,
   Shield,
   User,
-  ArrowRight
+  ArrowRight,
+  Zap
 } from 'lucide-react';
 import { Listing } from '../types';
 import Header from './layout/Header';
@@ -35,7 +36,8 @@ interface ListingDetailsProps {
 const SimilarListingCard: React.FC<{ listing: Listing, onClick: () => void, className?: string }> = ({ listing, onClick, className = "" }) => (
     <div 
       onClick={onClick}
-      className={`bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-none hover:border-primary-100 transition-all duration-300 cursor-pointer group flex-shrink-0 ${className}`}
+      className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer group flex-shrink-0 ${className}`}
+      style={{ width: '256px' }}
     >
         <div className="relative h-40 overflow-hidden">
             <img src={listing.image} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" alt={listing.title} />
@@ -227,30 +229,45 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                   </div>
                </div>
 
-               {/* Stats Grid */}
+               {/* Stats Grid - RÉPARÉ AVEC ICÔNES */}
                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {!isAccessory ? (
                     <>
-                      <div className="bg-white p-5 rounded-2xl border border-gray-100 flex flex-col gap-1">
-                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Année</span>
+                      <div className="bg-white p-5 rounded-2xl border border-gray-100 flex flex-col gap-2">
+                         <div className="flex items-center gap-2">
+                            <Calendar size={14} className="text-primary-500" />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Année</span>
+                         </div>
                          <span className="text-xl font-black text-gray-900">{listing.year}</span>
                       </div>
-                      <div className="bg-white p-5 rounded-2xl border border-gray-100 flex flex-col gap-1">
-                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Kilométrage</span>
+                      <div className="bg-white p-5 rounded-2xl border border-gray-100 flex flex-col gap-2">
+                         <div className="flex items-center gap-2">
+                            <Gauge size={14} className="text-primary-500" />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">KM</span>
+                         </div>
                          <span className="text-xl font-black text-gray-900">{listing.mileage}</span>
                       </div>
-                      <div className="bg-white p-5 rounded-2xl border border-gray-100 flex flex-col gap-1">
-                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Cylindrée</span>
+                      <div className="bg-white p-5 rounded-2xl border border-gray-100 flex flex-col gap-2">
+                         <div className="flex items-center gap-2">
+                            <Zap size={14} className="text-primary-500" />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">CC</span>
+                         </div>
                          <span className="text-xl font-black text-gray-900">{listing.cc}</span>
                       </div>
-                      <div className="bg-white p-5 rounded-2xl border border-gray-100 flex flex-col gap-1">
-                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">État</span>
-                         <span className="text-xl font-black text-gray-900">{listing.condition}</span>
+                      <div className="bg-white p-5 rounded-2xl border border-gray-100 flex flex-col gap-2">
+                         <div className="flex items-center gap-2">
+                            <Info size={14} className="text-primary-500" />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">État</span>
+                         </div>
+                         <span className="text-xl font-black text-gray-900 truncate">{listing.condition}</span>
                       </div>
                     </>
                   ) : (
                     <div className="col-span-full bg-white p-5 rounded-2xl border border-gray-100 flex items-center justify-between">
-                       <span className="text-sm font-black text-gray-400 uppercase tracking-widest">État général</span>
+                       <div className="flex items-center gap-3">
+                          <Info size={18} className="text-primary-500" />
+                          <span className="text-sm font-black text-gray-400 uppercase tracking-widest">État général</span>
+                       </div>
                        <span className="text-xl font-black text-gray-900">{listing.condition}</span>
                     </div>
                   )}
@@ -293,20 +310,19 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                <h3 className="text-xl font-black text-gray-900 mb-6 tracking-tight">Annonces similaires</h3>
                <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4">
                   {similarListings.map(l => (
-                    <SimilarListingCard key={l.id} listing={l} onClick={() => onNavigate?.('listing-details', { id: l.id })} className="w-64" />
+                    <SimilarListingCard key={l.id} listing={l} onClick={() => onNavigate?.('listing-details', { id: l.id })} />
                   ))}
                </div>
             </div>
           </div>
 
-          {/* RIGHT: SIDEBAR (Desktop & Tablet) - Affiné et harmonisé */}
+          {/* RIGHT: SIDEBAR (Desktop & Tablet) */}
           <div className="hidden lg:block lg:col-span-4">
              <div className="sticky top-32 space-y-6">
                 
                 {/* CARTE VENDEUR COMPACTE */}
                 <div className="bg-white rounded-[2rem] p-7 border border-gray-100 shadow-sm space-y-6 animate-fade-in-up">
                    
-                   {/* Prix Header - Réduit */}
                    <div className="space-y-2">
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">PRIX DEMANDÉ</p>
                       <h2 className="text-4xl font-black text-primary-600 tracking-tight leading-none">
@@ -327,13 +343,11 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
 
                    <hr className="border-gray-100" />
 
-                   {/* Section Vendeur - Redimensionnée */}
                    <div className="flex items-center gap-4">
                       <div className="relative">
                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 font-black text-2xl border border-gray-50 shadow-inner">
                            {listing.seller.charAt(0)}
                          </div>
-                         {/* Statut En Ligne - Plus petit */}
                          <div className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-success-500 border-[3px] border-white rounded-full"></div>
                       </div>
                       <div className="space-y-0.5">
@@ -345,14 +359,13 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                       </div>
                    </div>
 
-                   {/* Boutons d'action - Tailles réduites */}
                    <div className="space-y-3 pt-1">
                       {isPhoneRevealed ? (
-                        <a href={`tel:${listing.id}`} className="w-full h-14 bg-gray-900 text-white rounded-xl font-black text-base flex items-center justify-center gap-3 animate-fade-in-up active:scale-95 transition-all shadow-md">
+                        <a href={`tel:${listing.id}`} className="w-full h-14 bg-[#E6580B] text-white rounded-xl font-black text-base flex items-center justify-center gap-3 animate-fade-in-up active:scale-95 transition-all shadow-md">
                            <Phone size={20} fill="currentColor" /> 25 123 456
                         </a>
                       ) : (
-                        <button onClick={() => setIsPhoneRevealed(true)} className="w-full h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-black text-base flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-primary-600/10">
+                        <button onClick={() => setIsPhoneRevealed(true)} className="w-full h-14 bg-[#E6580B] hover:opacity-90 text-white rounded-xl font-black text-base flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-primary-600/10">
                            <Phone size={20} /> Afficher le numéro
                         </button>
                       )}
@@ -371,7 +384,6 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                       </div>
                    </div>
 
-                   {/* Footer Sécurité - Très discret */}
                    <div className="pt-4 border-t border-gray-100 flex gap-3 items-start">
                       <Shield size={16} className="text-gray-300 shrink-0 mt-0.5" />
                       <p className="text-[10px] font-bold text-gray-400 leading-normal">
@@ -386,7 +398,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
         </div>
       </main>
 
-      {/* MOBILE STICKY FOOTER */}
+      {/* MOBILE STICKY FOOTER - COULEUR ORANGE FORCÉE HEX #E6580B */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-100 p-4 safe-area-bottom z-40 flex items-center gap-3">
          <button 
             onClick={() => toggleFavorite('listing', listing.id)}
@@ -400,7 +412,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
             {isPhoneRevealed ? (
                 <a 
                     href={`tel:${listing.id}`}
-                    className="w-full h-14 bg-gray-900 text-white rounded-2xl font-black flex items-center justify-center gap-3 active:scale-95 transition-all animate-fade-in-up"
+                    className="w-full h-14 bg-[#E6580B] text-white rounded-2xl font-black flex items-center justify-center gap-3 active:scale-95 transition-all animate-fade-in-up"
                 >
                     <Phone size={18} fill="currentColor" />
                     <span className="text-base tabular-nums tracking-tighter">25 123 456</span>
@@ -408,7 +420,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
             ) : (
                 <button 
                     onClick={() => setIsPhoneRevealed(true)}
-                    className="w-full h-14 bg-primary-600 text-white rounded-2xl font-black flex items-center justify-center gap-3 active:scale-95 transition-all shadow-none"
+                    className="w-full h-14 bg-[#E6580B] text-white rounded-2xl font-black flex items-center justify-center gap-3 active:scale-95 transition-all shadow-none"
                 >
                     <Phone size={18} />
                     <span className="uppercase tracking-widest text-[10px]">Appeler</span>

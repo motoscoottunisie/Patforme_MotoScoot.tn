@@ -114,7 +114,7 @@ const News: React.FC<NewsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigger
         <div className="mb-12 animate-fade-in-up">
           <div 
             onClick={() => handleArticleClick(featuredArticle.id)}
-            className="group grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow transition-all duration-300 border border-gray-100 cursor-pointer"
+            className="group grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer"
           >
              <div className="relative h-72 lg:h-auto overflow-hidden">
                <img 
@@ -167,7 +167,7 @@ const News: React.FC<NewsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigger
              <article 
                key={article.id} 
                onClick={() => handleArticleClick(article.id)}
-               className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow transition-all duration-300 cursor-pointer animate-fade-in-up"
+               className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer animate-fade-in-up"
                style={{ animationDelay: `${index * 100}ms` }}
              >
                 <div className="relative h-56 overflow-hidden">
