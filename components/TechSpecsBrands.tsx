@@ -45,7 +45,7 @@ const TechSpecsBrands: React.FC<TechSpecsBrandsProps> = ({ onGoHome, onNavigate,
         onLogout={onLogout}
       />
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-20 md:pt-28 pb-8">
         {/* Breadcrumb Compact */}
         <nav className="flex items-center text-xs text-gray-500 mb-8">
             <button onClick={onGoHome} className="hover:text-primary-600 transition-colors flex items-center">

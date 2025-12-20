@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Heart, 
@@ -62,7 +61,7 @@ const Favorites: React.FC<FavoritesProps> = ({ onGoHome, onNavigate, isLoggedIn,
         onLogout={onLogout}
       />
 
-      <main className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-20 md:pt-28 pb-8">
         
         {/* Breadcrumbs */}
         <div className="flex items-center text-sm text-gray-500 mb-8">

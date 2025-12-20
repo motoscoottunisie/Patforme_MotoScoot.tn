@@ -36,6 +36,7 @@ const SpecRow: React.FC<{ label: string, value: string }> = ({ label, value }) =
 
 const TechSpecsDetails: React.FC<TechSpecsDetailsProps> = ({ specId, onGoHome, onNavigate, onBack, isLoggedIn, onTriggerLogin, onLogout }) => {
   
+  // Find spec or fallback to first one
   const spec = mockTechSpecs.find(s => s.id === specId) || mockTechSpecs[0];
 
   useEffect(() => {
@@ -53,7 +54,7 @@ const TechSpecsDetails: React.FC<TechSpecsDetailsProps> = ({ specId, onGoHome, o
         onLogout={onLogout}
       />
 
-      <main className="max-w-5xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-6 pt-20 md:pt-28 pb-8">
         
         {/* Navigation & Header Meta */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
@@ -62,184 +63,145 @@ const TechSpecsDetails: React.FC<TechSpecsDetailsProps> = ({ specId, onGoHome, o
               className="flex items-center gap-2 text-primary-600 font-bold text-sm hover:text-primary-700 transition-colors group"
             >
                 <div className="p-1.5 bg-primary-50 rounded-lg group-hover:bg-primary-100 transition-colors">
-                  <ChevronLeft size={18} />
+                    <ChevronLeft size={18} />
                 </div>
                 Retour aux modèles {spec.brand}
             </button>
             <div className="flex items-center gap-3">
-                <button className="p-2.5 bg-white border border-gray-200 text-gray-500 hover:text-primary-600 rounded-xl transition-all active:scale-95" title="Partager">
+                <button className="p-2.5 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-primary-600 hover:border-primary-200 transition-all shadow-sm">
                     <Share2 size={18} />
                 </button>
-                <div className="h-8 w-px bg-gray-200 mx-1"></div>
-                <span className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-xl text-[11px] font-black uppercase tracking-wider">{spec.category}</span>
-                <span className="px-3 py-1.5 bg-primary-600 text-white rounded-xl text-[11px] font-black uppercase tracking-wider">{spec.year}</span>
+                <button 
+                    onClick={() => onNavigate?.('search', { brand: spec.brand, model: spec.model })}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 transition-all shadow-md active:scale-95"
+                >
+                    <Bike size={18} />
+                    Chercher en occasion
+                </button>
             </div>
         </div>
 
-        {/* Title Area */}
-        <div className="mb-10 text-center md:text-left">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight leading-none mb-4">
-              {spec.brand} <span className="text-primary-600">{spec.model}</span>
-          </h1>
-          <p className="text-gray-500 text-lg font-medium max-w-2xl">
-            Découvrez la fiche technique complète, les performances et les caractéristiques détaillées de la {spec.brand} {spec.model} version {spec.year}.
-          </p>
-        </div>
-
-        {/* Hero Gallery Container */}
-        <div className="bg-white rounded-[2rem] p-4 md:p-6 border border-gray-200 mb-12 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50 blur-[100px] rounded-full opacity-50 -z-10"></div>
-            <div className="aspect-[16/9] md:aspect-[21/9] rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
-                <img 
-                  src={spec.image} 
-                  alt={spec.model} 
-                  className="w-full h-full object-cover transition-transform duration-1000 hover:scale-105" 
-                />
-            </div>
-        </div>
-
-        {/* Key Features Grid - Removed shadows, kept borders */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            <div className="bg-white p-6 rounded-3xl border border-gray-200 flex flex-col items-center text-center group hover:border-primary-200 transition-all">
-                <div className="w-12 h-12 bg-primary-50 text-primary-600 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
-                    <Zap size={24} />
+        {/* Hero Section Card */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2">
+                <div className="h-64 lg:h-auto bg-gray-100 overflow-hidden relative">
+                    <img 
+                      src={spec.image} 
+                      alt={`${spec.brand} ${spec.model}`} 
+                      className="w-full h-full object-cover" 
+                    />
+                    <div className="absolute top-6 left-6">
+                        <span className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-black text-gray-900 shadow-sm border border-white/50">
+                            {spec.year}
+                        </span>
+                    </div>
                 </div>
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Cylindrée</span>
-                <span className="text-xl font-extrabold text-gray-900">{spec.engine.cc}</span>
+                <div className="p-8 lg:p-12 flex flex-col justify-center">
+                    <div className="mb-8">
+                        <span className="text-primary-600 font-black text-xs uppercase tracking-widest mb-2 block">{spec.brand}</span>
+                        <h1 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight tracking-tight mb-4">
+                            {spec.model}
+                        </h1>
+                        <div className="flex flex-wrap gap-3">
+                            <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg border border-gray-200">{spec.category}</span>
+                            <span className="px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-lg border border-primary-100">Prix Neuf : {spec.priceNew}</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 pt-8 border-t border-gray-50">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-gray-400">
+                                <Zap size={16} />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Puissance</span>
+                            </div>
+                            <p className="font-bold text-gray-900 text-sm">{spec.engine.power.split(' ')[0]} ch</p>
+                        </div>
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-gray-400">
+                                <Activity size={16} />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Cylindrée</span>
+                            </div>
+                            <p className="font-bold text-gray-900 text-sm">{spec.engine.cc}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-gray-400">
+                                <Gauge size={16} />
+                                <span className="text-[10px] font-black uppercase tracking-widest">V-Max</span>
+                            </div>
+                            <p className="font-bold text-gray-900 text-sm">{spec.topSpeed || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        {/* Detailed Specs Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <div className="bg-white p-6 rounded-3xl border border-gray-200 flex flex-col items-center text-center group hover:border-blue-200 transition-all">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
-                    <Activity size={24} />
+            {/* Engine Section */}
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex flex-col">
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center border border-orange-100">
+                        <Zap size={20} />
+                    </div>
+                    <h3 className="text-xl font-black text-gray-900 tracking-tight">Moteur</h3>
                 </div>
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Puissance</span>
-                <span className="text-xl font-extrabold text-gray-900">{spec.engine.power.split(' ')[0]} ch</span>
+                <div className="space-y-0">
+                    <SpecRow label="Type" value={spec.engine.type} />
+                    <SpecRow label="Cylindrée" value={spec.engine.cc} />
+                    <SpecRow label="Puissance" value={spec.engine.power} />
+                    <SpecRow label="Couple" value={spec.engine.torque} />
+                    <SpecRow label="Refroidissement" value={spec.engine.cooling} />
+                    <SpecRow label="Alimentation" value={spec.engine.fuelSystem} />
+                    <SpecRow label="Transmission" value={spec.engine.transmission} />
+                </div>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border border-gray-200 flex flex-col items-center text-center group hover:border-gray-300 transition-all">
-                <div className="w-12 h-12 bg-gray-50 text-gray-600 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
-                    <Ruler size={24} />
+            {/* Chassis & Braking Section */}
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex flex-col">
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                        <Settings size={20} />
+                    </div>
+                    <h3 className="text-xl font-black text-gray-900 tracking-tight">Partie Cycle</h3>
                 </div>
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Poids (Plein)</span>
-                <span className="text-xl font-extrabold text-gray-900">{spec.dimensions.weight.split(' ')[0]} kg</span>
+                <div className="space-y-0">
+                    <SpecRow label="Cadre" value={spec.chassis.frame} />
+                    <SpecRow label="Susp. Avant" value={spec.chassis.suspensionFront} />
+                    <SpecRow label="Susp. Arrière" value={spec.chassis.suspensionRear} />
+                    <SpecRow label="Frein Avant" value={spec.chassis.brakesFront} />
+                    <SpecRow label="Frein Arrière" value={spec.chassis.brakesRear} />
+                    <SpecRow label="Pneu Avant" value={spec.chassis.tireFront} />
+                    <SpecRow label="Pneu Arrière" value={spec.chassis.tireRear} />
+                </div>
             </div>
 
-            <div className="bg-primary-600 p-6 rounded-3xl flex flex-col items-center text-center group hover:bg-primary-700 transition-all border border-primary-700">
-                <div className="w-12 h-12 bg-white/20 text-white rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md">
-                    <Info size={24} />
+            {/* Dimensions Section */}
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex flex-col">
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center border border-green-100">
+                        <Ruler size={20} />
+                    </div>
+                    <h3 className="text-xl font-black text-gray-900 tracking-tight">Dimensions</h3>
                 </div>
-                <span className="text-[10px] font-black text-white/70 uppercase tracking-widest mb-1">Prix Neuf</span>
-                <span className="text-xl font-extrabold text-white">{spec.priceNew.split(' ')[0]} DT</span>
+                <div className="space-y-0">
+                    <SpecRow label="Poids" value={spec.dimensions.weight} />
+                    <SpecRow label="Hauteur de selle" value={spec.dimensions.seatHeight} />
+                    <SpecRow label="Réservoir" value={spec.dimensions.tank} />
+                    <SpecRow label="Longueur" value={spec.dimensions.length} />
+                    <SpecRow label="Empattement" value={spec.dimensions.wheelbase} />
+                    <SpecRow label="Conso. Moyenne" value={spec.consumption || 'N/A'} />
+                </div>
             </div>
-        </div>
-
-        {/* Detailed Specs Section - Removed shadows */}
-        <div className="space-y-10">
-            
-            {/* Engine */}
-            <section className="bg-white rounded-[2rem] border border-gray-200 overflow-hidden animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                <div className="px-8 py-6 bg-gray-50/50 border-b border-gray-200 flex items-center gap-3">
-                    <div className="w-2 h-6 bg-primary-600 rounded-full"></div>
-                    <h3 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-                        <Settings size={20} className="text-primary-600" />
-                        Moteur & Performance
-                    </h3>
-                </div>
-                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
-                    <div className="space-y-0">
-                      <SpecRow label="Type de moteur" value={spec.engine.type} />
-                      <SpecRow label="Cylindrée" value={spec.engine.cc} />
-                      <SpecRow label="Puissance Max" value={spec.engine.power} />
-                      <SpecRow label="Couple Max" value={spec.engine.torque} />
-                    </div>
-                    <div className="space-y-0">
-                      <SpecRow label="Alimentation" value={spec.engine.fuelSystem} />
-                      <SpecRow label="Refroidissement" value={spec.engine.cooling} />
-                      <SpecRow label="Transmission" value={spec.engine.transmission} />
-                      <SpecRow label="Consommation" value={spec.consumption || "4.2 L/100km"} />
-                    </div>
-                </div>
-            </section>
-
-            {/* Chassis */}
-            <section className="bg-white rounded-[2rem] border border-gray-200 overflow-hidden animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                <div className="px-8 py-6 bg-gray-50/50 border-b border-gray-200 flex items-center gap-3">
-                    <div className="w-2 h-6 bg-gray-900 rounded-full"></div>
-                    <h3 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-                        <ShieldCheck size={20} className="text-gray-900" />
-                        Partie Cycle & Freinage
-                    </h3>
-                </div>
-                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
-                    <div className="space-y-0">
-                      <SpecRow label="Cadre" value={spec.chassis.frame} />
-                      <SpecRow label="Suspension AV" value={spec.chassis.suspensionFront} />
-                      <SpecRow label="Suspension AR" value={spec.chassis.suspensionRear} />
-                    </div>
-                    <div className="space-y-0">
-                      <SpecRow label="Freins AV" value={spec.chassis.brakesFront} />
-                      <SpecRow label="Freins AR" value={spec.chassis.brakesRear} />
-                      <SpecRow label="Pneus (AV/AR)" value={`${spec.chassis.tireFront.split(' ')[0]} / ${spec.chassis.tireRear.split(' ')[0]}`} />
-                    </div>
-                </div>
-            </section>
-
-            {/* Dimensions */}
-            <section className="bg-white rounded-[2rem] border border-gray-200 overflow-hidden animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                <div className="px-8 py-6 bg-gray-50/50 border-b border-gray-200 flex items-center gap-3">
-                    <div className="w-2 h-6 bg-gray-400 rounded-full"></div>
-                    <h3 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-                        <Gauge size={20} className="text-gray-400" />
-                        Dimensions & Capacités
-                    </h3>
-                </div>
-                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
-                    <div className="space-y-0">
-                      <SpecRow label="Poids à vide" value={spec.dimensions.weight} />
-                      <SpecRow label="Hauteur de selle" value={spec.dimensions.seatHeight} />
-                      <SpecRow label="Réservoir" value={spec.dimensions.tank} />
-                    </div>
-                    <div className="space-y-0">
-                      <SpecRow label="Longueur" value={spec.dimensions.length} />
-                      <SpecRow label="Empattement" value={spec.dimensions.wheelbase} />
-                      <SpecRow label="Vitesse de pointe" value={spec.topSpeed || "N/C"} />
-                    </div>
-                </div>
-            </section>
 
         </div>
 
-        {/* Final CTA Area - Removed shadow-2xl */}
-        <div className="mt-20 bg-neutral-900 rounded-[2.5rem] p-10 md:p-16 text-center text-white relative overflow-hidden border border-neutral-800">
-            {/* Background Ornaments */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-primary-600/30 blur-[120px] rounded-full pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full pointer-events-none"></div>
-
-            <div className="relative z-10">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-8 border border-white/10 backdrop-blur-sm">
-                  <Bike size={32} className="text-primary-500" />
-              </div>
-              <h2 className="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Prêt à passer à l'action ?</h2>
-              <p className="text-gray-400 text-lg mb-12 max-w-2xl mx-auto font-medium">
-                  Ne vous contentez pas de lire la fiche technique. Trouvez dès maintenant les meilleures offres d'occasion pour la <span className="text-white font-bold">{spec.brand} {spec.model}</span> en Tunisie.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <button 
-                      onClick={() => onNavigate?.('search', { brand: spec.brand, model: spec.model })}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-5 bg-primary-600 text-white font-black rounded-2xl hover:bg-primary-500 transition-all active:scale-95 text-lg"
-                  >
-                      Voir les annonces
-                      <ArrowRight size={22} />
-                  </button>
-                  <button 
-                      onClick={onBack}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-5 bg-white/5 text-white font-bold rounded-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/10 text-lg"
-                  >
-                      Autres modèles
-                  </button>
-              </div>
-            </div>
+        {/* Legal Disclaimer */}
+        <div className="mt-12 bg-gray-100/50 rounded-2xl p-6 border border-gray-200 flex gap-4 items-start">
+            <Info className="text-gray-400 shrink-0 mt-0.5" size={20} />
+            <p className="text-xs text-gray-500 leading-relaxed font-medium">
+                <strong>Information :</strong> Les données techniques sont fournies à titre indicatif par les constructeurs. MotoScoot.tn ne peut être tenu responsable d'éventuelles erreurs ou modifications de caractéristiques par le fabricant. Pour des informations définitives, veuillez consulter le concessionnaire officiel de la marque.
+            </p>
         </div>
 
       </main>
@@ -247,4 +209,5 @@ const TechSpecsDetails: React.FC<TechSpecsDetailsProps> = ({ specId, onGoHome, o
   );
 };
 
+// Fix for App.tsx line 31: Added missing default export
 export default TechSpecsDetails;

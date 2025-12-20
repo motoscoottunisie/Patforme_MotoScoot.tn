@@ -45,7 +45,7 @@ const DualRangeSlider = ({
   min: number; 
   max: number; 
   valueMin?: number;
-  valueMax?: number;
+  valueMax?: number; 
   step?: number; 
   unit?: string;
   onChange?: (min: number, max: number) => void;
@@ -70,7 +70,7 @@ const DualRangeSlider = ({
       if (onChange) onChange(minVal, maxVal);
     }, 300);
     return () => clearTimeout(handler);
-  }, [minVal, maxVal]);
+  }, [minVal, maxVal, onChange]);
 
   const getPercent = useCallback(
     (value: number) => Math.round(((value - min) / (max - min)) * 100),
@@ -297,55 +297,30 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       
-      {/* HERO SECTION */}
-      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 font-sans overflow-hidden bg-primary-50">
+      {/* Header en mode blanc immédiat */}
+      <Header 
+        variant="white" 
+        onNavigate={onNavigate} 
+        onGoHome={onGoHome} 
+        showMobileFilter={false}
+        onMobileFilterOpen={() => setIsMobileFilterOpen(true)}
+        isLoggedIn={isLoggedIn}
+        onTriggerLogin={onTriggerLogin}
+        onLogout={onLogout}
+      />
+
+      <div className="max-w-7xl mx-auto px-6 md:px-8 pt-24 md:pt-32 pb-8 md:py-12">
         
-        {/* Background Container */}
-        <div className="absolute inset-0 overflow-hidden z-0" aria-hidden="true">
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
-            style={{ backgroundImage: "url('https://www.magma-studio.tn/portfolio2/hero_section-background_mobile.webp')" }}
-          />
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block"
-            style={{ backgroundImage: "url('https://magma-studio.tn/portfolio2/-hero-background.webp')" }}
-          />
-          <div 
-            className="absolute inset-0"
-            style={{
-              background: 'linear-gradient(-180deg, #AF2E13 0%, #E65100 100%)',
-              opacity: 0.95,
-              mixBlendMode: 'multiply',
-            }}
-          />
-        </div>
-
-        <Header 
-          variant="transparent" 
-          onNavigate={onNavigate} 
-          onGoHome={onGoHome} 
-          showMobileFilter={false}
-          onMobileFilterOpen={() => setIsMobileFilterOpen(true)}
-          isLoggedIn={isLoggedIn}
-          onTriggerLogin={onTriggerLogin}
-          onLogout={onLogout}
-        />
-
-        {/* Hero Content */}
-        <div className="relative z-10 flex flex-col justify-center items-center w-full max-w-7xl mx-auto h-full pt-4">
-          <div className="text-center px-4">
-            <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-4 drop-shadow-sm tracking-tight leading-tight animate-fade-in-up">
-              Résultats
+        {/* Section de titre "Claire" sans Hero */}
+        <div className="mb-10 animate-fade-in-up">
+            <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter mb-2">
+              Résultats de recherche
             </h1>
-            <p className="text-white/90 text-lg md:text-xl font-medium max-w-2xl mx-auto animate-fade-in-up opacity-90" style={{ animationDelay: '100ms' }}>
-              {filteredListings.length} annonces trouvées pour votre recherche
+            <p className="text-gray-500 font-medium text-lg">
+               {filteredListings.length} annonces disponibles correspondant à vos critères
             </p>
-          </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8 md:py-12">
-        
         <div className="flex flex-wrap md:flex-nowrap items-center justify-between mb-8 gap-4">
           <nav aria-label="Fil d'ariane" className="flex items-center text-sm text-gray-500 overflow-x-auto whitespace-nowrap no-scrollbar mr-auto">
             <button className="flex items-center hover:text-primary-600 transition-colors flex-shrink-0 focus:outline-none focus:underline" onClick={onGoHome}>
@@ -353,7 +328,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
               <span>Accueil</span>
             </button>
             <ChevronRight className="w-4 h-4 mx-2 text-gray-300" aria-hidden="true" />
-            <span className="font-semibold text-gray-900 flex-shrink-0" aria-current="page">Résultats</span>
+            <span className="font-semibold text-gray-900 flex-shrink-0" aria-current="page">Annonces</span>
           </nav>
 
           <div className="flex items-center gap-3 ml-auto">
@@ -376,36 +351,36 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
           
           <aside className="hidden lg:block lg:w-72 xl:w-80 flex-shrink-0">
             <div className="flex flex-col gap-6 sticky top-24">
-              <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-none">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
-                      <Filter className="w-5 h-5 text-primary-600" />
+                  <h3 className="font-black text-[10px] text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                      <Filter className="w-4 h-4 text-primary-600" />
                       Filtrer
                   </h3>
-                  <button onClick={resetFilters} className="text-xs font-bold text-primary-600 hover:underline">Réinitialiser</button>
+                  <button onClick={resetFilters} className="text-[10px] font-black text-primary-600 uppercase hover:underline">Réinitialiser</button>
                 </div>
 
                 <div className="mb-6">
-                   <label className="text-sm font-bold text-gray-700 mb-2 block">Recherche</label>
+                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Recherche</label>
                    <div className="relative">
                       <input 
-                        type="text"
+                        type="text" 
                         value={filters.search}
                         onChange={(e) => handleFilterChange('search', e.target.value)}
                         placeholder="Modèle, mot-clé..."
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:bg-white focus:border-primary-600 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-sm font-bold focus:bg-white focus:border-primary-600 outline-none transition-all shadow-none"
                       />
-                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
                    </div>
                 </div>
 
                 <div className="mb-6">
-                  <label className="text-sm font-bold text-gray-700 mb-2 block">Type</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Type</label>
                   <div className="relative">
                     <select 
                       value={filters.type}
                       onChange={(e) => handleFilterChange('type', e.target.value)}
-                      className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
+                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer"
                     >
                       <option>Tous les types</option>
                       <option>Moto</option>
@@ -417,12 +392,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                 </div>
 
                 <div className="mb-6">
-                  <label className="text-sm font-bold text-gray-700 mb-2 block">Marque</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Marque</label>
                   <div className="relative">
                     <select 
                       value={filters.brand}
                       onChange={(e) => handleFilterChange('brand', e.target.value)}
-                      className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
+                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer"
                     >
                       <option>Toutes les marques</option>
                       <option>Yamaha</option>
@@ -440,12 +415,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                 </div>
 
                 <div className="mb-6">
-                  <label className="text-sm font-bold text-gray-700 mb-2 block">Modèle</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Modèle</label>
                   <div className="relative">
                     <select 
                       value={filters.model}
                       onChange={(e) => handleFilterChange('model', e.target.value)}
-                      className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
+                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer"
                     >
                       <option>Tous les modèles</option>
                       {mockModels.map((model) => (
@@ -457,12 +432,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                 </div>
 
                 <div className="mb-6">
-                  <label className="text-sm font-bold text-gray-700 mb-2 block">Localisation</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Localisation</label>
                   <div className="relative">
                     <select 
                       value={filters.location}
                       onChange={(e) => handleFilterChange('location', e.target.value)}
-                      className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:bg-white focus:border-primary-600 outline-none"
+                      className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:bg-white focus:border-primary-600 outline-none cursor-pointer"
                     >
                       <option>Toutes les régions</option>
                       <option>Tunis</option>
@@ -523,11 +498,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
               </div>
 
-              {/* Sidebar Ad Section - Square format */}
+              {/* Sidebar Ad Section */}
               <AdBanner 
                 zone="listing_sidebar" 
                 variant="native" 
-                className="w-full aspect-square" 
+                className="w-full aspect-square shadow-none border border-gray-100" 
               />
             </div>
           </aside>
@@ -535,13 +510,13 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
           <main className="flex-1 w-full">
             
             {filteredListings.length === 0 ? (
-               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm text-center">
+               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 text-center">
                   <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                     <Search className="w-10 h-10 text-gray-300" />
+                     <Search className="w-10 h-10 text-gray-200" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun résultat</h3>
                   <p className="text-gray-500 mb-6">Essayez de modifier vos filtres de recherche.</p>
-                  <button onClick={resetFilters} className="px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors">
+                  <button onClick={resetFilters} className="px-6 py-3 bg-gray-900 text-white font-black rounded-xl hover:bg-primary-600 transition-colors">
                      Réinitialiser les filtres
                   </button>
                </div>
@@ -557,7 +532,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                   <React.Fragment key={listing.id}>
                       <article 
                         onClick={() => handleCardClick(listing.id)}
-                        className={`group bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex animate-fade-in-up cursor-pointer ${isGrid ? 'flex-col rounded-2xl h-full' : 'flex-col md:flex-col lg:flex-row rounded-2xl lg:rounded-xl md:min-h-0 lg:min-h-[220px] lg:max-h-[260px]'}`}
+                        className={`group bg-white border border-gray-100 shadow-none hover:border-primary-100 transition-all duration-300 overflow-hidden flex animate-fade-in-up cursor-pointer ${isGrid ? 'flex-col rounded-2xl h-full' : 'flex-col md:flex-col lg:flex-row rounded-2xl lg:rounded-xl md:min-h-0 lg:min-h-[220px] lg:max-h-[260px]'}`}
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                       
@@ -575,69 +550,59 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                           </button>
                       </div>
 
-                      <div className={`flex flex-1 flex-col ${isGrid ? 'p-5' : 'md:p-5 lg:p-0 lg:flex-row min-w-0'}`}>
+                      <div className={`flex flex-1 flex-col ${isGrid ? 'p-6' : 'p-6 md:p-6 lg:p-0 lg:flex-row min-w-0'}`}>
                           
-                          <div className={`flex flex-col flex-grow min-w-0 ${isGrid ? 'gap-3' : 'lg:p-5 gap-1 justify-center'}`}>
+                          <div className={`flex flex-col flex-grow min-w-0 ${isGrid ? 'gap-4' : 'lg:p-5 gap-3 justify-center'}`}>
                             <div className="mb-1">
-                              <div className="flex justify-between items-start gap-2">
-                                <h3 className="text-lg md:text-xl font-extrabold text-gray-900 group-hover:text-primary-600 transition-colors leading-tight line-clamp-2 flex-1">
+                              <div className="flex justify-between items-start gap-3">
+                                <h3 className="text-lg md:text-xl font-extrabold text-gray-900 group-hover:text-primary-600 transition-colors leading-tight line-clamp-2 flex-1 tracking-tight">
                                     {listing.title}
                                 </h3>
-                                <span className={`text-lg md:text-xl font-bold text-primary-600 whitespace-nowrap pt-0.5 ${!isGrid ? 'lg:hidden' : ''}`}>
+                                <span className={`text-lg md:text-xl font-black text-primary-600 whitespace-nowrap pt-0.5 tracking-tighter ${!isGrid ? 'lg:hidden' : ''}`}>
                                     {listing.price}
                                 </span>
-                                {/* Price visible on tablet portrait even if not in grid mode explicitly, because we force the grid style */}
-                                <span className={`text-lg font-bold text-primary-600 whitespace-nowrap pt-0.5 hidden md:block lg:hidden`}>
+                                <span className={`text-lg font-black text-primary-600 whitespace-nowrap pt-0.5 hidden md:block lg:hidden tracking-tighter`}>
                                     {listing.price}
                                 </span>
                               </div>
-                              <div className="flex items-center text-xs md:text-sm text-gray-500 font-medium mt-1">
-                                  <MapPin size={14} className="mr-1 text-gray-400" />
+                              <div className="flex items-center text-xs text-gray-500 font-bold uppercase mt-2 tracking-wide">
+                                  <MapPin size={12} className="mr-1 text-gray-300" />
                                   <span className="truncate max-w-[120px] md:max-w-[180px]">{listing.location}</span>
-                                  <span className="mx-2 text-gray-300">•</span>
-                                  <span className="whitespace-nowrap">{listing.date}</span>
+                                  <span className="mx-2 text-neutral-200">•</span>
+                                  <span className="whitespace-nowrap">Aujourd'hui</span>
                               </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs md:text-sm font-semibold text-gray-700 my-2">
+                            <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs font-black text-gray-400 uppercase tracking-widest my-2">
                                {isItemAccessory ? (
-                                  <div className="flex items-center gap-1.5"><Info size={16} className="text-gray-400" /> <span>{listing.condition}</span></div>
+                                  <div className="flex items-center gap-1.5"><Info size={14} className="text-gray-300" /> <span>{listing.condition}</span></div>
                                ) : (
                                   <>
-                                    <div className="flex items-center gap-1.5"><Calendar size={16} className="text-gray-400" /> <span>{listing.year}</span></div>
-                                    <span className="text-gray-300 hidden md:inline">•</span>
-                                    <div className="flex items-center gap-1.5"><Gauge size={16} className="text-gray-400" /> <span>{listing.mileage}</span></div>
-                                    <span className="text-gray-300 hidden lg:inline">•</span>
-                                    <div className="hidden lg:flex items-center gap-1.5"><Info size={16} className="text-gray-400" /> <span>{listing.cc}</span></div>
+                                    <div className="flex items-center gap-1.5"><Calendar size={14} className="text-gray-300" /> <span>{listing.year}</span></div>
+                                    <div className="flex items-center gap-1.5"><Gauge size={14} className="text-gray-300" /> <span>{listing.mileage}</span></div>
+                                    <div className="flex items-center gap-1.5"><Info size={14} className="text-gray-300" /> <span>{listing.cc}</span></div>
                                   </>
                                )}
                             </div>
 
-                            <div className={`mt-auto pt-4 ${isGrid ? 'border-t border-gray-50' : 'md:pt-4 lg:pt-3 lg:border-t-0'} flex items-center gap-2`}>
+                            <div className={`mt-auto pt-4 ${isGrid ? 'border-t border-gray-50' : 'md:pt-4 lg:pt-3 lg:border-t-0'} flex items-center gap-2.5`}>
                                 {listing.sellerType === 'Pro' ? (
-                                  <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold flex-shrink-0"><ShieldCheck size={14} /></div>
+                                  <div className="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold flex-shrink-0"><ShieldCheck size={16} /></div>
                                 ) : (
-                                  <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold flex-shrink-0"><User size={14} /></div>
+                                  <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold flex-shrink-0"><User size={16} /></div>
                                 )}
                                 <div className="overflow-hidden flex items-center gap-2">
-                                    <span className="text-sm font-bold text-gray-700 truncate">{listing.seller}</span>
-                                    <span className="text-xs text-gray-400">• {listing.sellerType}</span>
+                                    <span className="text-xs font-bold text-gray-700 truncate">{listing.seller}</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">• {listing.sellerType}</span>
                                 </div>
-                            </div>
-
-                            {/* CTA visible on Grid OR Tablet portrait Grid-alike */}
-                            <div className="mt-4 md:block lg:hidden">
-                                <button className="w-full h-10 rounded-xl bg-primary-600 text-white font-bold text-sm shadow-sm hover:bg-primary-700 transition-all flex items-center justify-center gap-2 active:scale-95">
-                                  <Phone size={16} /> Appeler
-                                </button>
                             </div>
                           </div>
 
                           {!isGrid && (
                             <div className="hidden lg:flex flex-col justify-between items-end p-6 border-l border-gray-100 w-40 lg:w-64 flex-shrink-0 bg-gray-50/50">
                                <div className="text-right w-full">
-                                  <span className="block text-[10px] font-bold uppercase text-gray-400 mb-1">Prix demandé</span>
-                                  <span className="block text-xl lg:text-3xl font-black text-primary-600 leading-none mb-4 truncate">{listing.price}</span>
+                                  <span className="block text-[10px] font-black uppercase text-gray-300 mb-1 tracking-widest">Prix demandé</span>
+                                  <span className="block text-xl lg:text-3xl font-black text-primary-600 leading-none mb-4 truncate tracking-tighter">{listing.price}</span>
                                   {listing.dealRating && (
                                     <div className="flex flex-col items-end gap-1.5">
                                         <div className="flex gap-1 w-12 lg:w-20">
@@ -645,12 +610,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                                 <div key={level} className={`h-1.5 flex-1 rounded-full ${listing.dealRating! >= level ? dealInfo.color : 'bg-gray-200'}`}></div>
                                             ))}
                                         </div>
-                                        <span className={`text-[9px] lg:text-[10px] font-black uppercase tracking-tight ${dealInfo.textColor}`}>{dealInfo.label}</span>
+                                        <span className={`text-[10px] font-black uppercase tracking-tight ${dealInfo.textColor}`}>{dealInfo.label}</span>
                                     </div>
                                   )}
                                </div>
                                <div className="w-full flex flex-col gap-2 mt-4">
-                                  <button className="w-full h-10 lg:h-11 rounded-xl bg-primary-600 text-white font-bold text-xs lg:text-sm shadow-md hover:bg-primary-700 transition-all flex items-center justify-center gap-2">
+                                  <button className="w-full h-10 lg:h-11 rounded-xl bg-primary-600 text-white font-black text-xs lg:text-sm shadow-none hover:bg-primary-700 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
                                      <Phone size={16} /> Appeler
                                   </button>
                                   <button 
@@ -665,10 +630,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                           )}
                       </div>
 
-                      <div className="md:hidden px-5 pb-5">
+                      <div className="block md:hidden px-6 pb-6">
                          <button 
                            onClick={(e) => { e.stopPropagation(); }}
-                           className="w-full h-12 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                           className="w-full h-12 bg-gray-900 hover:bg-primary-600 text-white font-black rounded-xl shadow-none flex items-center justify-center gap-2 transition-all active:scale-[0.98] uppercase text-xs tracking-widest"
                          >
                             <Phone size={18} />
                             Appeler
@@ -676,10 +641,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                       </div>
                       </article>
 
-                      {/* Encart Pub In-Feed après la 6ème annonce (index 5) */}
                       {index === 5 && SHOW_IN_FEED_AD && (
                         <div className={`mt-6 col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-full animate-fade-in-up`}>
-                            <AdBanner zone="search_feed" variant="native" />
+                            <AdBanner zone="search_feed" variant="native" className="shadow-none border border-gray-100" />
                         </div>
                       )}
                   </React.Fragment>
@@ -695,25 +659,25 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
         <div className="fixed inset-0 z-[60] lg:hidden bg-white flex flex-col animate-fade-in-up" role="dialog">
            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white sticky top-0 z-20">
               <div className="flex items-center gap-3">
-                 <button onClick={() => setIsMobileFilterOpen(false)} className="p-2 -ml-2 text-gray-500 hover:bg-gray-50 rounded-full"><X size={24} /></button>
-                 <h3 className="font-bold text-xl text-gray-900">Filtres</h3>
+                 <button onClick={() => setIsMobileFilterOpen(false)} className="p-2 -ml-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors"><X size={24} /></button>
+                 <h3 className="font-black text-xl text-gray-900 tracking-tight">Filtres</h3>
               </div>
-              <button onClick={resetFilters} className="text-sm font-semibold text-primary-600">Réinitialiser</button>
+              <button onClick={resetFilters} className="text-[10px] font-black text-primary-600 uppercase">Réinitialiser</button>
            </div>
 
            <div className="flex-1 overflow-y-auto p-5 space-y-8 pb-32">
               <div>
-                 <label className="text-base font-bold text-gray-900 mb-3 block">Recherche</label>
+                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block ml-1">Recherche</label>
                  <div className="relative">
-                    <input type="text" value={filters.search} onChange={(e) => handleFilterChange('search', e.target.value)} className="w-full pl-11 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 text-base focus:border-primary-600 outline-none" placeholder="Mot-clé..." />
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <input type="text" value={filters.search} onChange={(e) => handleFilterChange('search', e.target.value)} className="w-full pl-11 pr-4 py-4 rounded-xl border border-gray-100 bg-gray-50 text-base font-bold focus:bg-white focus:border-primary-600 outline-none" placeholder="Mot-clé..." />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
                  </div>
               </div>
               
               <div className="space-y-6">
                  <div>
-                    <label className="block font-bold mb-2">Type</label>
-                    <select value={filters.type} onChange={(e) => handleFilterChange('type', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Type</label>
+                    <select value={filters.type} onChange={(e) => handleFilterChange('type', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold">
                        <option>Tous les types</option>
                        <option>Moto</option>
                        <option>Scooter</option>
@@ -722,8 +686,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                  </div>
                  
                  <div>
-                    <label className="block font-bold mb-2">Marque</label>
-                    <select value={filters.brand} onChange={(e) => handleFilterChange('brand', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Marque</label>
+                    <select value={filters.brand} onChange={(e) => handleFilterChange('brand', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold">
                        <option>Toutes les marques</option>
                        <option>Yamaha</option>
                        <option>Honda</option>
@@ -738,8 +702,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                  </div>
 
                  <div>
-                    <label className="block font-bold mb-2">Modèle</label>
-                    <select value={filters.model} onChange={(e) => handleFilterChange('model', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Modèle</label>
+                    <select value={filters.model} onChange={(e) => handleFilterChange('model', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold">
                        <option>Tous les modèles</option>
                        {mockModels.map((model) => (
                          <option key={model} value={model}>{model}</option>
@@ -748,8 +712,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                  </div>
 
                  <div>
-                    <label className="block font-bold mb-2">Localisation</label>
-                    <select value={filters.location} onChange={(e) => handleFilterChange('location', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block ml-1">Localisation</label>
+                    <select value={filters.location} onChange={(e) => handleFilterChange('location', e.target.value)} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold">
                        <option>Toutes les régions</option>
                        <option>Tunis</option>
                        <option>Sousse</option>
@@ -815,8 +779,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
               </div>
            </div>
 
-           <div className="p-4 border-t border-gray-100 bg-white sticky bottom-0 z-20 pb-8 md:pb-4 safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-              <button onClick={() => setIsMobileFilterOpen(false)} className="w-full bg-primary-600 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-lg active:scale-[0.98] transition-transform">
+           <div className="p-4 border-t border-gray-100 bg-white sticky bottom-0 z-20 pb-8 md:pb-4 safe-area-bottom">
+              <button onClick={() => setIsMobileFilterOpen(false)} className="w-full bg-gray-900 text-white font-black py-4 rounded-xl shadow-none flex items-center justify-center gap-2 text-sm active:scale-[0.98] uppercase tracking-widest">
                  Afficher {filteredListings.length} résultats
               </button>
            </div>

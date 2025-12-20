@@ -796,7 +796,7 @@ const DashboardPro: React.FC<DashboardProProps> = ({
         onLogout={onLogout}
       />
 
-      <main className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-20 md:pt-28 pb-8">
          <div className="flex flex-col lg:flex-row gap-8">
             
             <aside className="w-full lg:w-72 flex-shrink-0">

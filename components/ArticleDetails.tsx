@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { 
   ArrowLeft, 
@@ -59,7 +58,7 @@ const ArticleDetails: React.FC<ArticleDetailsProps> = ({
       {/* Progress Bar (Reading) - Optional Visual Flourish */}
       <div className="fixed top-0 left-0 h-1 bg-primary-600 z-[60] w-full origin-left transform scale-x-0 animate-scroll-progress"></div>
 
-      <main>
+      <main className="pt-20 md:pt-28">
         {/* Article Header / Hero */}
         <div className="max-w-4xl mx-auto px-6 md:px-8 pt-6 md:pt-12 pb-8">
             

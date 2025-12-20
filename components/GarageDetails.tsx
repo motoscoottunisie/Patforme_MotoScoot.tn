@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { 
   ArrowLeft, 
@@ -311,7 +310,7 @@ const GarageDetails: React.FC<GarageDetailsProps> = ({
         onLogout={onLogout}
       />
 
-      <main className="max-w-7xl mx-auto px-4 md:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-20 md:pt-28 pb-6">
         
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2 mb-6 text-sm text-gray-500">

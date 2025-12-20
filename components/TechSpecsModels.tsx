@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Home, ChevronRight, Search, Filter, Calendar } from 'lucide-react';
 import Header from './layout/Header';
@@ -41,7 +40,7 @@ const TechSpecsModels: React.FC<TechSpecsModelsProps> = ({ brand, onGoHome, onNa
         onLogout={onLogout}
       />
 
-      <main className="max-w-7xl mx-auto px-6 md:px-8 py-8 md:py-12">
+      <main className="max-w-7xl mx-auto px-6 md:px-8 pt-20 md:pt-28 pb-8 md:py-12">
         {/* Breadcrumb */}
         <div className="flex items-center text-sm text-gray-500 overflow-x-auto whitespace-nowrap mb-8">
             <button onClick={onGoHome} className="flex items-center hover:text-primary-600 transition-colors">

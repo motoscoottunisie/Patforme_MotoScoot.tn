@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { 
   ArrowLeft, 
@@ -69,95 +68,91 @@ const TipDetails: React.FC<TipDetailsProps> = ({
         onLogout={onLogout}
       />
 
-      <main>
-        {/* Header / Hero Section */}
-        <div className="bg-white border-b border-gray-200 pb-8 md:pb-12 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-            <div className="max-w-7xl mx-auto px-6 md:px-8 pt-6 md:pt-10">
-                
-                {/* Breadcrumb & Back */}
-                <div className="flex items-center justify-between mb-8">
-                    <button 
-                      onClick={onBack}
-                      className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary-600 transition-colors group"
-                    >
-                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                        Retour aux conseils
-                    </button>
-                    <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
-                        <span onClick={() => onNavigate?.('tips')} className="hover:text-gray-900 cursor-pointer transition-colors">Conseils</span>
-                        <ChevronRight size={14} />
-                        <span className="text-gray-900 font-medium">{tip.category}</span>
+      <main className="pt-20 md:pt-24">
+        {/* Title & Metadata Section - Now integrated directly on the page background */}
+        <div className="max-w-7xl mx-auto px-6 md:px-8 py-6 md:py-8">
+            
+            {/* Breadcrumb & Back */}
+            <div className="flex items-center justify-between mb-6">
+                <button 
+                  onClick={onBack}
+                  className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary-600 transition-colors group"
+                >
+                    <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                    Retour aux conseils
+                </button>
+                <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
+                    <span onClick={() => onNavigate?.('tips')} className="hover:text-gray-900 cursor-pointer transition-colors">Conseils</span>
+                    <ChevronRight size={14} />
+                    <span className="text-gray-900 font-medium">{tip.category}</span>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Header Info (8 cols) */}
+                <div className="lg:col-span-8">
+                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getDifficultyColor(tip.difficulty)}`}>
+                            {tip.difficulty}
+                        </span>
+                        <span className="px-3 py-1 rounded-full bg-white text-gray-600 text-[10px] font-black uppercase tracking-widest border border-gray-200">
+                            {tip.category}
+                        </span>
+                    </div>
+                    
+                    <h1 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight mb-6 tracking-tight">
+                        {tip.title}
+                    </h1>
+
+                    <div className="flex flex-wrap items-center gap-6 text-xs text-gray-500 font-bold uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-black border border-primary-200">
+                                {tip.author.charAt(0)}
+                            </div>
+                            <span className="text-gray-900">{tip.author}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <Clock size={16} className="text-gray-400" />
+                            <span>{tip.readTime}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <Calendar size={16} className="text-gray-400" />
+                            <span>{tip.date}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-                    
-                    {/* Header Info (8 cols) */}
-                    <div className="lg:col-span-8">
-                        <div className="flex flex-wrap items-center gap-3 mb-4">
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${getDifficultyColor(tip.difficulty)}`}>
-                                {tip.difficulty}
-                            </span>
-                            <span className="px-3 py-1 rounded-full bg-gray-50 text-gray-600 text-xs font-bold uppercase tracking-wide border border-gray-200">
-                                {tip.category}
-                            </span>
-                        </div>
-                        
-                        <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6 tracking-tight">
-                            {tip.title}
-                        </h1>
-
-                        <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 font-medium">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold border border-primary-200">
-                                    {tip.author.charAt(0)}
-                                </div>
-                                <span className="text-gray-900">{tip.author}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <Clock size={16} className="text-gray-400" />
-                                <span>{tip.readTime}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <Calendar size={16} className="text-gray-400" />
-                                <span>{tip.date}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Desktop Actions (4 cols) */}
-                    <div className="hidden lg:flex lg:col-span-4 justify-end">
-                       <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 hover:text-primary-600 hover:border-gray-300 transition-all shadow-sm active:scale-95">
-                          <Share2 size={18} />
-                          Partager ce guide
-                       </button>
-                    </div>
-
+                {/* Desktop Actions (4 cols) */}
+                <div className="hidden lg:flex lg:col-span-4 justify-end pt-2">
+                   <button className="flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 bg-white text-gray-700 font-bold hover:bg-gray-50 hover:text-primary-600 hover:border-primary-300 transition-all shadow-sm active:scale-95">
+                      <Share2 size={18} />
+                      Partager
+                   </button>
                 </div>
             </div>
         </div>
 
         {/* Content Layout */}
-        <div className="max-w-7xl mx-auto px-6 md:px-8 -mt-8">
+        <div className="max-w-7xl mx-auto px-6 md:px-8">
            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
               
               {/* LEFT COLUMN: Main Content (8 cols) */}
               <div className="lg:col-span-8">
                  
                  {/* Hero Image */}
-                 <div className="rounded-2xl md:rounded-3xl overflow-hidden shadow-md mb-10 aspect-video relative z-10 border border-gray-100">
+                 <div className="rounded-2xl md:rounded-3xl overflow-hidden shadow-lg mb-10 aspect-video relative border border-gray-100 bg-white">
                     <img src={tip.image} alt={tip.title} className="w-full h-full object-cover" />
                  </div>
 
-                 {/* Intro Summary - Subtle Shadow */}
-                 <div className="bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] mb-10">
-                     <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-medium">
+                 {/* Intro Summary */}
+                 <div className="bg-white rounded-2xl p-6 md:p-8 border border-gray-100 shadow-sm mb-10">
+                     <p className="text-lg md:text-xl text-gray-700 leading-relaxed font-semibold italic">
                         {tip.summary}
                      </p>
                  </div>
 
-                 {/* Rich Content Body - Subtle Shadow */}
-                 <div className="bg-white rounded-3xl p-6 md:p-10 border border-gray-200 shadow-[0_2px_12px_rgba(0,0,0,0.04)] mb-12">
+                 {/* Rich Content Body */}
+                 <div className="bg-white rounded-3xl p-6 md:p-10 border border-gray-100 shadow-sm mb-12">
                     <div 
                       className="prose prose-lg prose-slate max-w-none
                         prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
@@ -170,23 +165,23 @@ const TipDetails: React.FC<TipDetailsProps> = ({
                  </div>
 
                  {/* Feedback Section */}
-                 <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 text-center mb-16">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6">Ce guide vous a-t-il été utile ?</h3>
+                 <div className="bg-gray-100/50 border border-gray-200 rounded-3xl p-8 text-center mb-16">
+                    <h3 className="text-lg font-bold text-gray-900 mb-6 uppercase tracking-wider">Ce guide vous a-t-il été utile ?</h3>
                     <div className="flex justify-center gap-4">
                        <button 
                          onClick={() => setHelpful('yes')}
-                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all border ${helpful === 'yes' ? 'bg-success-600 text-white border-success-600 shadow-md transform scale-105' : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200 hover:border-gray-300 shadow-sm'}`}
+                         className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black transition-all border uppercase text-xs tracking-widest ${helpful === 'yes' ? 'bg-success-600 text-white border-success-600 shadow-xl scale-105' : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200 shadow-sm'}`}
                        >
-                          <ThumbsUp size={20} /> Oui, merci !
+                          <ThumbsUp size={18} /> Oui
                        </button>
                        <button 
                          onClick={() => setHelpful('no')}
-                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all border ${helpful === 'no' ? 'bg-gray-800 text-white border-gray-800 shadow-md transform scale-105' : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200 hover:border-gray-300 shadow-sm'}`}
+                         className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black transition-all border uppercase text-xs tracking-widest ${helpful === 'no' ? 'bg-gray-800 text-white border-gray-800 shadow-xl scale-105' : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200 shadow-sm'}`}
                        >
-                          <ThumbsDown size={20} /> Pas vraiment
+                          <ThumbsDown size={18} /> Non
                        </button>
                     </div>
-                    {helpful === 'yes' && <p className="text-success-600 font-bold mt-4 animate-fade-in-up flex items-center justify-center gap-2"><CheckCircle2 size={18}/> Merci pour votre retour !</p>}
+                    {helpful === 'yes' && <p className="text-success-600 font-black mt-6 animate-fade-in-up flex items-center justify-center gap-2 uppercase text-xs tracking-widest"><CheckCircle2 size={18}/> Merci pour votre retour !</p>}
                  </div>
 
               </div>
@@ -197,13 +192,13 @@ const TipDetails: React.FC<TipDetailsProps> = ({
                  {/* Toolkit Card (Sticky) */}
                  <div className="sticky top-24 space-y-6">
                     
-                    {/* Tools Needed - Reduced Shadow */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                       <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4 flex items-center gap-3">
-                          <div className="bg-white/20 p-1.5 rounded-lg">
-                             <Wrench className="text-white" size={18} />
+                    {/* Tools Needed */}
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                       <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5 flex items-center gap-3">
+                          <div className="bg-white/10 p-2 rounded-lg">
+                             <Wrench className="text-white" size={20} />
                           </div>
-                          <h3 className="font-bold text-white text-lg">Ce qu'il vous faut</h3>
+                          <h3 className="font-black text-white text-base uppercase tracking-wider">Matériel Requis</h3>
                        </div>
                        <div className="p-6">
                           {tip.tools && tip.tools.length > 0 ? (
@@ -213,43 +208,43 @@ const TipDetails: React.FC<TipDetailsProps> = ({
                                       <div className="w-5 h-5 rounded-full bg-primary-50 text-primary-600 border border-primary-100 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary-600 group-hover:text-white transition-colors">
                                          <CheckCircle2 size={12} />
                                       </div>
-                                      <span className="text-gray-700 font-medium text-sm leading-tight pt-0.5">{tool}</span>
+                                      <span className="text-gray-700 font-bold text-sm leading-tight pt-0.5">{tool}</span>
                                    </li>
                                 ))}
                              </ul>
                           ) : (
-                             <p className="text-gray-500 italic text-sm">Aucun matériel spécifique requis pour ce conseil.</p>
+                             <p className="text-gray-400 italic text-sm">Aucun matériel spécifique requis.</p>
                           )}
                        </div>
                     </div>
 
-                    {/* Quick Stats Card - Reduced Shadow */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-                       <h3 className="font-bold text-gray-900 mb-5 flex items-center gap-2">
-                          <Lightbulb className="text-warning-500 fill-warning-500" size={20} />
+                    {/* Quick Stats Card */}
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                       <h3 className="font-black text-gray-900 mb-5 flex items-center gap-2 uppercase text-xs tracking-widest">
+                          <Lightbulb className="text-warning-500 fill-warning-400" size={18} />
                           En bref
                        </h3>
                        <div className="space-y-4">
                           <div className="flex justify-between items-center pb-3 border-b border-gray-50">
-                             <span className="text-gray-500 text-sm font-medium">Difficulté</span>
-                             <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold uppercase border ${getDifficultyColor(tip.difficulty)}`}>{tip.difficulty}</span>
+                             <span className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Difficulté</span>
+                             <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase border ${getDifficultyColor(tip.difficulty)}`}>{tip.difficulty}</span>
                           </div>
                           <div className="flex justify-between items-center pb-3 border-b border-gray-50">
-                             <span className="text-gray-500 text-sm font-medium">Temps estimé</span>
-                             <span className="font-bold text-gray-900 text-sm">{tip.readTime}</span>
+                             <span className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Temps</span>
+                             <span className="font-black text-gray-900 text-xs">{tip.readTime}</span>
                           </div>
                           <div className="flex justify-between items-center">
-                             <span className="text-gray-500 text-sm font-medium">Catégorie</span>
-                             <span className="font-bold text-gray-900 text-sm">{tip.category}</span>
+                             <span className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Catégorie</span>
+                             <span className="font-black text-gray-900 text-xs uppercase">{tip.category}</span>
                           </div>
                        </div>
                     </div>
 
                     {/* Disclaimer */}
-                    <div className="bg-orange-50 rounded-xl p-4 border border-orange-100 flex gap-3 items-start">
+                    <div className="bg-orange-50 rounded-2xl p-5 border border-orange-100 flex gap-3 items-start">
                        <AlertTriangle className="text-orange-500 flex-shrink-0 mt-0.5" size={18} />
-                       <p className="text-xs text-orange-900 leading-relaxed font-medium">
-                          <strong>Note :</strong> La mécanique moto comporte des risques. En cas de doute, consultez toujours un professionnel.
+                       <p className="text-[10px] text-orange-900 leading-relaxed font-bold uppercase tracking-tight">
+                          Note : La mécanique moto comporte des risques. En cas de doute, consultez un professionnel certifié.
                        </p>
                     </div>
 
@@ -262,38 +257,36 @@ const TipDetails: React.FC<TipDetailsProps> = ({
         {/* Read Next Section */}
         <section className="bg-white mt-12 py-16 md:py-24 border-t border-gray-100">
             <div className="max-w-7xl mx-auto px-6 md:px-8">
-                <div className="flex items-center justify-between mb-10">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Autres conseils utiles</h2>
-                </div>
+                <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mb-10 uppercase">À consulter également</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {relatedTips.map(rel => (
                         <div 
                           key={rel.id} 
                           onClick={() => onNavigate?.('tip-details', { id: rel.id })}
-                          className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition-all cursor-pointer group border border-gray-200 flex flex-col h-full hover:-translate-y-1 duration-300"
+                          className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer group border border-gray-100 flex flex-col h-full hover:-translate-y-1 duration-300"
                         >
                             <div className="relative h-48 overflow-hidden bg-gray-100">
                                 <img src={rel.image} alt={rel.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
                                 <div className="absolute top-3 left-3">
-                                    <span className="px-2.5 py-1 bg-white/95 backdrop-blur-sm text-xs font-bold uppercase tracking-wider rounded-lg text-gray-800 shadow-sm">
+                                    <span className="px-2.5 py-1 bg-white/95 backdrop-blur-md text-[10px] font-black uppercase tracking-widest rounded-lg text-gray-800 shadow-sm border border-white/50">
                                         {rel.category}
                                     </span>
                                 </div>
                             </div>
-                            <div className="p-5 flex flex-col flex-1">
-                                <div className="flex items-center gap-2 text-xs text-gray-500 mb-2 font-medium">
+                            <div className="p-6 flex flex-col flex-1">
+                                <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
                                    <span className={`w-2 h-2 rounded-full ${rel.difficulty === 'Expert' ? 'bg-red-500' : rel.difficulty === 'Intermédiaire' ? 'bg-warning-500' : 'bg-success-500'}`}></span>
                                    {rel.difficulty}
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors line-clamp-2 leading-tight">
+                                <h3 className="text-lg font-black text-gray-900 mb-3 group-hover:text-primary-600 transition-colors line-clamp-2 leading-tight">
                                     {rel.title}
                                 </h3>
-                                <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">
+                                <p className="text-sm text-gray-500 line-clamp-2 mb-6 flex-1 font-medium">
                                     {rel.summary}
                                 </p>
-                                <span className="text-sm font-bold text-primary-600 flex items-center gap-1 mt-auto group-hover:gap-2 transition-all">
-                                    Consulter <ChevronRight size={16} />
+                                <span className="text-xs font-black text-primary-600 flex items-center gap-1 mt-auto uppercase tracking-widest group-hover:gap-2 transition-all">
+                                    Lire la suite <ChevronRight size={16} />
                                 </span>
                             </div>
                         </div>
