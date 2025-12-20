@@ -6,6 +6,8 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+  const LOGO_WHITE = "https://www.magma-studio.tn/portfolio2/moto/Logo/logo-white.svg";
+
   return (
     <footer className="bg-neutral-900 text-white pt-16 pb-8 border-t border-neutral-800" role="contentinfo">
       <div className="max-w-7xl mx-auto px-6 md:px-20 lg:px-32">
@@ -13,14 +15,16 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Brand Column */}
           <div className="space-y-6">
             <button 
-              className="flex items-center gap-3 cursor-pointer group focus:outline-none text-left" 
+              className="flex flex-col items-start gap-4 cursor-pointer group focus:outline-none text-left" 
               onClick={() => onNavigate?.('home')}
               aria-label="Retour à l'accueil"
             >
-               <div className="bg-primary-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-110">
-                 <span className="font-black text-xl text-white font-sans translate-y-[1px]">M</span>
-              </div>
-              <span className="text-xl font-extrabold tracking-tight group-hover:text-primary-500 transition-colors">MotoScoot.tn</span>
+               <img 
+                 src={LOGO_WHITE} 
+                 alt="MotoScoot.tn" 
+                 className="h-6 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+               />
+               <p className="text-gray-400 text-xs font-bold uppercase tracking-[0.2em] group-hover:text-primary-500 transition-colors">La référence moto</p>
             </button>
             <p className="text-gray-300 text-sm leading-relaxed">
               La référence en Tunisie pour l'achat et la vente de motos d'occasion et neuves. Trouvez votre liberté sur deux roues.

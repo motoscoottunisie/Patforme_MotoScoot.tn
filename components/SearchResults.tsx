@@ -282,15 +282,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
     }
   };
 
-  const getBadgeStyle = (condition: string) => {
-    switch (condition) {
-      case 'Excellent': return 'bg-success-100/70 text-success-700 border-success-200/50'; 
-      case 'Très bon': return 'bg-primary-100/70 text-primary-700 border-primary-200/50'; 
-      case 'Bon': return 'bg-warning-100/70 text-warning-700 border-warning-200/50';
-      default: return 'bg-gray-100/70 text-gray-800 border-gray-200/50';
-    }
-  };
-
   const getDealInfo = (rating?: number) => {
       switch (rating) {
           case 3: return { label: 'Super affaire', color: 'bg-success-500', textColor: 'text-success-600', bgColor: 'bg-success-50' };
@@ -361,7 +352,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
               <Home className="w-4 h-4 mr-1" aria-hidden="true" />
               <span>Accueil</span>
             </button>
-            <ChevronRight className="w-4 h-4 mx-2 text-gray-300 flex-shrink-0" aria-hidden="true" />
+            <ChevronRight className="w-4 h-4 mx-2 text-gray-300" aria-hidden="true" />
             <span className="font-semibold text-gray-900 flex-shrink-0" aria-current="page">Résultats</span>
           </nav>
 
@@ -558,9 +549,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
               <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6' : 'flex flex-col md:grid md:grid-cols-3 lg:flex lg:flex-col gap-6'}>
                 {filteredListings.map((listing, index) => {
                    const isGrid = viewMode === 'grid';
-                   const dealInfo = getDealInfo(listing.dealRating);
                    const favorited = isFavorite('listing', listing.id);
                    const isItemAccessory = listing.type === 'Accessoires';
+                   const dealInfo = getDealInfo(listing.dealRating);
                    
                    return (
                   <React.Fragment key={listing.id}>
@@ -576,11 +567,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                             alt={listing.title} 
                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
                           />
-                          <div className="absolute top-3 left-3">
-                            <span className={`px-2 py-1 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-wider shadow-sm border ${getBadgeStyle(listing.condition)} backdrop-blur-md bg-opacity-70`}>
-                                {listing.condition}
-                            </span>
-                          </div>
                           <button 
                             onClick={(e) => handleFavoriteClick(e, listing.id)}
                             className={`absolute top-3 right-3 p-2 backdrop-blur-md bg-white/70 rounded-full transition-colors ${!isGrid ? 'lg:hidden' : ''} ${favorited ? 'bg-red-50 text-red-500' : 'text-gray-400 hover:text-red-500'}`}
@@ -626,17 +612,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                   </>
                                )}
                             </div>
-
-                            {(listing.dealRating && (isGrid || true)) && (
-                              <div className="flex items-center gap-3 mt-2 lg:mt-2">
-                                 <div className="flex items-center gap-1 w-24">
-                                     {[1, 2, 3].map(level => (
-                                       <div key={level} className={`h-1.5 flex-1 rounded-full ${listing.dealRating! >= level ? dealInfo.color : 'bg-gray-200'}`}></div>
-                                     ))}
-                                 </div>
-                                 <span className={`text-xs font-bold ${dealInfo.textColor}`}>{dealInfo.label}</span>
-                              </div>
-                            )}
 
                             <div className={`mt-auto pt-4 ${isGrid ? 'border-t border-gray-50' : 'md:pt-4 lg:pt-3 lg:border-t-0'} flex items-center gap-2`}>
                                 {listing.sellerType === 'Pro' ? (
