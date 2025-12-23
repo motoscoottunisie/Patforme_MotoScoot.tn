@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AdCampaign } from '../types';
 
@@ -25,8 +24,8 @@ const initialAds: AdCampaign[] = [
     startDate: '2025-01-01', 
     endDate: '2025-12-31', 
     mediaType: 'Image', 
-    mediaUrl: '', // Using CSS/Layout for this specific native ad in current implementation, but normally would be an image URL
-    linkUrl: '#',
+    mediaUrl: 'https://www.magma-studio.tn/portfolio2/moto/pub/Pub_listingdetails.jpg', 
+    linkUrl: 'https://www.comar.tn/fr/particuliers/auto-moto',
     ctaText: 'Faire un devis',
     description: 'Assurez cette moto en 2 min. Comparateur gratuit, jusqu\'à -40% sur votre assurance.',
     isActive: true, 
@@ -35,20 +34,37 @@ const initialAds: AdCampaign[] = [
   },
   { 
     id: 2, 
-    title: 'Pièces Détachées', 
+    title: 'Équipement Motard', 
+    client: 'Moto Expert', 
+    zone: 'search_sidebar', 
+    location: 'National', 
+    startDate: '2025-02-01', 
+    endDate: '2025-12-31', 
+    mediaType: 'Image', 
+    mediaUrl: 'https://www.magma-studio.tn/portfolio2/moto/pub/Pub_searchresiults_carr%c3%a9.jpg',
+    linkUrl: 'https://www.moto-expert.fr/equipement-motard',
+    ctaText: 'Découvrir',
+    description: 'Trouvez les meilleurs équipements pour votre sécurité au meilleur prix.',
+    isActive: true, 
+    views: 9400, 
+    clicks: 310 
+  },
+  { 
+    id: 5, 
+    title: 'Promotions Accessoires', 
     client: 'Moto Expert', 
     zone: 'garage_sidebar', 
-    location: 'Tunis', 
+    location: 'National', 
     startDate: '2025-02-01', 
-    endDate: '2025-06-01', 
+    endDate: '2025-12-31', 
     mediaType: 'Image', 
-    mediaUrl: '',
-    linkUrl: '#',
+    mediaUrl: 'https://www.magma-studio.tn/portfolio2/moto/pub/Pub_searchresiults_carr%c3%a9.jpg',
+    linkUrl: 'https://www.moto-expert.fr/accessoires-moto',
     ctaText: 'Découvrir',
-    description: 'Large choix de pièces moto d\'origine au meilleur prix.',
+    description: 'Équipez votre moto avec les meilleures marques.',
     isActive: true, 
-    views: 8200, 
-    clicks: 120 
+    views: 5200, 
+    clicks: 180 
   },
   { 
     id: 3, 
@@ -60,7 +76,7 @@ const initialAds: AdCampaign[] = [
     endDate: '2025-03-15', 
     mediaType: 'Image', 
     mediaUrl: 'https://placehold.co/1200x200/1e293b/ffffff?text=YAMAHA+REV+YOUR+HEART+-+PROMO+HIVER',
-    linkUrl: '#',
+    linkUrl: 'https://www.yamaha-motor.tn/offres',
     isActive: true, 
     views: 4500, 
     clicks: 80 
@@ -75,7 +91,7 @@ const initialAds: AdCampaign[] = [
     endDate: '2025-12-31', 
     mediaType: 'Image', 
     mediaUrl: '',
-    linkUrl: '#',
+    linkUrl: 'https://www.banquezitouna.com/fr/particuliers/financements/tamwil-sayara',
     ctaText: 'Voir l\'offre',
     description: 'Financez l\'achat de votre moto avec un taux préférentiel. Réponse immédiate.',
     isActive: true, 
@@ -117,14 +133,12 @@ export const AdsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const getAdByZone = (zone: string) => {
-    // Return a random active ad for the requested zone
     const validAds = ads.filter(ad => ad.zone === zone && ad.isActive);
     if (validAds.length === 0) return undefined;
     return validAds[Math.floor(Math.random() * validAds.length)];
   };
 
   const trackView = (id: number) => {
-    // In a real app, this would debounce and send to API
     setAds(prev => prev.map(ad => ad.id === id ? { ...ad, views: ad.views + 1 } : ad));
   };
 

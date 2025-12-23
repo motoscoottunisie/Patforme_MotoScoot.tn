@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export interface Listing {
@@ -6,6 +5,7 @@ export interface Listing {
   title: string;
   price: string;
   image: string;
+  images?: string[]; // Galerie de photos spécifique
   year: string;
   mileage: string;
   cc: string;
@@ -17,6 +17,7 @@ export interface Listing {
   dealRating?: 1 | 2 | 3; // 1: Prix du marché, 2: Bonne affaire, 3: Super affaire
   equipment?: string[];
   type: 'Moto' | 'Scooter' | 'Accessoires'; // Added for accurate filtering
+  description?: string; // Champ de description personnalisé
 }
 
 export interface GarageService {
@@ -154,7 +155,7 @@ export interface AdCampaign {
   id: number;
   title: string;
   client: string;
-  zone: 'news_top' | 'search_feed' | 'garage_sidebar' | 'listing_sidebar';
+  zone: 'news_top' | 'search_feed' | 'garage_sidebar' | 'listing_sidebar' | 'search_sidebar';
   location: string;
   startDate: string;
   endDate: string;

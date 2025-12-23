@@ -1,4 +1,3 @@
-
 import { Listing, Garage, Article, BikeModel, Review, Tip, TechSpec } from '../types';
 
 // --- SHARED DATA CONSTANTS ---
@@ -17,7 +16,7 @@ export const mockModels = [
   "Street Triple 675", "Street Triple 765", "Bonneville T100", "Bonneville T120", "Tiger 800", "Tiger 900",
   "Scrambler 800", "Monster 821", "Monster 937", "Panigale V4", "Multistrada V4",
   "Vespa GTS 300", "Beverly 300", "Beverly 400", "Liberty 125",
-  "Fiddle II", "Fiddle III", "Symphony ST", "Jet 14", "Orbit II", "Kisbee",
+  "Fiddle II", "Fiddle III", "Fiddle 4", "Symphony ST", "Jet 14", "Orbit II", "Kisbee",
   "350 E", "310 M", "125 M", "350 D"
 ];
 
@@ -87,7 +86,7 @@ export const mockTechSpecs: TechSpec[] = [
   {
     id: 2,
     brand: "Yamaha",
-    model: "TMAX 560 Tech MAX",
+    model: "TMAX 562 Tech MAX",
     year: 2024,
     category: "Scooter",
     priceNew: "54 000 DT",
@@ -272,6 +271,29 @@ export const mockTechSpecs: TechSpec[] = [
 ];
 
 export const mockListings: Listing[] = [
+  {
+    id: 19,
+    title: "SYM Fiddle 4",
+    price: "8 200 TND",
+    image: "https://www.magma-studio.tn/portfolio2/moto/sym/Sym_Fiddle_4_Ariana.jpg",
+    images: [
+      "https://www.magma-studio.tn/portfolio2/moto/sym/Sym_Fiddle_4_Ariana.jpg",
+      "https://www.magma-studio.tn/portfolio2/moto/sym/Sym_Fiddle_4_Ariana_2.jpg",
+      "https://www.magma-studio.tn/portfolio2/moto/sym/Sym_Fiddle_4_Ariana_3.jpg"
+    ],
+    year: "2024",
+    mileage: "1 200 km",
+    cc: "125 cm³",
+    location: "Ariana",
+    date: "Aujourd'hui",
+    seller: "Ahmed B.",
+    sellerType: "Particulier",
+    condition: "État neuf",
+    description: "Ceci est un exemple d'annonce",
+    dealRating: 2,
+    type: "Scooter",
+    equipment: ["USB", "Top Case", "LED"]
+  },
   {
     id: 1,
     title: "Yamaha MT-07",
@@ -595,14 +617,15 @@ export const mockGarages: Garage[] = [
     isVerified: true,
     phone: "+216 71 123 456",
     email: "contact@blayah-moto.tn",
+    coordinates: { lat: 36.7585, lng: 10.1915 },
     images: [
       "https://www.magma-studio.tn/portfolio2/moto/Blayah.jpg",
       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=800&q=80"
     ],
     services: [
-      { name: "Vidange simple + Contrôle", price: "À partir de 45 DT" },
-      { name: "Changement Kit Chaîne", price: "Sur devis" },
+      { name: "Vidange + controle", price: "À partir de 45 DT" },
+      { name: "Changement chaine", price: "Sur devis" },
       { name: "Diagnostic Valise", price: "60 DT" },
       { name: "Montage Pneumatiques", price: "15 DT / roue" }
     ],
@@ -648,6 +671,7 @@ export const mockGarages: Garage[] = [
     specialties: ["Tuning", "Accessoires", "Moto"],
     isVerified: true,
     phone: "+216 73 111 222",
+    coordinates: { lat: 35.8256, lng: 10.6084 },
     images: [
       "https://images.unsplash.com/photo-1504222490345-c075b6008014?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1558981806-ec527fa84f3d?auto=format&fit=crop&w=800&q=80"
@@ -680,6 +704,7 @@ export const mockGarages: Garage[] = [
     specialties: ["Scooter", "Rapide", "Pièces détachées"],
     isVerified: false,
     phone: "+216 22 333 444",
+    coordinates: { lat: 36.8625, lng: 10.1956 },
     services: [
         { name: "Forfait Révision Scooter 50cc", price: "50 DT" },
         { name: "Remplacement Courroie", price: "Sur devis" }
@@ -698,6 +723,7 @@ export const mockGarages: Garage[] = [
     specialties: ["Restauration", "Classique", "Peinture"],
     isVerified: true,
     phone: "+216 74 555 666",
+    coordinates: { lat: 34.7406, lng: 10.7603 },
     services: [
         { name: "Restauration Complète", price: "Sur devis" },
         { name: "Réglage Carburateur", price: "À partir de 90 DT" }
@@ -715,6 +741,7 @@ export const mockGarages: Garage[] = [
     specialties: ["Pneumatiques", "Moto", "Scooter"],
     isVerified: false,
     phone: "+216 20 888 999",
+    coordinates: { lat: 36.4561, lng: 10.7376 },
     services: [
         { name: "Montage Pneu", price: "10 DT" },
         { name: "Équilibrage", price: "10 DT" }
@@ -732,6 +759,7 @@ export const mockGarages: Garage[] = [
     specialties: ["Électrique", "Diagnostic", "Eco"],
     isVerified: true,
     phone: "+216 25 444 777",
+    coordinates: { lat: 36.8848, lng: 10.3239 },
     services: [
         { name: "Diagnostic Batterie", price: "80 DT" },
         { name: "Mise à jour Logiciel", price: "50 DT" }
@@ -766,7 +794,7 @@ const articleContent = `
   </p>
 
   <p class="mb-6 text-gray-700 leading-relaxed">
-    L'ergonomie est aussi revue pour s'adapter à une plus grande variété de gabarits. Selles réglables, guidons ajustables, bulles électriques... le confort n'est plus une option, c'est une exigence pour ceux qui roulent au quotidien.
+    L'ergonomie est aussi revue pour s'adapter à une plus grande variety de gabarits. Selles réglables, guidons ajustables, bulles électriques... le confort n'est plus une option, c'est une exigence pour ceux qui roulent au quotidien.
   </p>
 
   <h3 class="text-2xl font-bold text-gray-900 mb-4">Notre verdict</h3>
@@ -831,7 +859,7 @@ export const mockArticles: Article[] = [
     date: "15 Oct 2025",
     readTime: "5 min",
     author: "Karim Ben Amor",
-    summary: "BMW Motorrad repousse encore les limites avec sa nouvelle GS Adventure. Plus légère, plus puissante et bardée de technologies, elle promet de redéfinir le segment trail.",
+    summary: "BMW Motorrad repousse encore les limites with sa nouvelle GS Adventure. Plus légère, plus puissante et bardée de technologies, elle promet de redéfinir le segment trail.",
     content: articleContent,
     tags: ["BMW", "Trail", "Adventure", "Nouveauté 2025"],
     isFeatured: true
@@ -844,7 +872,7 @@ export const mockArticles: Article[] = [
     date: "12 Oct 2025",
     readTime: "8 min",
     author: "Sarah Mansouri",
-    summary: "Après 20 ans de règne, le TMAX revient avec une mise à jour esthétique et technologique. Suffisant pour garder sa couronne face au Forza 750 ?",
+    summary: "Après 20 ans de règne, le TMAX revient with une mise à jour esthétique et technologique. Suffisant pour garder sa couronne face au Forza 750 ?",
     content: articleContent,
     tags: ["Yamaha", "Scooter", "TMAX", "Essai"],
     isFeatured: false
@@ -883,7 +911,7 @@ export const mockArticles: Article[] = [
     date: "05 Oct 2025",
     readTime: "4 min",
     author: "Sarah Mansouri",
-    summary: "Honda entre enfin dans la danse de la mobilité urbaine électrique avec le EM1 e:. Idéal pour les trajets courts en centre-ville.",
+    summary: "Honda entre enfin dans la danse de la mobilité urbaine électrique with le EM1 e:. Idéal pour les trajets courts en centre-ville.",
     content: articleContent,
     tags: ["Honda", "Electrique", "Urbain"],
     isFeatured: false
@@ -948,7 +976,7 @@ export const mockArticles: Article[] = [
     date: "18 Sept 2025",
     readTime: "4 min",
     author: "Pierre Martin",
-    summary: "Triumph s'attaque au marché des petites cylindrées avec brio. Finition premium et moteur joueur au programme.",
+    summary: "Triumph s'attaque au marché des petites cylindrées with brio. Finition premium et moteur joueur au programme.",
     content: articleContent,
     tags: ["Triumph", "A2", "Néo-Rétro"],
     isFeatured: false
@@ -1069,7 +1097,7 @@ export const mockTips: Tip[] = [
     author: "Atelier Expert",
     readTime: "15 min",
     difficulty: "Intermédiaire",
-    summary: "Une opération d'entretien accessible avec un peu d'outillage. Tuto pas à pas pour remplacer vos plaquettes usées.",
+    summary: "Une opération d'entretien accessible with un peu d'outillage. Tuto pas à pas pour remplacer vos plaquettes usées.",
     content: tipContent,
     tools: ["Clés Allen", "Pince multiprise", "Nettoyant frein", "Plaquettes neuves"]
   },

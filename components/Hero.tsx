@@ -5,7 +5,8 @@ import {
   Layers,
   ChevronDown,
   Bike,
-  ShoppingBag // Added for accessories icon
+  ShoppingBag,
+  Navigation
 } from 'lucide-react';
 import { tunisianCities, brandsMoto, mockModels, accessoryTypes } from '../data/mockData';
 import Header from './layout/Header';
@@ -86,8 +87,9 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
   const [type, setType] = useState("");
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
-  const [accessoryCategory, setAccessoryCategory] = useState(""); // New state for accessory type
+  const [accessoryCategory, setAccessoryCategory] = useState("");
   const [location, setLocation] = useState("");
+  const [isLocating, setIsLocating] = useState(false);
 
   // Reset dependent fields when Type changes
   useEffect(() => {
@@ -96,16 +98,50 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
     setAccessoryCategory("");
   }, [type]);
 
+  const handleLocationRequest = () => {
+    if (!navigator.geolocation) return;
+    
+    setIsLocating(true);
+    // Options optimisées pour éviter "Position update unavailable"
+    const geoOptions = {
+      enableHighAccuracy: false, // Plus stable sur desktop/réseaux mobiles
+      timeout: 10000, 
+      maximumAge: 300000 // 5 minutes de cache
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setIsLocating(false);
+        setLocation("Ma position");
+      },
+      (error) => {
+        setIsLocating(false);
+        setLocation("");
+        console.warn("Géolocalisation Hero ignorée:", error.message || "Erreur inconnue");
+      },
+      geoOptions
+    );
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === "around_me") {
+      handleLocationRequest();
+    } else {
+      setLocation(val);
+    }
+  };
+
   const handleSearchClick = () => {
     if (onSearch) {
       const isAccessory = type === 'Accessoires';
       onSearch({
         type,
-        // If it's an accessory, pass the category as a search keyword to find matches
         search: isAccessory ? accessoryCategory : "", 
         brand: isAccessory ? "" : brand,
         model: isAccessory ? "" : model,
-        location
+        location: location === "Ma position" ? "" : location,
+        aroundMe: location === "Ma position"
       });
     }
   };
@@ -115,7 +151,6 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
       const isAccessorySub = ["Casques", "Vestes", "Gants"].includes(categoryLabel);
       onSearch({
         type: isAccessorySub || categoryLabel === "Accessoires" ? "Accessoires" : categoryLabel,
-        // If clicking a specific accessory icon, pre-fill the search
         search: isAccessorySub ? categoryLabel.slice(0, -1) : "", 
         brand: "",
         model: "",
@@ -273,21 +308,29 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
 
             {/* Input 4: Location */}
             <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group">
-              <MapPin className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
+              <MapPin className={`w-5 h-5 mr-3 flex-shrink-0 transition-colors ${location === "Ma position" ? "text-primary-600" : "text-gray-400"}`} />
               <div className="flex-1 relative">
                 <label htmlFor="search-city" className="sr-only">Ville</label>
                 <select 
                   id="search-city"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
+                  value={location === "Ma position" ? "around_me" : location}
+                  onChange={handleLocationChange}
+                  className={`w-full bg-transparent outline-none font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none ${location === "Ma position" ? "text-primary-600" : "text-gray-700"}`}
                 >
                   <option value="" disabled>Ville</option>
+                  <option value="around_me" className="font-bold text-primary-600">Autour de moi</option>
+                  <option disabled>──────────</option>
                   {tunisianCities.map((city) => (
                     <option key={city} value={city}>{city}</option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" aria-hidden="true" />
+                {isLocating ? (
+                   <div className="absolute right-0 top-1/2 transform -translate-y-1/2">
+                      <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                   </div>
+                ) : (
+                  <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" aria-hidden="true" />
+                )}
               </div>
             </div>
 

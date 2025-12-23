@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Header from './layout/Header';
 import { mockTips } from '../data/mockData';
+import AdBanner from './common/AdBanner';
 
 interface TipDetailsProps {
   tipId: number;
@@ -239,6 +240,8 @@ const TipDetails: React.FC<TipDetailsProps> = ({
                           </div>
                        </div>
                     </div>
+
+                    <AdBanner zone="listing_sidebar" className="rounded-2xl border border-gray-100 shadow-none overflow-hidden aspect-square" />
 
                     {/* Disclaimer */}
                     <div className="bg-orange-50 rounded-2xl p-5 border border-orange-100 flex gap-3 items-start">

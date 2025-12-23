@@ -361,14 +361,15 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
   const injectTemplate = (phrase: string) => {
     const current = formData.description;
     let textToAdd = phrase
-      .replace("(modèle moto)", formData.model || "(modèle)")
-      .replace("(modèle)", formData.model || "(modèle)")
       .replace("(marque)", formData.brand || "(marque)")
-      .replace("(article)", formData.accessoryType || "(article)")
-      .replace("(état)", formData.condition || "(état)")
+      .replace("(modèle)", formData.model || "(modèle)")
+      .replace("(état)", (formData.condition || "(état)").toLowerCase())
       .replace("(localisation)", formData.city || "(ville)");
 
-    updateField('description', current ? current + "\n– " + textToAdd : "– " + textToAdd);
+    // Clean multiple spaces and trim
+    textToAdd = textToAdd.replace(/\s+/g, ' ').trim();
+
+    updateField('description', current ? current + "\n" + textToAdd : textToAdd);
   };
 
   // --- RENDERERS ---
@@ -388,7 +389,7 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
           <button
             key={item.id}
             onClick={() => handleCategorySelect(item.id as Category)}
-            className={`group p-8 rounded-[2rem] border-2 transition-all text-left flex flex-col gap-4 active:scale-[0.98] ${formData.category === item.id ? 'border-primary-600 bg-primary-50' : 'border-neutral-100 bg-white hover:border-primary-200'}`}
+            className={`group p-8 rounded-[2.5rem] border-2 transition-all text-left flex flex-col gap-4 active:scale-[0.98] ${formData.category === item.id ? 'border-primary-600 bg-primary-50' : 'border-neutral-100 bg-white hover:border-primary-200'}`}
           >
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${formData.category === item.id ? 'bg-primary-600 text-white' : 'bg-neutral-50 text-gray-400 group-hover:bg-primary-100 group-hover:text-primary-600'}`}>
               <item.icon size={28} />
@@ -502,9 +503,26 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
       <div className="pt-8 border-t border-neutral-100 space-y-4">
         <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Description de l'annonce</label>
         <textarea rows={6} value={formData.description} onChange={(e) => updateField('description', e.target.value)} className="w-full px-6 py-5 rounded-[2rem] bg-neutral-50 border border-neutral-200 focus:border-primary-600 focus:bg-white outline-none font-medium text-gray-700 transition-all resize-none shadow-none" placeholder="Décrivez l'historique, l'entretien..." />
+        
+        {/* BOUTONS DE PHRASES PRÉ-ÉCRITES OPTIMISÉS */}
         <div className="flex flex-wrap gap-2">
-          {["Bonjour, je vends ma (modèle)", "État impeccable", "Visible sur (localisation)", "Entretien à jour"].map((p, i) => (
-            <button key={i} onClick={() => injectTemplate(p)} className="px-4 py-2 bg-white border border-neutral-200 rounded-full text-[11px] font-black text-gray-500 hover:border-primary-600 hover:text-primary-600 transition-all shadow-none">+ {p.split(' (')[0]}</button>
+          {[
+            { label: "Vente (modèle)", text: "Je vends ma (marque) (modèle) (état)." },
+            { label: "CG Tunisienne", text: "Carte Grise : Tunisienne." },
+            { label: "Sans papier", text: "Sans papier." },
+            { label: "Prix négociable", text: "Prix légèrement négociable." },
+            { label: "Prix fixe", text: "Prix fixe." },
+            { label: "Échange", text: "Échange possible." },
+            { label: "Visibilité", text: "Visible sur (localisation)." }
+          ].map((item, i) => (
+            <button 
+              key={i} 
+              type="button"
+              onClick={() => injectTemplate(item.text)} 
+              className="px-4 py-2 bg-white border border-neutral-200 rounded-full text-[11px] font-black text-gray-500 hover:border-primary-600 hover:text-primary-600 hover:bg-primary-50 transition-all shadow-none"
+            >
+              + {item.label}
+            </button>
           ))}
         </div>
       </div>

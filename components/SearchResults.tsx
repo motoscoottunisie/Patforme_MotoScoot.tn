@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { 
   Heart, 
   Phone, 
@@ -16,9 +16,17 @@ import {
   LayoutGrid,
   List as ListIcon,
   User,
-  Zap
+  Zap,
+  ArrowUpDown,
+  Check,
+  Shield,
+  BadgeCheck,
+  ArrowRight,
+  Building2,
+  Navigation,
+  Bell,
+  CheckCircle2
 } from 'lucide-react';
-// Added brandsMoto to the import list below
 import { mockListings, mockModels, brandsMoto } from '../data/mockData';
 import Header from './layout/Header';
 import { useFavorites } from '../context/FavoritesContext';
@@ -32,6 +40,21 @@ interface SearchResultsProps {
   onTriggerLogin?: () => void;
   onLogout?: () => void;
 }
+
+type SortOption = 'recent' | 'price_asc' | 'price_desc' | 'year_desc' | 'km_asc' | 'proximity';
+
+// --- UTILS ---
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // Rayon de la Terre en km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return Math.round(R * c * 10) / 10;
+};
 
 const DualRangeSlider = ({ 
   label, 
@@ -69,7 +92,6 @@ const DualRangeSlider = ({
     [min, max]
   );
 
-  // RÉPARATION DU GAUGE (Barre orange entre les handles)
   useEffect(() => {
     if (range.current) {
       const minPercent = getPercent(minVal);
@@ -175,19 +197,16 @@ const DualRangeSlider = ({
 
 const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome, onNavigate, isLoggedIn, onTriggerLogin, onLogout }) => {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
+  
+  // Proximity State
+  const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'denied' | 'error'>('idle');
 
-  useEffect(() => {
-    if (isMobileFilterOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isMobileFilterOpen]);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const [filters, setFilters] = useState({
     search: '',
@@ -195,6 +214,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
     brand: '',
     model: '', 
     location: '',
+    onlyPro: false,
     minYear: 2000,
     maxYear: 2026,
     minKm: 0,
@@ -211,29 +231,119 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
         ...prev,
         ...initialFilters
       }));
+      // Si la recherche initiale vient du hero avec "Ma position", on lance la détection
+      if (initialFilters.aroundMe) {
+        handleLocationDetect();
+      }
     }
   }, [initialFilters]);
 
-  const filteredListings = mockListings.filter(listing => {
-    if (filters.search && !listing.title.toLowerCase().includes(filters.search.toLowerCase()) && !listing.location.toLowerCase().includes(filters.search.toLowerCase())) return false;
-    if (filters.type && filters.type !== 'Tous les types' && listing.type !== filters.type) return false;
-    if (filters.brand && filters.brand !== 'Toutes les marques' && !listing.title.toLowerCase().includes(filters.brand.toLowerCase())) return false;
-    if (filters.model && filters.model !== 'Tous les modèles' && !listing.title.toLowerCase().includes(filters.model.toLowerCase())) return false;
-    if (filters.location && filters.location !== 'Toutes les régions' && filters.location !== 'Toute la Tunisie' && !listing.location.includes(filters.location)) return false;
+  // --- LOCATION DETECTION ---
+  const handleLocationDetect = () => {
+    if (!navigator.geolocation) return;
+    
+    setLocationStatus('loading');
+    
+    const geoOptions = {
+      enableHighAccuracy: false,
+      timeout: 10000, 
+      maximumAge: 300000
+    };
 
-    const price = parseInt(listing.price.replace(/\D/g, ''));
-    if (price < filters.minPrice || price > filters.maxPrice) return false;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        setLocationStatus('success');
+        setSortBy('proximity'); 
+      },
+      (error) => {
+        console.warn("Géolocalisation ignorée:", error.message || "Erreur inconnue");
+        setLocationStatus(error.code === 1 ? 'denied' : 'error');
+      },
+      geoOptions
+    );
+  };
 
-    if (listing.type !== 'Accessoires') {
-        const year = parseInt(listing.year);
-        if (year < filters.minYear || year > filters.maxYear) return false;
-        const km = parseInt(listing.mileage.replace(/\D/g, ''));
-        if (km < filters.minKm || km > filters.maxKm) return false;
-        const cc = parseInt(listing.cc.replace(/\D/g, ''));
-        if (cc < filters.minCC || cc > filters.maxCC) return false;
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileFilterOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
-    return true;
-  });
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileFilterOpen]);
+
+  // --- COMPUTED DATA WITH DISTANCE ---
+  const listingsWithDistance = useMemo(() => {
+    return mockListings.map(listing => {
+        let distance = null;
+        if (userLocation) {
+            // Simulation : les coordonnées dépendent de l'ID pour avoir des distances variées
+            const simLat = 36.8 + (listing.id % 15) * 0.05;
+            const simLng = 10.1 + (listing.id % 15) * 0.05;
+            distance = calculateDistance(userLocation.lat, userLocation.lng, simLat, simLng);
+        }
+        return { ...listing, distance };
+    });
+  }, [userLocation]);
+
+  const filteredAndSortedListings = useMemo(() => {
+    return listingsWithDistance.filter(listing => {
+      if (filters.search && !listing.title.toLowerCase().includes(filters.search.toLowerCase()) && !listing.location.toLowerCase().includes(filters.search.toLowerCase())) return false;
+      if (filters.type && filters.type !== 'Tous les types' && listing.type !== filters.type) return false;
+      if (filters.brand && filters.brand !== 'Toutes les marques' && !listing.title.toLowerCase().includes(filters.brand.toLowerCase())) return false;
+      if (filters.model && filters.model !== 'Tous les modèles' && !listing.title.toLowerCase().includes(filters.model.toLowerCase())) return false;
+      if (filters.location && filters.location !== 'Toutes les régions' && filters.location !== 'Toute la Tunisie' && !listing.location.includes(filters.location)) return false;
+      
+      if (filters.onlyPro && listing.sellerType !== 'Pro') return false;
+
+      const price = parseInt(listing.price.replace(/\D/g, ''));
+      if (price < filters.minPrice || price > filters.maxPrice) return false;
+
+      if (listing.type !== 'Accessoires') {
+          const year = parseInt(listing.year);
+          if (year < filters.minYear || year > filters.maxYear) return false;
+          const km = parseInt(listing.mileage.replace(/\D/g, ''));
+          if (km < filters.minKm || km > filters.maxKm) return false;
+          const cc = parseInt(listing.cc.replace(/\D/g, ''));
+          if (cc < filters.minCC || cc > filters.maxCC) return false;
+      }
+      return true;
+    }).sort((a, b) => {
+      if (sortBy === 'proximity' && a.distance !== null && b.distance !== null) {
+          return a.distance - b.distance;
+      }
+
+      const priceA = parseInt(a.price.replace(/\D/g, ''));
+      const priceB = parseInt(b.price.replace(/\D/g, ''));
+      
+      switch (sortBy) {
+        case 'price_asc': return priceA - priceB;
+        case 'price_desc': return priceB - priceA;
+        case 'year_desc': return parseInt(b.year) - parseInt(a.year);
+        case 'km_asc': 
+          const kmA = parseInt(a.mileage.replace(/\D/g, '')) || 0;
+          const kmB = parseInt(b.mileage.replace(/\D/g, '')) || 0;
+          return kmA - kmB;
+        case 'recent':
+        default:
+          return b.id - a.id;
+      }
+    });
+  }, [listingsWithDistance, filters, sortBy]);
 
   const handleFilterChange = (key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -246,6 +356,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
       brand: '',
       model: '',
       location: '',
+      onlyPro: false,
       minYear: 2000,
       maxYear: 2026,
       minKm: 0,
@@ -255,6 +366,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
       minCC: 50,
       maxCC: 1650
     });
+    setSortBy(userLocation ? 'proximity' : 'recent');
   };
 
   const handleCardClick = (listingId: number) => {
@@ -272,11 +384,20 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
   const getDealInfo = (rating?: number) => {
       switch (rating) {
-          case 3: return { label: 'Super affaire', color: 'bg-success-500', textColor: 'text-success-600', bgColor: 'bg-success-50' };
+          case 3: return { label: 'Plus récentes', color: 'bg-success-500', textColor: 'text-success-600', bgColor: 'bg-success-50' };
           case 2: return { label: 'Bonne affaire', color: 'bg-primary-500', textColor: 'text-primary-600', bgColor: 'bg-primary-50' };
           case 1: 
           default: return { label: 'Prix du marché', color: 'bg-gray-400', textColor: 'text-gray-500', bgColor: 'bg-gray-50' };
       }
+  };
+
+  const sortLabels: Record<SortOption, string> = {
+    recent: 'Plus récentes',
+    proximity: 'Plus proches',
+    price_asc: 'Prix : Croissant',
+    price_desc: 'Prix : Décroissant',
+    year_desc: 'Année : Récente',
+    km_asc: 'Kilométrage : Bas'
   };
 
   const SHOW_IN_FEED_AD = true;
@@ -285,7 +406,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       
-      {/* Header en mode blanc immédiat */}
       <Header 
         variant="white" 
         onNavigate={onNavigate} 
@@ -299,13 +419,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
       <div className="max-w-7xl mx-auto px-6 md:px-8 pt-24 md:pt-32 pb-8 md:py-12">
         
-        {/* Section de titre "Claire" */}
         <div className="mb-10 animate-fade-in-up">
             <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter mb-2">
               Résultats de recherche
             </h1>
             <p className="text-gray-500 font-medium text-lg">
-               {filteredListings.length} annonces disponibles correspondant à vos critères
+               {filteredAndSortedListings.length} annonces disponibles correspondant à vos critères
             </p>
         </div>
 
@@ -319,17 +438,55 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
             <span className="font-semibold text-gray-900 flex-shrink-0" aria-current="page">Annonces</span>
           </nav>
 
-          <div className="flex items-center gap-3 ml-auto">
-             <div className="hidden md:flex bg-white rounded-xl border border-gray-200 p-1 shadow-sm">
-                <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-primary-50 text-primary-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
+          <div className="flex items-center gap-3 ml-auto relative" ref={sortDropdownRef}>
+             {/* Sort Dropdown */}
+             <div className="relative">
+                <button 
+                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                  className={`flex items-center gap-3 px-4 h-11 rounded-xl border transition-all text-sm font-bold shadow-sm active:scale-95 ${isSortDropdownOpen ? 'bg-primary-50 border-primary-500 text-primary-700' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'}`}
+                >
+                   {sortBy === 'proximity' ? <Navigation size={16} className="text-primary-600" /> : <ArrowUpDown size={16} className={sortBy !== 'recent' ? 'text-primary-600' : 'text-gray-400'} />}
+                   <span className="hidden sm:inline">{sortLabels[sortBy]}</span>
+                   <ChevronDown size={14} className={`transition-transform duration-300 ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isSortDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 animate-scale-in origin-top-right overflow-hidden">
+                     {(['recent', 'proximity', 'price_asc', 'price_desc', 'year_desc', 'km_asc'] as SortOption[]).map((option) => {
+                        if (option === 'proximity' && !userLocation) return null;
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => {
+                              setSortBy(option);
+                              setIsSortDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-3 text-sm font-bold flex items-center justify-between transition-colors ${sortBy === option ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-50'}`}
+                          >
+                             <div className="flex items-center gap-2">
+                                {option === 'proximity' && <Navigation size={14} />}
+                                {sortLabels[option]}
+                             </div>
+                             {sortBy === option && <Check size={14} strokeWidth={3} />}
+                          </button>
+                        );
+                     })}
+                  </div>
+                )}
+             </div>
+
+             {/* View Toggle */}
+             <div className="hidden md:flex bg-white rounded-xl border border-gray-100 p-1 shadow-sm h-11">
+                <button onClick={() => setViewMode('list')} className={`px-3 h-full rounded-lg transition-all flex items-center justify-center ${viewMode === 'list' ? 'bg-primary-50 text-primary-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
                    <ListIcon size={20} />
                 </button>
-                <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
+                <button onClick={() => setViewMode('grid')} className={`px-3 h-full rounded-lg transition-all flex items-center justify-center ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
                    <LayoutGrid size={20} />
                 </button>
              </div>
              
-             <button onClick={() => setIsMobileFilterOpen(true)} className="lg:hidden flex items-center justify-center w-10 h-10 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all active:scale-95 flex-shrink-0 shadow-sm">
+             {/* Mobile Filter Trigger */}
+             <button onClick={() => setIsMobileFilterOpen(true)} className="lg:hidden flex items-center justify-center w-11 h-11 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all active:scale-95 flex-shrink-0 shadow-sm">
                 <Filter className="w-5 h-5" aria-hidden="true" />
               </button>
           </div>
@@ -339,13 +496,81 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
           
           <aside className="hidden lg:block lg:w-72 xl:w-80 flex-shrink-0">
             <div className="flex flex-col gap-6 sticky top-24">
-              <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-none">
+              <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-none overflow-hidden">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-black text-[10px] text-gray-400 uppercase tracking-widest flex items-center gap-2">
                       <Filter className="w-4 h-4 text-primary-600" />
                       Filtrer
                   </h3>
                   <button onClick={resetFilters} className="text-[10px] font-black text-primary-600 uppercase hover:underline">Réinitialiser</button>
+                </div>
+
+                {/* SMART PROXIMITY TRIGGER BUTTON - Identique à Garages.tsx */}
+                <div className="mb-6">
+                   {locationStatus === 'idle' && (
+                     <button 
+                        onClick={handleLocationDetect}
+                        className="w-full p-4 bg-primary-50 rounded-xl border border-primary-200 flex items-center gap-3 group hover:bg-primary-100 transition-all shadow-glow-primary/5 active:scale-[0.98]"
+                     >
+                        <div className="w-8 h-8 rounded-lg bg-primary-600 text-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                           <MapPin size={16} />
+                        </div>
+                        <div className="text-left">
+                           <span className="block text-[10px] font-black text-primary-700 uppercase tracking-tight leading-none mb-1">À proximité ?</span>
+                           <span className="block text-[9px] font-bold text-primary-600 uppercase">Activer la localisation</span>
+                        </div>
+                     </button>
+                   )}
+
+                   {locationStatus === 'loading' && (
+                     <div className="p-4 bg-primary-50 rounded-xl border border-primary-100 flex items-center gap-3 animate-pulse">
+                        <Navigation className="w-4 h-4 text-primary-600" />
+                        <span className="text-[10px] font-black text-primary-700 uppercase tracking-tight">Détection...</span>
+                     </div>
+                   )}
+
+                   {locationStatus === 'success' && (
+                     <div className="p-4 bg-success-50 rounded-xl border border-success-100 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-success-500 flex items-center justify-center text-white shadow-sm">
+                           <CheckCircle2 size={16} />
+                        </div>
+                        <div>
+                           <span className="block text-[10px] font-black text-success-700 uppercase tracking-tight leading-none mb-1">Position active</span>
+                           <span className="block text-[9px] font-bold text-success-600 uppercase">Trié par distance</span>
+                        </div>
+                     </div>
+                   )}
+
+                   {(locationStatus === 'denied' || locationStatus === 'error') && (
+                     <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center gap-3">
+                        <Navigation className="w-4 h-4 text-gray-400" />
+                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-tight">Position indisponible</span>
+                     </div>
+                   )}
+                </div>
+
+                {/* FEATURE TOGGLE - Vendeur Pro */}
+                <div className="mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-all hover:border-primary-200">
+                   <label className="flex items-center justify-between cursor-pointer group">
+                      <div className="flex items-center gap-3">
+                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${filters.onlyPro ? 'bg-primary-600 text-white' : 'bg-white text-gray-400 border border-gray-100 shadow-xs'}`}>
+                            <Building2 size={16} />
+                         </div>
+                         <span className={`text-xs font-black uppercase tracking-tight transition-colors ${filters.onlyPro ? 'text-primary-700' : 'text-gray-500'}`}>
+                            Vendeur Pro
+                         </span>
+                      </div>
+                      <div className="relative">
+                         <input 
+                           type="checkbox" 
+                           checked={filters.onlyPro} 
+                           onChange={(e) => handleFilterChange('onlyPro', e.target.checked)}
+                           className="sr-only" 
+                         />
+                         <div className={`w-10 h-6 rounded-full transition-colors ${filters.onlyPro ? 'bg-primary-600' : 'bg-gray-200'}`}></div>
+                         <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${filters.onlyPro ? 'translate-x-4' : ''}`}></div>
+                      </div>
+                   </label>
                 </div>
 
                 <div className="mb-6">
@@ -479,16 +704,16 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
               </div>
 
               <AdBanner 
-                zone="listing_sidebar" 
-                variant="native" 
-                className="w-full aspect-square shadow-none border border-gray-100" 
+                zone="search_sidebar" 
+                variant="banner" 
+                className="w-full aspect-square shadow-none border border-gray-100 rounded-2xl" 
               />
             </div>
           </aside>
 
           <main className="flex-1 w-full">
             
-            {filteredListings.length === 0 ? (
+            {filteredAndSortedListings.length === 0 ? (
                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 text-center shadow-none animate-fade-in-up">
                   <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                      <Search className="w-10 h-10 text-gray-200" />
@@ -501,17 +726,24 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                </div>
             ) : (
               <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6' : 'flex flex-col md:grid md:grid-cols-3 lg:flex lg:flex-col gap-6'}>
-                {filteredListings.map((listing, index) => {
+                {filteredAndSortedListings.map((listing, index) => {
                    const isGrid = viewMode === 'grid';
                    const favorited = isFavorite('listing', listing.id);
                    const isItemAccessory = listing.type === 'Accessoires';
                    const dealInfo = getDealInfo(listing.dealRating);
+                   const isPro = listing.sellerType === 'Pro';
+                   const isNear = listing.distance !== null && listing.distance <= 10;
                    
                    return (
                   <React.Fragment key={listing.id}>
                       <article 
                         onClick={() => handleCardClick(listing.id)}
-                        className={`group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer flex animate-fade-in-up ${isGrid ? 'flex-col h-full' : 'flex-col md:flex-col lg:flex-row lg:rounded-xl md:min-h-0 lg:min-h-[220px] lg:max-h-[260px]'}`}
+                        className={`group rounded-2xl overflow-hidden transition-all duration-300 border cursor-pointer flex animate-fade-in-up relative 
+                          ${isGrid ? 'flex-col h-full' : 'flex-col md:flex-col lg:flex-row lg:rounded-xl md:min-h-0 lg:min-h-[220px] lg:max-h-[260px]'}
+                          ${isPro 
+                            ? 'bg-primary-50/30 border-primary-200 shadow-md hover:shadow-lg hover:shadow-primary-100/20' 
+                            : 'bg-white border-gray-100 shadow-sm hover:shadow-md'
+                          }`}
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                       
@@ -521,6 +753,15 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                             alt={listing.title} 
                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
                           />
+                          
+                          {/* PROXIMITY BADGE */}
+                          {listing.distance !== null && (
+                            <div className={`absolute left-0 top-0 z-20 px-3 py-1.5 rounded-br-2xl border-b border-r flex items-center gap-1.5 text-[10px] font-black uppercase tracking-tight shadow-sm ${isNear ? 'bg-primary-600 text-white border-primary-500' : 'bg-white text-gray-600 border-gray-100'}`}>
+                                <Navigation size={12} className={isNear ? 'text-white' : 'text-primary-500'} fill={isNear ? 'currentColor' : 'none'} />
+                                <span>À {listing.distance} km</span>
+                            </div>
+                          )}
+
                           <button 
                             onClick={(e) => handleFavoriteClick(e, listing.id)}
                             className={`absolute top-3 right-3 p-2 backdrop-blur-md bg-white/70 rounded-full transition-colors ${!isGrid ? 'lg:hidden' : ''} ${favorited ? 'bg-red-50 text-red-500' : 'text-gray-400 hover:text-red-500'}`}
@@ -534,7 +775,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                           <div className={`flex flex-col flex-grow min-w-0 ${isGrid ? 'gap-4' : 'lg:p-5 gap-3 justify-center'}`}>
                             <div className="mb-1">
                               <div className="flex justify-between items-start gap-3">
-                                <h3 className="text-lg md:text-xl font-extrabold text-gray-900 group-hover:text-primary-600 transition-colors leading-tight line-clamp-2 flex-1 tracking-tight">
+                                <h3 className={`font-extrabold text-gray-900 group-hover:text-primary-600 transition-colors leading-tight line-clamp-2 flex-1 tracking-tight ${isGrid ? 'text-lg' : 'text-xl'}`}>
                                     {listing.title}
                                 </h3>
                                 <span className={`text-lg md:text-xl font-black text-primary-600 whitespace-nowrap pt-0.5 tracking-tighter ${!isGrid ? 'lg:hidden' : ''}`}>
@@ -562,20 +803,20 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                             </div>
 
                             <div className={`mt-auto pt-4 ${isGrid ? 'border-t border-gray-50' : 'md:pt-4 lg:pt-3 lg:border-t-0'} flex items-center gap-2.5`}>
-                                {listing.sellerType === 'Pro' ? (
-                                  <div className="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold flex-shrink-0"><ShieldCheck size={16} /></div>
+                                {isPro ? (
+                                  <div className="w-7 h-7 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600 font-bold flex-shrink-0"><ShieldCheck size={16} /></div>
                                 ) : (
                                   <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold flex-shrink-0"><User size={16} /></div>
                                 )}
                                 <div className="overflow-hidden flex items-center gap-2">
-                                    <span className="text-xs font-bold text-gray-700 truncate">{listing.seller}</span>
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">• {listing.sellerType}</span>
+                                    <span className={`text-xs font-black truncate ${isPro ? 'text-primary-700' : 'text-gray-700'}`}>{listing.seller}</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">• {isPro ? 'PRO' : 'Particulier'}</span>
                                 </div>
                             </div>
                           </div>
 
                           {!isGrid && (
-                            <div className="hidden lg:flex flex-col justify-between items-end p-6 border-l border-gray-100 w-40 lg:w-64 flex-shrink-0 bg-gray-50/50">
+                            <div className={`hidden lg:flex flex-col justify-between items-end p-6 border-l w-40 lg:w-64 flex-shrink-0 ${isPro ? 'bg-primary-50/50 border-primary-100' : 'bg-gray-50/50 border-gray-100'}`}>
                                <div className="text-right w-full">
                                   <span className="block text-[10px] font-black uppercase text-gray-300 mb-1 tracking-widest">Prix demandé</span>
                                   <span className="block text-xl lg:text-3xl font-black text-primary-600 leading-none mb-4 truncate tracking-tighter">{listing.price}</span>
@@ -594,6 +835,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                   <button className="w-full h-10 lg:h-11 rounded-xl bg-[#E6580B] text-white font-black text-xs lg:text-sm shadow-none hover:opacity-90 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
                                      <Phone size={16} /> Appeler
                                   </button>
+                                  {isPro && (
+                                     <button className="w-full h-10 lg:h-11 rounded-xl bg-white border-2 border-primary-600 text-primary-600 font-black text-xs lg:text-sm hover:bg-primary-50 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
+                                        Boutique <ArrowRight size={14} />
+                                     </button>
+                                  )}
                                   <button 
                                     onClick={(e) => handleFavoriteClick(e, listing.id)}
                                     className={`w-full h-8 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase transition-colors ${favorited ? 'bg-red-50 text-red-500' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
@@ -635,18 +881,55 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
         <div className="fixed inset-0 z-[60] lg:hidden bg-white flex flex-col animate-fade-in-up" role="dialog">
            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white sticky top-0 z-20">
               <div className="flex items-center gap-3">
-                 <button onClick={() => setIsMobileFilterOpen(false)} className="p-2 -ml-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors"><X size={24} /></button>
+                 <button onClick={() => setIsMobileFilterOpen(false)} className="p-2 -ml-2 text-gray-500 hover:text-gray-900 rounded-full transition-all"><X size={24} /></button>
                  <h3 className="font-black text-xl text-gray-900 tracking-tight">Filtres</h3>
               </div>
               <button onClick={resetFilters} className="text-[10px] font-black text-primary-600 uppercase">Réinitialiser</button>
            </div>
 
            <div className="flex-1 overflow-y-auto p-5 space-y-8 pb-32">
+              
+              {/* MOBILE SMART PROXIMITY TRIGGER */}
+              <div className="p-4 bg-primary-50 rounded-2xl border border-primary-200">
+                <button 
+                    onClick={() => { handleLocationDetect(); setIsMobileFilterOpen(false); }}
+                    className="w-full flex items-center justify-between"
+                >
+                    <div className="flex items-center gap-3">
+                        <Navigation size={20} className="text-primary-600" />
+                        <span className="text-base font-bold text-primary-900">Motos autour de moi</span>
+                    </div>
+                    <ChevronRight size={20} className="text-primary-400" />
+                </button>
+              </div>
+
+              {/* FEATURE TOGGLE - MOBILE */}
+              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                 <label className="flex items-center justify-between cursor-pointer">
+                    <div className="flex items-center gap-3">
+                       <Building2 size={20} className={filters.onlyPro ? 'text-primary-600' : 'text-gray-400'} />
+                       <span className={`text-base font-bold transition-colors ${filters.onlyPro ? 'text-primary-700' : 'text-gray-700'}`}>
+                          Vendeur Pro
+                       </span>
+                    </div>
+                    <div className="relative">
+                       <input 
+                         type="checkbox" 
+                         checked={filters.onlyPro} 
+                         onChange={(e) => handleFilterChange('onlyPro', e.target.checked)}
+                         className="sr-only" 
+                       />
+                       <div className={`w-12 h-7 rounded-full transition-colors ${filters.onlyPro ? 'bg-primary-600' : 'bg-gray-200'}`}></div>
+                       <div className={`absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform shadow-sm ${filters.onlyPro ? 'translate-x-5' : ''}`}></div>
+                    </div>
+                 </label>
+              </div>
+
               <div>
                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block ml-1">Recherche</label>
                  <div className="relative">
                     <input type="text" value={filters.search} onChange={(e) => handleFilterChange('search', e.target.value)} className="w-full pl-11 pr-4 py-4 rounded-xl border border-gray-100 bg-gray-50 text-base font-bold focus:bg-white focus:border-primary-600 outline-none" placeholder="Mot-clé..." />
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                  </div>
               </div>
               
@@ -749,7 +1032,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
 
            <div className="p-4 border-t border-gray-100 bg-white sticky bottom-0 z-20 pb-8 md:pb-4 safe-area-bottom shadow-none">
               <button onClick={() => setIsMobileFilterOpen(false)} className="w-full bg-gray-900 text-white font-black py-4 rounded-xl flex items-center justify-center gap-2 text-sm active:scale-[0.98] uppercase tracking-widest shadow-none">
-                 Afficher {filteredListings.length} résultats
+                 Afficher {filteredAndSortedListings.length} résultats
               </button>
            </div>
         </div>

@@ -1,10 +1,9 @@
-
 import React, { useEffect } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { useAds } from '../../context/AdsContext';
 
 interface AdBannerProps {
-  zone: 'news_top' | 'search_feed' | 'garage_sidebar' | 'listing_sidebar';
+  zone: 'news_top' | 'search_feed' | 'garage_sidebar' | 'listing_sidebar' | 'search_sidebar';
   className?: string;
   variant?: 'native' | 'banner'; // Native looks like app content, banner looks like an image
 }

@@ -10,12 +10,15 @@ import {
   Phone, 
   ChevronLeft, 
   ChevronRight, 
-  Camera,
   FileText,
   Shield,
   User,
-  ArrowRight,
-  Zap
+  Zap,
+  X,
+  Copy,
+  Bike,
+  Home,
+  Maximize2
 } from 'lucide-react';
 import { Listing } from '../types';
 import Header from './layout/Header';
@@ -23,15 +26,162 @@ import { mockListings } from '../data/mockData';
 import { useFavorites } from '../context/FavoritesContext';
 import AdBanner from './common/AdBanner';
 
-interface ListingDetailsProps {
-  listingId: number;
-  onGoHome?: () => void;
-  onNavigate?: (view: string, params?: any) => void;
-  onBack?: () => void;
-  isLoggedIn?: boolean;
-  onTriggerLogin?: () => void;
-  onLogout?: () => void;
+// --- CUSTOM BRAND ICONS ---
+
+const FacebookIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+  </svg>
+);
+
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .004 5.411.002 12.048a11.802 11.802 0 001.576 5.94L0 24l6.117-1.604a11.845 11.845 0 005.932 1.577h.005c6.637 0 12.045-5.411 12.048-12.049a11.815 11.815 0 00-3.535-8.416z"/>
+  </svg>
+);
+
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M12.525.02c1.31-.032 2.617-.019 3.91-.01 1.3.01 1.3.01 1.3 1.31a6.45 6.45 0 004.28 5.62 1.32 1.32 0 01-1.31 1.3 6.45 6.45 0 01-4.28-1.5 1.32 1.32 0 01-.67-1.15c-.01-1.3.01-2.6.01-3.9 0-.66-.33-.99-.99-.99a3.83 3.83 0 00-3.83 3.83v7.71c.01 3.2-2.58 5.8-5.78 5.8s-5.8-2.6-5.8-5.8c0-3.1 2.41-5.63 5.48-5.78a1.32 1.32 0 011.3 1.31c0 1.3-.01 2.61-.01 3.91a1.32 1.32 0 01-1.3 1.31c-.96 0-1.74.77-1.74 1.74s.77 1.74 1.74 1.74 1.74-.77 1.74-1.74V1.31c.01-1.3.01-1.3 1.3-1.3z"/>
+  </svg>
+);
+
+// --- SHARE MODAL COMPONENT ---
+interface ShareModalProps {
+  listing: Listing;
+  isOpen: boolean;
+  onClose: () => void;
 }
+
+const ShareModal: React.FC<ShareModalProps> = ({ listing, isOpen, onClose }) => {
+  const [copied, setCopied] = useState(false);
+  if (!isOpen) return null;
+
+  const shareUrl = window.location.href;
+  const shareText = `Regarde cette annonce sur MotoScoot.tn : ${listing.title} à ${listing.price}`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const shareOnFB = () => {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+  };
+
+  const shareOnWA = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank');
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in-up">
+      <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative border border-gray-100 flex flex-col">
+        <button onClick={onClose} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-900 bg-gray-100 rounded-full transition-colors z-10">
+          <X size={20} />
+        </button>
+
+        <div className="p-8 flex-1">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">Partager l'annonce</h3>
+            <p className="text-gray-500 text-sm font-medium">Aperçu de ce que vos amis verront</p>
+          </div>
+          
+          <div className="bg-white rounded-3xl border border-gray-100 mb-8 overflow-hidden shadow-xl shadow-gray-200/50 group animate-fade-in-up">
+             <div className="px-4 py-2.5 bg-gray-50 flex items-center justify-between border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                   <div className="w-5 h-5 bg-primary-600 rounded-md flex items-center justify-center">
+                      <Bike size={12} className="text-white" />
+                   </div>
+                   <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">MotoScoot.tn</span>
+                </div>
+                <span className="text-[9px] font-bold text-gray-400 uppercase">Annonce vérifiée</span>
+             </div>
+
+             <div className="relative aspect-[1.91/1] overflow-hidden bg-gray-100">
+                <img src={listing.image} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute top-3 right-3">
+                   <span className="px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-lg text-[10px] font-black text-primary-600 shadow-sm uppercase tracking-wider">
+                      {listing.type === 'Accessoires' ? 'Accessoire' : 'Occasion'}
+                   </span>
+                </div>
+                <div className="absolute bottom-3 left-3">
+                   <span className="px-3 py-1.5 bg-primary-600 text-white rounded-xl text-lg font-black shadow-lg">
+                      {listing.price}
+                   </span>
+                </div>
+             </div>
+
+             <div className="p-5">
+                <h4 className="font-extrabold text-gray-900 text-lg leading-tight mb-3 line-clamp-1">{listing.title}</h4>
+                
+                <div className="flex items-center gap-4 mb-3 pb-3 border-b border-gray-50">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
+                       <MapPin size={14} className="text-primary-500" />
+                       {listing.location}
+                    </div>
+                    {listing.type !== 'Accessoires' && (
+                       <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1 text-[10px] font-black text-gray-400 uppercase">
+                             <Calendar size={12} /> {listing.year}
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] font-black text-gray-400 uppercase">
+                             <Gauge size={12} /> {listing.mileage}
+                          </div>
+                       </div>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                   <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400">
+                      {listing.seller.charAt(0)}
+                   </div>
+                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Posté par {listing.seller}</span>
+                </div>
+             </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <button onClick={shareOnFB} className="flex flex-col items-center gap-2.5 group">
+              <div className="w-16 h-16 rounded-[1.25rem] bg-gray-50 text-[#1877F2] flex items-center justify-center group-hover:bg-[#1877F2] group-hover:text-white transition-all shadow-sm active:scale-95 group-hover:shadow-lg group-hover:shadow-blue-500/20">
+                <FacebookIcon className="w-8 h-8" />
+              </div>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter group-hover:text-[#1877F2] transition-colors">Facebook</span>
+            </button>
+            <button onClick={shareOnWA} className="flex flex-col items-center gap-2.5 group">
+              <div className="w-16 h-16 rounded-[1.25rem] bg-gray-50 text-[#25D366] flex items-center justify-center group-hover:bg-[#25D366] group-hover:text-white transition-all shadow-sm active:scale-95 group-hover:shadow-lg group-hover:shadow-green-500/20">
+                <WhatsAppIcon className="w-8 h-8" />
+              </div>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter group-hover:text-[#25D366] transition-colors">WhatsApp</span>
+            </button>
+            <button onClick={handleCopy} className="flex flex-col items-center gap-2.5 group">
+              <div className="w-16 h-16 rounded-[1.25rem] bg-gray-50 text-gray-900 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all shadow-sm active:scale-95 group-hover:shadow-lg group-hover:shadow-black/20">
+                <TikTokIcon className="w-7 h-7" />
+              </div>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter group-hover:text-black transition-colors">TikTok</span>
+            </button>
+          </div>
+
+          <div className="space-y-3">
+             <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Lien direct</label>
+             <div className="relative group">
+                <input 
+                  type="text" 
+                  readOnly 
+                  value={shareUrl}
+                  className="w-full pl-5 pr-14 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-xs font-bold text-gray-500 outline-none focus:bg-white focus:border-primary-500 transition-all"
+                />
+                <button onClick={handleCopy} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white border border-gray-100 text-primary-600 hover:text-white hover:bg-primary-600 rounded-xl transition-all shadow-sm">
+                  {copied ? <CheckCircle2 size={18} className="text-success-500" /> : <Copy size={18} />}
+                </button>
+             </div>
+             {copied && <p className="text-[10px] text-success-600 font-bold text-center animate-fade-in-up">Copié dans le presse-papier !</p>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SimilarListingCard: React.FC<{ listing: Listing, onClick: () => void, className?: string }> = ({ listing, onClick, className = "" }) => (
     <div 
@@ -62,6 +212,17 @@ const SimilarListingCard: React.FC<{ listing: Listing, onClick: () => void, clas
     </div>
 );
 
+// --- COMPONENT INTERFACE ---
+interface ListingDetailsProps {
+  listingId: number;
+  onGoHome?: () => void;
+  onNavigate?: (view: string, params?: any) => void;
+  onBack?: () => void;
+  isLoggedIn?: boolean;
+  onTriggerLogin?: () => void;
+  onLogout?: () => void;
+}
+
 const ListingDetails: React.FC<ListingDetailsProps> = ({ 
   listingId, 
   onGoHome, 
@@ -73,6 +234,10 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isPhoneRevealed, setIsPhoneRevealed] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { isFavorite, toggleFavorite } = useFavorites();
 
@@ -81,18 +246,41 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
   const favorited = isFavorite('listing', listing.id);
   const isAccessory = listing.type === 'Accessoires';
 
-  const allImages = [
-    listing.image,
-    "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1558981806-ec527fa84f3d?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1558980394-0a06c46e60e7?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80"
-  ];
+  // Utiliser la galerie de l'annonce si elle existe
+  const allImages = listing.images && listing.images.length > 0 
+    ? listing.images 
+    : [
+        listing.image,
+        "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1558981806-ec527fa84f3d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1558980394-0a06c46e60e7?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80"
+      ];
 
   const handleScroll = () => {
     if (scrollContainerRef.current) {
       const index = Math.round(scrollContainerRef.current.scrollLeft / scrollContainerRef.current.offsetWidth);
       setActiveImageIndex(index);
+    }
+  };
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setIsLightboxOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+    document.body.style.overflow = 'unset';
+  };
+
+  const navigateLightbox = (dir: 'next' | 'prev', e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (dir === 'next') {
+      setLightboxIndex((prev) => (prev + 1) % allImages.length);
+    } else {
+      setLightboxIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
     }
   };
 
@@ -109,7 +297,20 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
   useEffect(() => {
     window.scrollTo(0, 0);
     setIsPhoneRevealed(false);
+    setActiveImageIndex(0); // Reset index when listing changes
   }, [listingId]);
+
+  // Handle Keyboard for Lightbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isLightboxOpen) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') navigateLightbox('next');
+      if (e.key === 'ArrowLeft') navigateLightbox('prev');
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen]);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-32 md:pb-12">
@@ -122,23 +323,71 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
         onLogout={onLogout}
       />
 
+      <ShareModal listing={listing} isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} />
+
+      {/* --- LIGHTBOX PLEIN ÉCRAN --- */}
+      {isLightboxOpen && (
+        <div 
+          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center animate-fade-in-up"
+          onClick={closeLightbox}
+        >
+          <button 
+            onClick={closeLightbox}
+            className="absolute top-6 right-6 z-[210] p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all"
+          >
+            <X size={28} />
+          </button>
+
+          <div className="absolute top-6 left-6 z-[210] px-4 py-2 bg-white/10 rounded-xl border border-white/10 text-white font-black text-sm tracking-widest uppercase">
+             {lightboxIndex + 1} / {allImages.length}
+          </div>
+
+          <button 
+            onClick={(e) => navigateLightbox('prev', e)}
+            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-[210] p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all active:scale-90"
+          >
+            <ChevronLeft size={32} strokeWidth={3} />
+          </button>
+
+          <div className="w-full h-full flex items-center justify-center p-4 md:p-12" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={allImages[lightboxIndex]} 
+              alt="" 
+              className="max-w-full max-h-full object-contain animate-scale-in"
+            />
+          </div>
+
+          <button 
+            onClick={(e) => navigateLightbox('next', e)}
+            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-[210] p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all active:scale-90"
+          >
+            <ChevronRight size={32} strokeWidth={3} />
+          </button>
+        </div>
+      )}
+
       <main className="max-w-7xl mx-auto px-0 md:px-8 pt-28 md:pt-28">
         
-        {/* Breadcrumb (Desktop) */}
-        <nav className="hidden md:flex items-center gap-2 mb-8 text-xs font-black uppercase tracking-widest text-gray-400">
-           <button onClick={onBack} className="hover:text-primary-600 flex items-center gap-1 transition-colors">
-              <ChevronLeft size={14} /> Retour
+        {/* FIL D'ARIANE ENRICHI (SEO & NAVIGATION) */}
+        <nav className="flex items-center px-5 md:px-0 mb-8 overflow-x-auto no-scrollbar whitespace-nowrap text-[10px] md:text-xs font-black uppercase tracking-[0.1em] text-gray-400 gap-1.5">
+           <button onClick={onGoHome} className="flex items-center gap-1 hover:text-primary-600 transition-colors">
+              <Home size={14} className="mb-0.5" />
+              Accueil
            </button>
-           <span className="text-gray-200">/</span>
-           <span>{listing.title}</span>
+           <ChevronRight size={12} className="text-gray-200" />
+           <button onClick={() => onNavigate?.('search', { type: listing.type })} className="hover:text-primary-600 transition-colors">
+              {listing.type}
+           </button>
+           <ChevronRight size={12} className="text-gray-200" />
+           <button onClick={() => onNavigate?.('search', { location: listing.location })} className="hover:text-primary-600 transition-colors">
+              {listing.location}
+           </button>
+           <ChevronRight size={12} className="text-gray-200" />
+           <span className="text-gray-900 truncate max-w-[150px] md:max-w-xs">{listing.title}</span>
         </nav>
 
         {/* MOBILE: TITRE */}
         <div className="md:hidden px-5 mb-6 animate-fade-in-up">
-           <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 bg-primary-50 text-primary-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-primary-100">{listing.type}</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">Réf: #00{listing.id}</span>
-           </div>
            <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
               {listing.title}
            </h1>
@@ -151,7 +400,10 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
             
             {/* Gallery Section */}
             <div className="relative group px-4 md:px-0">
-                <div className="md:hidden relative h-[45vh] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-none">
+                <div 
+                  className="md:hidden relative h-[45vh] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-none cursor-pointer"
+                  onClick={() => openLightbox(activeImageIndex)}
+                >
                    <div 
                       ref={scrollContainerRef}
                       onScroll={handleScroll}
@@ -163,11 +415,11 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                          </div>
                       ))}
                    </div>
-                   <div className="absolute top-4 right-4 flex flex-col gap-2">
+                   <div className="absolute top-4 right-4 flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
                       <button onClick={() => toggleFavorite('listing', listing.id)} className={`p-3 rounded-full backdrop-blur-md transition-all active:scale-90 ${favorited ? 'bg-red-50 text-red-500' : 'bg-white/80 text-gray-500'}`}>
                          <Heart size={20} fill={favorited ? "currentColor" : "none"} />
                       </button>
-                      <button className="p-3 bg-white/80 backdrop-blur-md rounded-full text-gray-500">
+                      <button onClick={() => setIsShareModalOpen(true)} className="p-3 bg-white/80 backdrop-blur-md rounded-full text-gray-500 active:scale-90 transition-all">
                          <Share2 size={20} />
                       </button>
                    </div>
@@ -180,16 +432,23 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
 
                 {/* Desktop Slider */}
                 <div className="hidden md:block rounded-3xl overflow-hidden border border-gray-100 bg-white">
-                   <div className="aspect-[16/9] relative">
+                   <div className="aspect-[16/9] relative cursor-pointer" onClick={() => openLightbox(activeImageIndex)}>
                       <img src={allImages[activeImageIndex]} className="w-full h-full object-cover" alt="" />
-                      <div className="absolute bottom-6 right-6 flex gap-2">
+                      
+                      <div className="absolute inset-0 bg-black/0 hover:bg-black/5 transition-colors flex items-center justify-center group/view">
+                          <div className="bg-white/20 backdrop-blur-md border border-white/20 p-4 rounded-full text-white opacity-0 group-hover/view:opacity-100 transition-opacity scale-90 group-hover/view:scale-100">
+                             <Maximize2 size={24} />
+                          </div>
+                      </div>
+
+                      <div className="absolute bottom-6 right-6 flex gap-2" onClick={(e) => e.stopPropagation()}>
                         <button onClick={() => setActiveImageIndex(prev => (prev - 1 + allImages.length) % allImages.length)} className="p-3 bg-white/90 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"><ChevronLeft size={20}/></button>
                         <button onClick={() => setActiveImageIndex(prev => (prev + 1) % allImages.length)} className="p-3 bg-white/90 backdrop-blur-md rounded-full shadow-sm hover:bg-white transition-colors"><ChevronRight size={20}/></button>
                       </div>
                    </div>
                    <div className="p-4 flex gap-3 overflow-x-auto no-scrollbar bg-gray-50/50">
                       {allImages.map((img, i) => (
-                        <button key={i} onClick={() => setActiveImageIndex(i)} className={`w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${i === activeImageIndex ? 'border-primary-600' : 'border-transparent opacity-60'}`}><img src={img} className="w-full h-full object-cover" /></button>
+                        <button key={i} onClick={() => setActiveImageIndex(i)} className={`w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${i === activeImageIndex ? 'border-primary-600' : 'border-transparent opacity-60 hover:opacity-100'}`}><img src={img} className="w-full h-full object-cover" /></button>
                       ))}
                    </div>
                 </div>
@@ -208,7 +467,6 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                      </h1>
                   </div>
 
-                  {/* Le prix et le badge sur la même ligne en mobile */}
                   <div className="lg:hidden flex flex-row items-center justify-between gap-2">
                      <span className="text-3xl md:text-5xl font-black text-primary-600 tracking-tighter leading-none">{listing.price}</span>
                      {listing.dealRating && (
@@ -229,7 +487,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                   </div>
                </div>
 
-               {/* Stats Grid - RÉPARÉ AVEC ICÔNES */}
+               {/* Stats Grid */}
                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {!isAccessory ? (
                     <>
@@ -280,9 +538,9 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                        <FileText size={14} className="text-primary-600" /> Description
                     </h3>
                     <p className="text-gray-600 font-medium leading-relaxed whitespace-pre-line">
-                      {isAccessory 
+                      {listing.description || (isAccessory 
                       ? `Je vends cet article : ${listing.title}.\nÉtat : ${listing.condition}.\nPour plus d'informations ou des photos supplémentaires, n'hésitez pas à me contacter.`
-                      : `Bonjour, je vends ma ${listing.title} en excellent état.\nEntretien à jour, carnet d'entretien disponible. La révision a été faite récemment.\nVisible sur ${listing.location}. Prix légèrement négociable.`
+                      : `Bonjour, je vends ma ${listing.title} en excellent état.\nEntretien à jour, carnet d'entretien disponible. La révision a été faite récemment.\nVisible sur ${listing.location}. Prix légèrement négociable.`)
                       }
                     </p>
                   </div>
@@ -371,7 +629,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                       )}
                       
                       <div className="grid grid-cols-2 gap-3">
-                         <button className="h-12 bg-white border border-gray-100 rounded-xl font-black text-gray-700 text-xs hover:bg-gray-50 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-sm">
+                         <button onClick={() => setIsShareModalOpen(true)} className="h-12 bg-white border border-gray-100 rounded-xl font-black text-gray-700 text-xs hover:bg-gray-50 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-sm">
                             <Share2 size={16} className="text-gray-400" /> Partager
                          </button>
                          <button 
@@ -392,13 +650,13 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
                    </div>
                 </div>
                 
-                <AdBanner zone="listing_sidebar" variant="native" className="border border-gray-100 shadow-none" />
+                <AdBanner zone="listing_sidebar" className="rounded-2xl border border-gray-100 shadow-none overflow-hidden aspect-square" />
              </div>
           </div>
         </div>
       </main>
 
-      {/* MOBILE STICKY FOOTER - COULEUR ORANGE FORCÉE HEX #E6580B */}
+      {/* MOBILE STICKY FOOTER */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-100 p-4 safe-area-bottom z-40 flex items-center gap-3">
          <button 
             onClick={() => toggleFavorite('listing', listing.id)}
@@ -433,4 +691,5 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({
   );
 };
 
+// Fix for App.tsx line 31: Added missing default export
 export default ListingDetails;
