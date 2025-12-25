@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   MapPin, 
   Tag,
@@ -6,7 +6,8 @@ import {
   ChevronDown,
   Bike,
   ShoppingBag,
-  Navigation
+  Search,
+  X
 } from 'lucide-react';
 import { tunisianCities, brandsMoto, mockModels, accessoryTypes } from '../data/mockData';
 import Header from './layout/Header';
@@ -48,7 +49,7 @@ const IconCasques = (props: any) => (
 const IconVestes = (props: any) => (
   <img 
     src="https://www.magma-studio.tn/portfolio2/moto/icons/vestes.svg" 
-    alt="Vestes"
+    alt="Vestes" 
     className={props.className} 
   />
 );
@@ -56,7 +57,7 @@ const IconVestes = (props: any) => (
 const IconGants = (props: any) => (
   <img 
     src="https://www.magma-studio.tn/portfolio2/moto/icons/gants.svg" 
-    alt="Gants"
+    alt="Gants" 
     className={props.className} 
   />
 );
@@ -91,22 +92,45 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
   const [location, setLocation] = useState("");
   const [isLocating, setIsLocating] = useState(false);
 
+  // States pour les Comboboxes
+  const [brandSearch, setBrandSearch] = useState("");
+  const [modelSearch, setModelSearch] = useState("");
+  const [isBrandOpen, setIsBrandOpen] = useState(false);
+  const [isModelOpen, setIsModelOpen] = useState(false);
+
+  const brandRef = useRef<HTMLDivElement>(null);
+  const modelRef = useRef<HTMLDivElement>(null);
+
   // Reset dependent fields when Type changes
   useEffect(() => {
     setBrand("");
+    setBrandSearch("");
     setModel("");
+    setModelSearch("");
     setAccessoryCategory("");
   }, [type]);
 
+  // Fermeture des menus au clic extérieur
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (brandRef.current && !brandRef.current.contains(event.target as Node)) {
+        setIsBrandOpen(false);
+      }
+      if (modelRef.current && !modelRef.current.contains(event.target as Node)) {
+        setIsModelOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleLocationRequest = () => {
     if (!navigator.geolocation) return;
-    
     setIsLocating(true);
-    // Options optimisées pour éviter "Position update unavailable"
     const geoOptions = {
-      enableHighAccuracy: false, // Plus stable sur desktop/réseaux mobiles
+      enableHighAccuracy: false,
       timeout: 10000, 
-      maximumAge: 300000 // 5 minutes de cache
+      maximumAge: 300000
     };
 
     navigator.geolocation.getCurrentPosition(
@@ -161,6 +185,15 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
 
   const isAccessoryMode = type === 'Accessoires';
 
+  // Filtrage des listes pour les comboboxes
+  const filteredBrands = brandsMoto.filter(b => 
+    b.toLowerCase().includes(brandSearch.toLowerCase())
+  );
+
+  const filteredModels = mockModels.filter(m => 
+    m.toLowerCase().includes(modelSearch.toLowerCase())
+  );
+
   return (
     <div className="relative w-full h-[100dvh] md:h-[50vh] lg:h-[80vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
       
@@ -193,12 +226,9 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
         onLogout={onLogout}
       />
 
-      {/* Main Content Container */}
       <div className="relative z-10 flex flex-col md:block h-full md:h-auto w-full max-w-7xl mx-auto md:space-y-16 justify-between md:justify-center pt-20 md:pt-0">
         
-        {/* Top Section: Headline and Search */}
         <div className="flex-1 flex flex-col justify-center items-center w-full md:px-0 space-y-10 md:space-y-6 mt-12 md:mt-48">
-          {/* Headline */}
           <div className="w-full max-w-5xl text-left text-white flex flex-col items-start md:mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-white text-xs md:text-sm font-bold uppercase tracking-wide mb-6 animate-fade-in-up">
               <span className="relative flex h-2.5 w-2.5">
@@ -212,35 +242,34 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
               Achetez ou vendez <br className="md:hidden" /> votre moto d'occasion
             </h1>
             <p className="text-base md:text-xl font-medium opacity-95 text-white/90">
-           Solution simple et rapide pour acheter ou vendre votre moto d’occasion en quelques clics.
+              Solution simple et rapide pour acheter ou vendre votre moto d’occasion en quelques clics.
             </p>
           </div>
 
           {/* Search Bar */}
-          <div className="w-full max-w-5xl bg-white rounded-xl p-2 flex flex-col md:flex-row items-stretch md:items-center shadow-2xl">
+          <div className="w-full max-w-5xl bg-white rounded-xl p-2 flex flex-col md:flex-row items-stretch md:items-center shadow-2xl relative">
             
             {/* Input 1: Type */}
             <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group">
               <Bike className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
               <div className="flex-1 relative">
-                <label htmlFor="search-type" className="sr-only">Type de véhicule</label>
                 <select 
                   id="search-type" 
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
+                  className="w-full bg-transparent outline-none text-gray-700 font-bold appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
                 >
-                  <option value="" disabled>Type</option>
+                  <option value="" disabled>Que cherchez-vous ?</option>
                   <option value="Moto">Moto</option>
                   <option value="Scooter">Scooter</option>
                   <option value="Accessoires">Accessoires</option>
                 </select>
-                <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" aria-hidden="true" />
+                <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
             </div>
 
-            {/* Input 2: Dynamic (Marque OR Type d'accessoire) */}
-            <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group">
+            {/* Input 2: Dynamic (Marque OR Type d'accessoire) - COMBOBOX MARQUE */}
+            <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group" ref={brandRef}>
               {isAccessoryMode ? (
                  <ShoppingBag className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
               ) : (
@@ -249,60 +278,76 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
               
               <div className="flex-1 relative">
                 {isAccessoryMode ? (
-                  /* Accessory Category Select */
-                  <>
-                    <label htmlFor="search-accessory-type" className="sr-only">Type d'accessoire</label>
                     <select 
-                      id="search-accessory-type"
                       value={accessoryCategory}
                       onChange={(e) => setAccessoryCategory(e.target.value)}
-                      className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
+                      className="w-full bg-transparent outline-none text-gray-700 font-bold appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
                     >
                       <option value="" disabled>Articles</option>
-                      {accessoryTypes.map((acc) => (
-                        <option key={acc} value={acc}>{acc}</option>
-                      ))}
+                      {accessoryTypes.map((acc) => <option key={acc} value={acc}>{acc}</option>)}
                     </select>
-                  </>
                 ) : (
-                  /* Brand Select */
                   <>
-                    <label htmlFor="search-brand" className="sr-only">Marque</label>
-                    <select 
-                      id="search-brand"
-                      value={brand}
-                      onChange={(e) => setBrand(e.target.value)}
-                      className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
-                    >
-                      <option value="" disabled>Marque</option>
-                      {brandsMoto.map((b) => (
-                        <option key={b} value={b}>{b}</option>
-                      ))}
-                    </select>
+                    <input
+                      type="text"
+                      placeholder="Marque"
+                      value={brandSearch || brand}
+                      autoComplete="off"
+                      onFocus={() => { setIsBrandOpen(true); setBrandSearch(""); }}
+                      onChange={(e) => { setBrandSearch(e.target.value); setIsBrandOpen(true); }}
+                      className="w-full bg-transparent outline-none text-gray-700 font-bold placeholder:text-gray-400 border-none p-0 focus:ring-0"
+                    />
+                    {isBrandOpen && (
+                      <div className="absolute top-[calc(100%+1.5rem)] left-0 w-[calc(100%+2rem)] -ml-4 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 max-h-60 overflow-y-auto z-[60] animate-scale-in origin-top">
+                        {filteredBrands.length > 0 ? filteredBrands.map((b) => (
+                          <button
+                            key={b}
+                            onClick={() => { setBrand(b); setBrandSearch(b); setIsBrandOpen(false); setModel(""); setModelSearch(""); }}
+                            className={`w-full text-left px-5 py-2.5 text-sm font-bold transition-colors ${brand === b ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                          >
+                            {b}
+                          </button>
+                        )) : (
+                          <div className="px-5 py-3 text-xs text-gray-400 italic">Aucune marque trouvée</div>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
-                <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" aria-hidden="true" />
+                <ChevronDown className={`absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform duration-200 ${isBrandOpen ? 'rotate-180' : ''}`} />
               </div>
             </div>
 
-            {/* Input 3: Model (Disabled for Accessoires) */}
-            <div className={`flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group ${isAccessoryMode ? 'opacity-50 cursor-not-allowed bg-gray-50' : ''}`}>
+            {/* Input 3: Model - COMBOBOX MODELE */}
+            <div className={`flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group ${isAccessoryMode ? 'opacity-50 cursor-not-allowed bg-gray-50' : ''}`} ref={modelRef}>
               <Layers className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
               <div className="flex-1 relative">
-                <label htmlFor="search-model" className="sr-only">Modèle</label>
-                <select 
-                  id="search-model" 
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
+                <input
+                  type="text"
+                  placeholder={isAccessoryMode ? "-" : "Modèle"}
+                  value={modelSearch || model}
                   disabled={isAccessoryMode}
-                  className="w-full bg-transparent outline-none text-gray-700 font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none disabled:cursor-not-allowed"
-                >
-                  <option value="" disabled>{isAccessoryMode ? '-' : 'Modèle'}</option>
-                  {!isAccessoryMode && mockModels.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" aria-hidden="true" />
+                  autoComplete="off"
+                  onFocus={() => { setIsModelOpen(true); setModelSearch(""); }}
+                  onChange={(e) => { setModelSearch(e.target.value); setIsModelOpen(true); }}
+                  className="w-full bg-transparent outline-none text-gray-700 font-bold placeholder:text-gray-400 border-none p-0 focus:ring-0 disabled:cursor-not-allowed"
+                />
+                {!isAccessoryMode && isModelOpen && (
+                  <div className="absolute top-[calc(100%+1.5rem)] left-0 w-[calc(100%+2rem)] -ml-4 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 max-h-60 overflow-y-auto z-[60] animate-scale-in origin-top">
+                    {filteredModels.length > 0 ? filteredModels.map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => { setModel(m); setModelSearch(m); setIsModelOpen(false); }}
+                        className={`w-full text-left px-5 py-2.5 text-sm font-bold transition-colors ${model === m ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                      >
+                        {m}
+                      </button>
+                    )) : (
+                      <div className="px-5 py-3 text-xs text-gray-400 italic">Aucun modèle trouvé</div>
+                    )}
+                  </div>
+                )}
+                <ChevronDown className={`absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform duration-200 ${isModelOpen ? 'rotate-180' : ''}`} />
               </div>
             </div>
 
@@ -310,26 +355,21 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
             <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group">
               <MapPin className={`w-5 h-5 mr-3 flex-shrink-0 transition-colors ${location === "Ma position" ? "text-primary-600" : "text-gray-400"}`} />
               <div className="flex-1 relative">
-                <label htmlFor="search-city" className="sr-only">Ville</label>
                 <select 
                   id="search-city"
                   value={location === "Ma position" ? "around_me" : location}
                   onChange={handleLocationChange}
-                  className={`w-full bg-transparent outline-none font-medium appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none ${location === "Ma position" ? "text-primary-600" : "text-gray-700"}`}
+                  className={`w-full bg-transparent outline-none font-bold appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none ${location === "Ma position" ? "text-primary-600" : "text-gray-700"}`}
                 >
-                  <option value="" disabled>Ville</option>
+                  <option value="" disabled>Où ça ?</option>
                   <option value="around_me" className="font-bold text-primary-600">Autour de moi</option>
                   <option disabled>──────────</option>
-                  {tunisianCities.map((city) => (
-                    <option key={city} value={city}>{city}</option>
-                  ))}
+                  {tunisianCities.map((city) => <option key={city} value={city}>{city}</option>)}
                 </select>
                 {isLocating ? (
-                   <div className="absolute right-0 top-1/2 transform -translate-y-1/2">
-                      <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-                   </div>
+                   <div className="absolute right-0 top-1/2 transform -translate-y-1/2"><div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div></div>
                 ) : (
-                  <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" aria-hidden="true" />
+                  <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 )}
               </div>
             </div>
@@ -345,7 +385,6 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
           </div>
         </div>
 
-        {/* Category Icons Slider - Hidden on Mobile */}
         <div className="hidden md:block w-full overflow-x-auto no-scrollbar pb-6 md:pb-0 flex-shrink-0 px-6 md:px-0">
           <div className="flex flex-nowrap md:justify-center gap-4 md:gap-10 w-full">
             {categories.map((item, index) => (

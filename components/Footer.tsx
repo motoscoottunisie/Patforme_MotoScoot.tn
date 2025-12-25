@@ -60,6 +60,12 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   Espace Pro
                 </button>
               </li>
+              <li className="pt-1">
+                <button onClick={() => onNavigate?.('super-admin')} className="text-neutral-600 hover:text-neutral-400 transition-colors flex items-center gap-2 focus:outline-none focus:underline text-[10px] font-black uppercase tracking-widest">
+                  <span className="w-1 h-1 rounded-full bg-neutral-700"></span>
+                  Super Admin
+                </button>
+              </li>
             </ul>
           </div>
 

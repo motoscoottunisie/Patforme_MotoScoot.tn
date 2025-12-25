@@ -1,18 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
-  Calendar, 
   Clock, 
-  ChevronRight, 
-  ArrowRight, 
-  User,
-  CircleDashed,
-  Home,
   Search,
-  Mail
+  ArrowRight,
+  ChevronRight,
+  Calendar,
+  Newspaper,
+  Home as HomeIcon,
+  Filter
 } from 'lucide-react';
 import { mockArticles } from '../data/mockData';
 import Header from './layout/Header';
-import AdBanner from './common/AdBanner';
 
 interface NewsProps {
   onGoHome?: () => void;
@@ -23,35 +21,35 @@ interface NewsProps {
 }
 
 const News: React.FC<NewsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTriggerLogin, onLogout }) => {
-  const [visibleCount, setVisibleCount] = useState<number>(6);
+  const [activeCategory, setActiveCategory] = useState('Tout');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const featuredArticle = mockArticles.find(a => a.isFeatured) || mockArticles[0];
-  const regularArticles = mockArticles.filter(a => a.id !== featuredArticle.id);
+  const categories = ['Tout', 'Nouveautés', 'Essais', 'Tech', 'Scooters', 'Électrique'];
 
-  const handleArticleClick = (id: number) => {
-    onNavigate?.('article-details', { id });
-  };
+  const filteredArticles = useMemo(() => {
+    return mockArticles.filter(a => {
+      const matchesCat = activeCategory === 'Tout' || a.category === activeCategory;
+      const matchesSearch = a.title.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCat && matchesSearch;
+    });
+  }, [activeCategory, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-[#F9FAFB] font-sans selection:bg-primary-100 selection:text-primary-700">
       
-      {/* HERO SECTION - Updated for Tablet Portrait */}
-      <div className="relative w-full h-[35vh] md:h-[30vh] lg:h-[45vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
+      {/* FULL-WIDTH HERO SECTION WITH ALIGNED CONTENT */}
+      <section className="relative w-full h-[55vh] md:h-[50vh] lg:h-[52vh] flex flex-col items-start justify-center overflow-hidden">
         
         {/* Background Container */}
         <div className="absolute inset-0 overflow-hidden z-0">
-          {/* Mobile Background Image */}
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
             style={{ backgroundImage: "url('https://www.magma-studio.tn/portfolio2/hero_section-background_mobile.webp')" }}
           />
-          {/* Desktop Background Image */}
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block"
             style={{ backgroundImage: "url('https://magma-studio.tn/portfolio2/-hero-background.webp')" }}
           />
-
-          {/* Gradient Overlay */}
           <div 
             className="absolute inset-0"
             style={{
@@ -71,196 +69,150 @@ const News: React.FC<NewsProps> = ({ onGoHome, onNavigate, isLoggedIn, onTrigger
           onLogout={onLogout}
         />
 
-        {/* Hero Main Content */}
-        <div className="relative z-10 flex flex-col justify-center items-center w-full max-w-7xl mx-auto md:space-y-6 h-full pt-20">
-          
-          <div className="text-center px-4 md:mt-32">
-            <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-4 drop-shadow-sm tracking-tight leading-tight animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              Actualités & Essais
-            </h1>
-            <p className="text-white text-lg md:text-xl font-normal max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              Nouveautés, tests exclusifs et tendances du monde moto.
-            </p>
-          </div>
-
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
-        
-        {/* Breadcrumbs & Search Bar (Dummy Field) */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-          <div className="flex items-center text-sm text-gray-500 overflow-x-auto whitespace-nowrap">
-            <div className="flex items-center hover:text-primary-600 cursor-pointer transition-colors" onClick={onGoHome}>
-              <Home className="w-4 h-4 mr-1" />
-              <span>Accueil</span>
+        {/* Content Wrapper aligned with Header Logo */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-20 lg:px-32 mt-10 md:mt-16 animate-fade-in-up">
+            {/* Glassmorphism Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md text-white rounded-full border border-white/20 mb-6">
+              <Newspaper size={12} strokeWidth={2.5} />
+              <span className="text-[9px] font-black uppercase tracking-[0.25em]">Actualités & Essais</span>
             </div>
-            <ChevronRight className="w-4 h-4 mx-2 text-gray-300" />
-            <span className="font-semibold text-gray-900">Actualités & Essais</span>
-          </div>
 
-          {/* Dummy Search Field */}
-          <div className="relative w-full md:w-80">
-             <input
-               type="text"
-               placeholder="Rechercher un article..."
-               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-all shadow-sm"
-             />
-             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          </div>
+            {/* XXL Typo - Frameless and White */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-[900] text-white leading-[1.1] tracking-[-0.04em] mb-6">
+              Toute l’actualité moto, <br />
+              <span className="text-white">
+                en accès privilégié.
+              </span>
+            </h1>
+
+            <p className="text-white/80 text-sm md:text-base lg:text-lg font-medium max-w-xl leading-relaxed">
+              Essais privés, décryptages du marché et guides d’achat experts pour la communauté moto et scooter.
+            </p>
         </div>
+      </section>
+
+      {/* Main Content Area aligned with Hero Content and Header Logo */}
+      <main className="max-w-7xl mx-auto px-6 md:px-20 lg:px-32 -mt-10 relative z-20 pb-24">
         
-        {/* Featured Article */}
-        <div className="mb-12 animate-fade-in-up">
-          <div 
-            onClick={() => handleArticleClick(featuredArticle.id)}
-            className="group grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer"
-          >
-             <div className="relative h-72 lg:h-auto overflow-hidden">
-               <img 
-                 src={featuredArticle.image} 
-                 alt={featuredArticle.title} 
-                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
-               />
-               <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 bg-primary-600 text-white text-xs font-bold uppercase tracking-wider rounded-md shadow-sm">
-                    À la une
-                  </span>
-               </div>
-             </div>
-             <div className="p-8 lg:p-12 flex flex-col justify-center">
-                <div className="flex items-center gap-3 text-sm text-gray-500 mb-4">
-                  <span className="font-bold text-primary-600">{featuredArticle.category}</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1"><Calendar size={14} /> {featuredArticle.date}</span>
-                </div>
-                <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900 mb-4 group-hover:text-primary-600 transition-colors leading-tight">
-                  {featuredArticle.title}
-                </h2>
-                <p className="text-gray-600 text-lg mb-8 line-clamp-3">
-                  {featuredArticle.summary}
-                </p>
-                <div className="flex items-center justify-between mt-auto">
-                   <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                         <User size={18} className="text-gray-500" />
-                      </div>
-                      <div className="text-sm">
-                         <p className="font-bold text-gray-900">{featuredArticle.author}</p>
-                         <p className="text-gray-500">{featuredArticle.readTime} de lecture</p>
-                      </div>
-                   </div>
-                   <span className="p-3 bg-primary-50 rounded-full text-primary-600 group-hover:bg-primary-600 group-hover:text-white transition-all">
-                      <ArrowRight className="w-5 h-5" />
-                   </span>
-                </div>
-             </div>
-          </div>
-        </div>
-
-        {/* Ad Banner - Dynamic */}
-        <AdBanner zone="news_top" className="mb-12 h-32 md:h-48 rounded-2xl" />
-
-        {/* Article Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-           {regularArticles.slice(0, visibleCount).map((article, index) => (
-             <article 
-               key={article.id} 
-               onClick={() => handleArticleClick(article.id)}
-               className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 cursor-pointer animate-fade-in-up"
-               style={{ animationDelay: `${index * 100}ms` }}
-             >
-                <div className="relative h-56 overflow-hidden">
-                   <img 
-                     src={article.image} 
-                     alt={article.title} 
-                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
-                   />
-                   <div className="absolute top-3 left-3">
-                      <span className="px-2.5 py-1 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-bold uppercase tracking-wider rounded-md shadow-sm">
-                        {article.category}
-                      </span>
-                   </div>
+        {/* FLOATING FILTERS & SEARCH BAR */}
+        <div className="bg-white rounded-3xl p-4 md:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-gray-100 mb-20">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full lg:w-auto">
+                    {categories.map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => setActiveCategory(cat)}
+                            className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeCategory === cat ? 'bg-[#0F172A] text-white shadow-lg' : 'text-gray-400 hover:text-[#0F172A] hover:bg-gray-50'}`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
                 </div>
                 
-                <div className="p-6 flex-1 flex flex-col">
-                   <div className="flex items-center gap-2 text-xs text-gray-500 mb-3 font-medium">
-                      <Calendar size={12} />
-                      <span>{article.date}</span>
-                      <span>•</span>
-                      <Clock size={12} />
-                      <span>{article.readTime}</span>
-                   </div>
-                   
-                   <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors line-clamp-2">
-                      {article.title}
-                   </h3>
-                   
-                   <p className="text-gray-600 text-sm mb-6 line-clamp-3 flex-1">
-                      {article.summary}
-                   </p>
-
-                   <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
-                      <span className="text-xs font-bold text-gray-500">Par {article.author}</span>
-                      <span className="text-sm font-bold text-primary-600 flex items-center gap-1 group-hover:gap-2 transition-all">
-                         Lire l'article <ChevronRight size={16} />
-                      </span>
-                   </div>
+                <div className="relative w-full lg:w-96 group">
+                    <input 
+                      type="text" 
+                      placeholder="Rechercher un modèle, une info..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold text-gray-900 focus:bg-white focus:border-[#E65100] outline-none transition-all"
+                    />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#E65100] transition-colors" size={18} />
                 </div>
-             </article>
-           ))}
+            </div>
         </div>
 
-        {/* Load More */}
-        {visibleCount < regularArticles.length && (
-          <div className="text-center mb-16">
-             <button 
-               onClick={() => setVisibleCount(prev => prev + 3)}
-               className="inline-flex items-center gap-2 px-8 py-4 bg-white border border-gray-200 text-gray-900 font-bold rounded-full hover:border-primary-600 hover:text-primary-600 transition-all shadow-sm"
-             >
-                <CircleDashed className="w-5 h-5 animate-spin-slow" />
-                Charger plus d'articles
-             </button>
-          </div>
+        {/* ARTICLES GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-20">
+            {filteredArticles.map((article, idx) => (
+                <article 
+                    key={article.id}
+                    onClick={() => onNavigate?.('article-details', { id: article.id })}
+                    className="group cursor-pointer flex flex-col animate-fade-in-up"
+                    style={{ animationDelay: `${idx * 100}ms` }}
+                >
+                    {/* Image Card - Animations removed as requested */}
+                    <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-gray-200 mb-8 border border-gray-100 shadow-sm transition-all group-hover:shadow-xl group-hover:shadow-primary-600/5 duration-500">
+                        <img 
+                            src={article.image} 
+                            className="w-full h-full object-cover" 
+                            alt={article.title} 
+                        />
+                        <div className="absolute top-6 left-6">
+                            <span className="px-4 py-1.5 bg-white/95 backdrop-blur-md rounded-xl text-[9px] font-black text-gray-900 uppercase tracking-[0.2em] shadow-sm">
+                                {article.category}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Meta Section */}
+                    <div className="flex items-center gap-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">
+                        <div className="flex items-center gap-1.5">
+                            <Calendar size={12} className="text-[#E65100]" />
+                            <span>{article.date}</span>
+                        </div>
+                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                        <div className="flex items-center gap-1.5">
+                            <Clock size={12} />
+                            <span>{article.readTime}</span>
+                        </div>
+                    </div>
+
+                    {/* Typography Section */}
+                    <div className="px-2 flex-1 flex flex-col">
+                        <h3 className="text-xl font-[900] text-[#0F172A] leading-[1.2] tracking-tight mb-4 group-hover:text-[#E65100] transition-colors line-clamp-2">
+                            {article.title}
+                        </h3>
+                        <p className="text-gray-500 text-sm font-medium line-clamp-3 leading-relaxed mb-8">
+                            {article.summary}
+                        </p>
+                        <div className="mt-auto flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.25em] text-[#0F172A] transition-all">
+                            Découvrir <ArrowRight size={14} className="text-[#E65100] group-hover:translate-x-2 transition-transform" />
+                        </div>
+                    </div>
+                </article>
+            ))}
+        </div>
+
+        {/* EMPTY STATE */}
+        {filteredArticles.length === 0 && (
+            <div className="py-32 text-center bg-white rounded-[3.5rem] border border-gray-100 shadow-sm animate-fade-in-up">
+                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-8">
+                    <Search className="w-10 h-10 text-gray-200" />
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">Aucun résultat trouvé</h3>
+                <p className="text-gray-500 font-medium max-w-xs mx-auto">Nous n'avons pas d'articles correspondant à votre recherche actuelle.</p>
+                <button 
+                  onClick={() => { setSearchQuery(""); setActiveCategory("Tout"); }}
+                  className="mt-10 px-8 py-4 bg-[#0F172A] text-white font-black rounded-2xl text-[10px] uppercase tracking-widest active:scale-95 transition-all"
+                >
+                   Réinitialiser
+                </button>
+            </div>
         )}
 
-        {/* Newsletter Section (Dummy Text Fields) */}
-        <div className="bg-neutral-900 rounded-3xl p-8 md:p-16 text-center relative overflow-hidden shadow-2xl">
-            {/* Background Texture */}
-            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-primary-600 rounded-full blur-[128px] opacity-20 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-primary-500 rounded-full blur-[100px] opacity-10 pointer-events-none"></div>
-
-            <div className="relative z-10 max-w-3xl mx-auto">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-wider mb-6 border border-white/10">
-                   <Mail className="w-3 h-3" />
-                   Newsletter
+        {/* PREMIUM PRO CONTACT */}
+        <section className="mt-32 p-12 md:p-24 bg-[#0F172A] rounded-[4rem] relative overflow-hidden group shadow-2xl animate-fade-in-up">
+            <div className="absolute top-0 right-0 w-[40%] h-full bg-gradient-to-l from-[#E65100]/10 to-transparent pointer-events-none"></div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+                <div className="max-w-2xl text-center md:text-left">
+                    <h2 className="text-4xl md:text-6xl font-[900] text-white tracking-tighter leading-[1.1] mb-6">
+                        Une info <br /> <span className="text-[#E65100]">à partager ?</span>
+                    </h2>
+                    <p className="text-gray-400 font-medium text-lg md:text-xl">
+                        Devenez contributeur ou envoyez-nous vos actualités locales pour faire vivre la communauté.
+                    </p>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">Restez informé de l'actualité moto</h2>
-                <p className="text-gray-400 mb-10 text-lg">Recevez les derniers essais, les nouveautés et nos conseils d'entretien directement dans votre boîte mail.</p>
-                
-                <div className="flex flex-col md:flex-row gap-4">
-                    <input
-                      type="text"
-                      placeholder="Votre nom"
-                      className="flex-1 px-6 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:bg-white/10 focus:border-primary-500 transition-all"
-                    />
-                    <input
-                      type="email"
-                      placeholder="Votre adresse email"
-                      className="flex-1 px-6 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:bg-white/10 focus:border-primary-500 transition-all"
-                    />
-                    <button className="px-8 py-4 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl transition-all shadow-lg active:scale-95 whitespace-nowrap">
-                        S'inscrire
-                    </button>
-                </div>
-                <p className="text-gray-500 text-xs mt-4">
-                  En vous inscrivant, vous acceptez notre politique de confidentialité. Désinscription possible à tout moment.
-                </p>
+                <button 
+                    onClick={() => onNavigate?.('contact')}
+                    className="px-12 py-6 bg-white text-[#0F172A] font-[900] rounded-2xl text-xs uppercase tracking-widest hover:bg-[#E65100] hover:text-white transition-all active:scale-95 shadow-2xl"
+                >
+                    Contactez la rédaction
+                </button>
             </div>
-        </div>
+        </section>
 
-      </div>
-
+      </main>
     </div>
   );
 };

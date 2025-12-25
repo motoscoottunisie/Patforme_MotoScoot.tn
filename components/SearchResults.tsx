@@ -424,7 +424,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
               Résultats de recherche
             </h1>
             <p className="text-gray-500 font-medium text-lg">
-               {filteredAndSortedListings.length} annonces disponibles correspondant à vos critères
+               {filteredAndSortedListings.length} annonces disponibles
             </p>
         </div>
 
@@ -835,11 +835,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                   <button className="w-full h-10 lg:h-11 rounded-xl bg-[#E6580B] text-white font-black text-xs lg:text-sm shadow-none hover:opacity-90 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
                                      <Phone size={16} /> Appeler
                                   </button>
-                                  {isPro && (
-                                     <button className="w-full h-10 lg:h-11 rounded-xl bg-white border-2 border-primary-600 text-primary-600 font-black text-xs lg:text-sm hover:bg-primary-50 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
-                                        Boutique <ArrowRight size={14} />
-                                     </button>
-                                  )}
                                   <button 
                                     onClick={(e) => handleFavoriteClick(e, listing.id)}
                                     className={`w-full h-8 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase transition-colors ${favorited ? 'bg-red-50 text-red-500' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
@@ -847,7 +842,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                                      <Heart size={14} fill={favorited ? "currentColor" : "none"} />
                                      <span className="hidden lg:inline">{favorited ? "Sauvegardé" : "Sauvegarder"}</span>
                                   </button>
-                               </div>
+                                </div>
                             </div>
                           )}
                       </div>
@@ -1031,7 +1026,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
            </div>
 
            <div className="p-4 border-t border-gray-100 bg-white sticky bottom-0 z-20 pb-8 md:pb-4 safe-area-bottom shadow-none">
-              <button onClick={() => setIsMobileFilterOpen(false)} className="w-full bg-gray-900 text-white font-black py-4 rounded-xl flex items-center justify-center gap-2 text-sm active:scale-[0.98] uppercase tracking-widest shadow-none">
+              <button onClick={() => setIsMobileFilterOpen(false)} className="w-full bg-primary-600 text-white font-black py-4 rounded-xl flex items-center justify-center gap-2 text-sm active:scale-[0.98] uppercase tracking-widest shadow-none">
                  Afficher {filteredAndSortedListings.length} résultats
               </button>
            </div>

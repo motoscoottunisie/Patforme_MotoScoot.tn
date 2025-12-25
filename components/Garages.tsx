@@ -203,7 +203,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
               Garages & Ateliers
             </h1>
             <p className="text-gray-500 font-medium text-lg">
-               {filteredAndSortedGarages.length} experts disponibles pour l'entretien de votre moto
+               {filteredAndSortedGarages.length} experts disponibles
             </p>
         </div>
 
@@ -564,7 +564,7 @@ const Garages: React.FC<GaragesProps> = ({ onGoHome, onNavigate, isLoggedIn, onT
               </div>
 
               <div>
-                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block ml-1">VILLE</label>
+                 <label className="text-[10px) font-black text-gray-400 uppercase tracking-widest mb-3 block ml-1">VILLE</label>
                  <div className="relative">
                     <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl px-4 py-4 text-base text-gray-900 font-bold focus:bg-white">
                       <option value="">Toutes les villes</option>
