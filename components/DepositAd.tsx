@@ -34,7 +34,10 @@ import {
   CircleDollarSign,
   BarChart3,
   AlertCircle,
-  ShieldCheck
+  ShieldCheck,
+  Shield,
+  Hammer,
+  Image as ImageIcon
 } from 'lucide-react';
 import Header from './layout/Header';
 import { brandsMoto, mockModels, equipmentOptions, accessoryTypes, conditions, mockTechSpecs, mockListings } from '../data/mockData';
@@ -74,6 +77,46 @@ const ccList = [
   "49", "50", "80", "100", "110", "125", "150", "200", "250", "300", "350", "400", 
   "450", "500", "530", "560", "600", "636", "650", "660", "700", "750", "765", "800", "850", "890", "900", 
   "1000", "1050", "1100", "1200", "1250", "1290", "1300", "1400", "1500", "1600", "1700", "1800", "2000", "2300", "2500"
+];
+
+// --- OPTIONS CONFIGURATION ---
+
+const motoOptionsGroups = [
+  {
+    category: "Sécurité / Aides",
+    options: ["ABS", "Antipatinage", "Modes de conduite", "Éclairage Full LED"]
+  },
+  {
+    category: "Confort / Voyage",
+    options: ["Régulateur de vitesse", "Poignées chauffantes", "Bulle / pare-brise", "Selle confort"]
+  },
+  {
+    category: "Praticité",
+    options: ["Top case", "Valises latérales", "Béquille centrale"]
+  },
+  {
+    category: "Tech",
+    options: ["Prise USB", "Démarrage sans clé", "Quickshifter", "Alarme"]
+  }
+];
+
+const scooterOptionsGroups = [
+  {
+    category: "Sécurité",
+    options: ["ABS", "Antipatinage", "Éclairage Full LED"]
+  },
+  {
+    category: "Confort",
+    options: ["Bulle haute", "Selle confort", "Tablier de protection", "Poignées chauffantes"]
+  },
+  {
+    category: "Praticité",
+    options: ["Top case", "Coffre (2 casques)", "Béquille centrale"]
+  },
+  {
+    category: "Tech",
+    options: ["Prise USB", "Démarrage sans clé", "Alarme"]
+  }
 ];
 
 // --- CROP MODAL COMPONENT ---
@@ -336,19 +379,60 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
   };
 
   const updateField = (field: keyof AdFormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      
+      // Clear model when brand changes
+      if (field === 'brand') {
+        newData.model = '';
+        setModelSuggestions([]);
+      }
+      
+      return newData;
+    });
 
+    // Handle Model Suggestions (Searchable Dropdown)
     if (field === 'model' && formData.brand) {
-      const sourceData = [...mockTechSpecs.filter(s => s.brand === formData.brand).map(s => s.model), ...mockModels];
-      const filtered = Array.from(new Set(sourceData)).filter(m => m.toLowerCase().includes(value.toLowerCase())).slice(0, 6);
+      const brandModels = mockTechSpecs
+        .filter(s => s.brand === formData.brand)
+        .map(s => s.model);
+      
+      const sourceData = Array.from(new Set(brandModels));
+      
+      const filtered = sourceData
+        .filter(m => m.toLowerCase().includes(value.toLowerCase()))
+        .slice(0, 10);
+        
       setModelSuggestions(filtered);
-      setShowSuggestions(value.length > 0 && filtered.length > 0);
+      setShowSuggestions(filtered.length > 0);
+    }
+  };
+
+  // Ensure models are visible when focusing the input if a brand is selected
+  const handleModelFocus = () => {
+    if (formData.brand) {
+      const brandModels = mockTechSpecs
+        .filter(s => s.brand === formData.brand)
+        .map(s => s.model);
+      
+      const sourceData = Array.from(new Set(brandModels));
+      setModelSuggestions(sourceData.slice(0, 10));
+      setShowSuggestions(sourceData.length > 0);
     }
   };
 
   const handleCategorySelect = (cat: Category) => {
     setFormData(prev => ({ ...prev, category: cat, brand: '', model: '', year: '', mileage: '', cc: '', accessoryType: '', condition: '', equipment: [], description: '' }));
     setStep(2);
+  };
+
+  const toggleEquipment = (option: string) => {
+    setFormData(prev => ({
+      ...prev,
+      equipment: prev.equipment.includes(option)
+        ? prev.equipment.filter(e => e !== option)
+        : [...prev.equipment, option]
+    }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -419,10 +503,18 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
           <>
             <div className="col-span-full">
               <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Type d'article</label>
-              <div className="flex flex-wrap gap-2">
-                {accessoryTypes.map(t => (
-                  <button key={t} onClick={() => updateField('accessoryType', t)} className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${formData.accessoryType === t ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-neutral-100 text-gray-600 hover:border-primary-200'}`}>{t}</button>
-                ))}
+              <div className="relative">
+                <select 
+                  value={formData.accessoryType} 
+                  onChange={(e) => updateField('accessoryType', e.target.value)} 
+                  className="w-full appearance-none px-5 py-4 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary-600 outline-none font-bold text-gray-900 cursor-pointer shadow-none"
+                >
+                  <option value="" disabled>Choisir le type d'accessoire</option>
+                  {accessoryTypes.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
               </div>
             </div>
             <div className="space-y-2">
@@ -449,14 +541,25 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
             <div className="space-y-2 relative" ref={suggestionRef}>
               <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Modèle</label>
               <div className="relative">
-                <input type="text" value={formData.model} onChange={(e) => updateField('model', e.target.value)} placeholder="Tappez le modèle..." className="w-full px-5 py-4 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary-600 outline-none font-bold text-gray-900 shadow-none" />
-                <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                <input 
+                  type="text" 
+                  value={formData.model} 
+                  onChange={(e) => updateField('model', e.target.value)} 
+                  onFocus={handleModelFocus}
+                  placeholder={formData.brand ? `Choisir un modèle ${formData.brand}...` : "Sélectionnez d'abord une marque"} 
+                  disabled={!formData.brand}
+                  className="w-full px-5 py-4 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary-600 outline-none font-bold text-gray-900 shadow-none disabled:opacity-50 disabled:cursor-not-allowed" 
+                />
+                <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
               </div>
               {showSuggestions && (
-                <div className="absolute z-50 left-0 right-0 top-full mt-2 bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden animate-scale-in">
+                <div className="absolute z-50 left-0 right-0 top-full mt-2 bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden animate-scale-in max-h-60 overflow-y-auto">
                    {modelSuggestions.map((m, idx) => (
                      <button key={idx} onClick={() => { updateField('model', m); setShowSuggestions(false); }} className="w-full px-5 py-3 text-left hover:bg-primary-50 text-sm font-bold text-gray-700">{m}</button>
                    ))}
+                   <div className="px-5 py-2 bg-gray-50 border-t border-gray-100 text-[9px] font-black text-gray-400 uppercase tracking-widest italic">
+                     Modèle introuvable ? Saisissez-le librement.
+                   </div>
                 </div>
               )}
             </div>
@@ -498,6 +601,47 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
              ))}
           </div>
         </div>
+
+        {/* --- OPTIONS / ÉQUIPEMENTS SECTION --- */}
+        {(formData.category === 'Moto' || formData.category === 'Scooter') && (
+          <div className="col-span-full pt-8 border-t border-neutral-100 animate-fade-in-up">
+             <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center text-primary-600 border border-primary-100 shadow-xs"><Sparkles size={20} /></div>
+                <div>
+                   <h3 className="font-black text-gray-900 text-lg tracking-tight uppercase">Options & Équipements</h3>
+                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Séléctionnez les atouts de votre véhicule</p>
+                </div>
+             </div>
+
+             <div className="space-y-8">
+                {(formData.category === 'Moto' ? motoOptionsGroups : scooterOptionsGroups).map((group, gIdx) => (
+                   <div key={gIdx} className="space-y-3">
+                      <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">{group.category}</h4>
+                      <div className="flex flex-wrap gap-2">
+                         {group.options.map((option) => {
+                            const isSelected = formData.equipment.includes(option);
+                            return (
+                               <button
+                                 key={option}
+                                 type="button"
+                                 onClick={() => toggleEquipment(option)}
+                                 className={`px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all flex items-center gap-2 active:scale-95 shadow-xs ${
+                                    isSelected 
+                                    ? 'bg-primary-600 border-primary-600 text-white shadow-md' 
+                                    : 'bg-white border-neutral-100 text-gray-600 hover:border-primary-200'
+                                 }`}
+                               >
+                                  {isSelected ? <CheckCircle2 size={14} strokeWidth={3} /> : <Plus size={14} className="opacity-40" />}
+                                  {option}
+                               </button>
+                            );
+                         })}
+                      </div>
+                   </div>
+                ))}
+             </div>
+          </div>
+        )}
       </div>
 
       <div className="pt-8 border-t border-neutral-100 space-y-4">
@@ -532,45 +676,86 @@ const DepositAd: React.FC<DepositAdProps> = ({ onGoHome, onNavigate, isLoggedIn,
   const renderStep3 = () => (
     <div className="space-y-10 animate-fade-in-up">
       <div className="space-y-6">
-        <div className="text-center md:text-left">
-          <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-2 tracking-tight">Galerie Photos</h2>
-          <p className="text-gray-500 font-medium">Optimisez vos chances de vente avec de belles photos (max 10).</p>
+        <div className="text-center md:text-left flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Galerie Photos</h2>
+            <p className="text-gray-500 text-sm font-medium mt-1">Optimisez vos chances de vente avec de belles photos.</p>
+          </div>
+          <div className="bg-primary-50 px-4 py-2 rounded-2xl border border-primary-100 hidden sm:block">
+            <span className="text-xs font-black text-primary-600 uppercase tracking-widest">{formData.images.length} / 10</span>
+          </div>
         </div>
         
         <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" multiple />
-        <button onClick={() => fileInputRef.current?.click()} className="w-full aspect-[4/1] rounded-[2rem] border-2 border-dashed border-neutral-200 bg-neutral-50 flex flex-col items-center justify-center gap-2 group hover:border-primary-400 hover:bg-primary-50/30 transition-all shadow-none">
-            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary-600 border border-neutral-100 group-hover:scale-110 transition-transform shadow-none"><Camera size={28} /></div>
-            <span className="font-black text-gray-900">Ajouter des photos</span>
-            <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Recommandé : 4:3 (Horizontal)</span>
-        </button>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {formData.images.map((img, idx) => (
-                <div key={idx} className="flex flex-col gap-3 animate-fade-in-up">
-                    <div className="relative aspect-square rounded-2xl overflow-hidden border border-neutral-100 bg-gray-50 shadow-none">
-                        <img src={img} alt="" className="w-full h-full object-cover" />
-                        {idx === 0 && (
-                            <span className="absolute bottom-2 left-2 bg-primary-600 text-white text-[8px] font-black px-2 py-1 rounded uppercase shadow-none">Principale</span>
-                        )}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+            {/* Upload Button integrated into grid */}
+            {formData.images.length < 10 && (
+                <button 
+                    onClick={() => fileInputRef.current?.click()} 
+                    className="flex flex-col items-center justify-center gap-2 aspect-square rounded-[1.5rem] md:rounded-[2rem] border-2 border-dashed border-neutral-200 bg-neutral-50 group hover:border-primary-400 hover:bg-primary-50/30 transition-all shadow-none animate-fade-in-up"
+                >
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-2xl flex items-center justify-center text-primary-600 border border-neutral-100 group-hover:scale-110 transition-transform shadow-sm">
+                        {/* Fix: removed invalid md:size prop and used responsive Tailwind classes instead */}
+                        <Camera className="w-5 h-5 md:w-6 md:h-6" />
                     </div>
-                    <div className="flex gap-2">
+                    <div className="text-center px-2">
+                        <span className="block text-[11px] font-black text-gray-900 leading-tight">Ajouter</span>
+                        <span className="hidden xs:block text-[8px] text-gray-400 font-bold uppercase tracking-tighter mt-0.5">4:3 Recommandé</span>
+                    </div>
+                </button>
+            )}
+
+            {formData.images.map((img, idx) => (
+                <div key={idx} className="group relative aspect-square rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border border-neutral-100 bg-gray-50 shadow-sm animate-fade-in-up">
+                    <img src={img} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    
+                    {/* Image Actions Overlay */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[2px]">
                         <button 
                             onClick={() => setCroppingIndex(idx)} 
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-primary-600 hover:border-primary-100 transition-all active:scale-95 shadow-none"
+                            className="p-2 bg-white text-gray-700 rounded-full hover:bg-primary-600 hover:text-white transition-all active:scale-90"
+                            title="Recadrer"
                         >
-                            <CropIcon size={14} />
-                            <span className="text-[10px] font-black uppercase tracking-tighter">Éditer</span>
+                            <CropIcon size={16} />
                         </button>
                         <button 
                             onClick={() => updateField('images', formData.images.filter((_, i) => i !== idx))} 
-                            className="p-2.5 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-red-500 hover:border-red-100 transition-all active:scale-95 shadow-none"
+                            className="p-2 bg-white text-red-600 rounded-full hover:bg-red-600 hover:text-white transition-all active:scale-90"
+                            title="Supprimer"
                         >
-                            <Trash2 size={14} />
+                            <Trash2 size={16} />
                         </button>
                     </div>
+
+                    {idx === 0 && (
+                        <div className="absolute top-2 left-2 bg-primary-600 text-white text-[7px] font-black px-2 py-0.5 rounded-full uppercase shadow-lg border border-white/20">
+                            Principale
+                        </div>
+                    )}
                 </div>
             ))}
+
+            {/* Empty slots placeholders on larger screens for layout consistency */}
+            {formData.images.length === 0 && (
+                Array.from({ length: 4 }).map((_, i) => (
+                    <div key={`placeholder-${i}`} className="hidden sm:flex aspect-square rounded-[2rem] border border-neutral-100 bg-neutral-50/50 items-center justify-center opacity-40">
+                         <ImageIcon size={24} className="text-gray-300" />
+                    </div>
+                ))
+            )}
         </div>
+
+        {formData.images.length > 0 && (
+            <div className="bg-gray-50 p-4 rounded-3xl border border-gray-100 flex items-center gap-4 animate-fade-in-up">
+                <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-primary-600 shadow-sm shrink-0 border border-gray-100">
+                    <CheckCircle2 size={20} />
+                </div>
+                <p className="text-xs font-bold text-gray-600">
+                    <strong>Excellent !</strong> Vous avez ajouté {formData.images.length} photo{formData.images.length > 1 ? 's' : ''}. Cliquez sur l'icône <CropIcon size={12} className="inline mb-1" /> pour recadrer vos clichés si besoin.
+                </p>
+            </div>
+        )}
       </div>
     </div>
   );

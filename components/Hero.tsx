@@ -7,7 +7,8 @@ import {
   Bike,
   ShoppingBag,
   Search,
-  X
+  X,
+  Navigation
 } from 'lucide-react';
 import { tunisianCities, brandsMoto, mockModels, accessoryTypes } from '../data/mockData';
 import Header from './layout/Header';
@@ -49,7 +50,7 @@ const IconCasques = (props: any) => (
 const IconVestes = (props: any) => (
   <img 
     src="https://www.magma-studio.tn/portfolio2/moto/icons/vestes.svg" 
-    alt="Vestes" 
+    alt="Vestes"
     className={props.className} 
   />
 );
@@ -57,10 +58,13 @@ const IconVestes = (props: any) => (
 const IconGants = (props: any) => (
   <img 
     src="https://www.magma-studio.tn/portfolio2/moto/icons/gants.svg" 
-    alt="Gants" 
+    alt="Gants"
     className={props.className} 
   />
 );
+
+// Define missing Category type
+type Category = 'Moto' | 'Scooter' | 'Accessoires';
 
 interface CategoryItem {
   icon: React.ElementType;
@@ -92,14 +96,21 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
   const [location, setLocation] = useState("");
   const [isLocating, setIsLocating] = useState(false);
 
-  // States pour les Comboboxes
-  const [brandSearch, setBrandSearch] = useState("");
-  const [modelSearch, setModelSearch] = useState("");
+  // States pour les Dropdowns / Popups
+  const [isTypeOpen, setIsTypeOpen] = useState(false);
   const [isBrandOpen, setIsBrandOpen] = useState(false);
   const [isModelOpen, setIsModelOpen] = useState(false);
+  const [isAccessoryOpen, setIsAccessoryOpen] = useState(false);
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
 
+  // Search filter pour les comboboxes
+  const [brandSearch, setBrandSearch] = useState("");
+  const [modelSearch, setModelSearch] = useState("");
+
+  const typeRef = useRef<HTMLDivElement>(null);
   const brandRef = useRef<HTMLDivElement>(null);
   const modelRef = useRef<HTMLDivElement>(null);
+  const locationRef = useRef<HTMLDivElement>(null);
 
   // Reset dependent fields when Type changes
   useEffect(() => {
@@ -113,12 +124,14 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
   // Fermeture des menus au clic extérieur
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (brandRef.current && !brandRef.current.contains(event.target as Node)) {
-        setIsBrandOpen(false);
-      }
-      if (modelRef.current && !modelRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (typeRef.current && !typeRef.current.contains(target)) setIsTypeOpen(false);
+      if (brandRef.current && !brandRef.current.contains(target)) setIsBrandOpen(false);
+      if (modelRef.current && !modelRef.current.contains(target)) {
         setIsModelOpen(false);
+        setIsAccessoryOpen(false);
       }
+      if (locationRef.current && !locationRef.current.contains(target)) setIsLocationOpen(false);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -137,23 +150,16 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
       (position) => {
         setIsLocating(false);
         setLocation("Ma position");
+        setIsLocationOpen(false);
       },
       (error) => {
         setIsLocating(false);
         setLocation("");
+        setIsLocationOpen(false);
         console.warn("Géolocalisation Hero ignorée:", error.message || "Erreur inconnue");
       },
       geoOptions
     );
-  };
-
-  const handleLocationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    if (val === "around_me") {
-      handleLocationRequest();
-    } else {
-      setLocation(val);
-    }
   };
 
   const handleSearchClick = () => {
@@ -185,6 +191,12 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
 
   const isAccessoryMode = type === 'Accessoires';
 
+  // Classes partagées pour les Popups - Z-INDEX AUGMENTÉ À 100
+  const POPUP_CLASSES = "absolute top-[calc(100%+1.5rem)] left-0 w-[calc(100%+2rem)] -ml-4 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 max-h-60 overflow-y-auto z-[100] animate-scale-in origin-top";
+  const ITEM_CLASSES = "w-full text-left px-5 py-2.5 text-sm font-bold transition-colors";
+  const ACTIVE_ITEM_CLASSES = "bg-primary-50 text-primary-600";
+  const DEFAULT_ITEM_CLASSES = "text-gray-600 hover:bg-gray-50";
+
   // Filtrage des listes pour les comboboxes
   const filteredBrands = brandsMoto.filter(b => 
     b.toLowerCase().includes(brandSearch.toLowerCase())
@@ -195,9 +207,9 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
   );
 
   return (
-    <div className="relative w-full h-[100dvh] md:h-[50vh] lg:h-[80vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans overflow-hidden bg-primary-50">
+    <div className="relative w-full h-[100dvh] md:h-[50vh] lg:h-[80vh] flex flex-col md:items-center md:justify-center px-6 md:px-20 lg:px-32 md:pb-20 lg:pb-32 font-sans bg-primary-50">
       
-      {/* Background Container */}
+      {/* Background Container - L'overflow: hidden est déplacé ici pour ne pas couper les popups du parent principal */}
       <div className="absolute inset-0 overflow-hidden z-0">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
@@ -226,9 +238,9 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
         onLogout={onLogout}
       />
 
-      <div className="relative z-10 flex flex-col md:block h-full md:h-auto w-full max-w-7xl mx-auto md:space-y-16 justify-between md:justify-center pt-20 md:pt-0">
+      <div className="relative z-10 flex flex-col md:block h-full md:h-auto w-full max-w-7xl mx-auto md:space-y-16 justify-between md:justify-center pt-20 md:pt-0 overflow-visible">
         
-        <div className="flex-1 flex flex-col justify-center items-center w-full md:px-0 space-y-10 md:space-y-6 mt-12 md:mt-48">
+        <div className="flex-1 flex flex-col justify-center items-center w-full md:px-0 space-y-10 md:space-y-6 mt-12 md:mt-48 overflow-visible">
           <div className="w-full max-w-5xl text-left text-white flex flex-col items-start md:mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-white text-xs md:text-sm font-bold uppercase tracking-wide mb-6 animate-fade-in-up">
               <span className="relative flex h-2.5 w-2.5">
@@ -246,29 +258,38 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
             </p>
           </div>
 
-          {/* Search Bar */}
-          <div className="w-full max-w-5xl bg-white rounded-xl p-2 flex flex-col md:flex-row items-stretch md:items-center shadow-2xl relative">
+          {/* Search Bar Container - overflow-visible is key */}
+          <div className="w-full max-w-5xl bg-white rounded-xl p-2 flex flex-col md:flex-row items-stretch md:items-center shadow-2xl relative overflow-visible z-20">
             
-            {/* Input 1: Type */}
-            <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group">
+            {/* Input 1: Type - CUSTOM DROPDOWN */}
+            <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group" ref={typeRef}>
               <Bike className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
               <div className="flex-1 relative">
-                <select 
-                  id="search-type" 
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="w-full bg-transparent outline-none text-gray-700 font-bold appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
+                <button 
+                  onClick={() => setIsTypeOpen(!isTypeOpen)}
+                  className="w-full text-left bg-transparent outline-none text-gray-700 font-bold cursor-pointer pr-8 truncate"
                 >
-                  <option value="" disabled>Que cherchez-vous ?</option>
-                  <option value="Moto">Moto</option>
-                  <option value="Scooter">Scooter</option>
-                  <option value="Accessoires">Accessoires</option>
-                </select>
-                <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  {type || "Que cherchez-vous ?"}
+                </button>
+                <ChevronDown className={`absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform ${isTypeOpen ? 'rotate-180' : ''}`} />
+                
+                {isTypeOpen && (
+                  <div className={POPUP_CLASSES}>
+                    {["Moto", "Scooter", "Accessoires"].map((item) => (
+                      <button
+                        key={item}
+                        onClick={() => { setType(item as Category); setIsTypeOpen(false); }}
+                        className={`${ITEM_CLASSES} ${type === item ? ACTIVE_ITEM_CLASSES : DEFAULT_ITEM_CLASSES}`}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Input 2: Dynamic (Marque OR Type d'accessoire) - COMBOBOX MARQUE */}
+            {/* Input 2: Dynamic (Marque OR Articles) - COMBOBOX/DROPDOWN */}
             <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group" ref={brandRef}>
               {isAccessoryMode ? (
                  <ShoppingBag className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
@@ -278,14 +299,27 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
               
               <div className="flex-1 relative">
                 {isAccessoryMode ? (
-                    <select 
-                      value={accessoryCategory}
-                      onChange={(e) => setAccessoryCategory(e.target.value)}
-                      className="w-full bg-transparent outline-none text-gray-700 font-bold appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none"
+                  <>
+                    <button 
+                      onClick={() => setIsAccessoryOpen(!isAccessoryOpen)}
+                      className="w-full text-left bg-transparent outline-none text-gray-700 font-bold cursor-pointer pr-8 truncate"
                     >
-                      <option value="" disabled>Articles</option>
-                      {accessoryTypes.map((acc) => <option key={acc} value={acc}>{acc}</option>)}
-                    </select>
+                      {accessoryCategory || "Articles"}
+                    </button>
+                    {isAccessoryOpen && (
+                      <div className={POPUP_CLASSES}>
+                        {accessoryTypes.map((acc) => (
+                          <button
+                            key={acc}
+                            onClick={() => { setAccessoryCategory(acc); setIsAccessoryOpen(false); }}
+                            className={`${ITEM_CLASSES} ${accessoryCategory === acc ? ACTIVE_ITEM_CLASSES : DEFAULT_ITEM_CLASSES}`}
+                          >
+                            {acc}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <>
                     <input
@@ -298,12 +332,12 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
                       className="w-full bg-transparent outline-none text-gray-700 font-bold placeholder:text-gray-400 border-none p-0 focus:ring-0"
                     />
                     {isBrandOpen && (
-                      <div className="absolute top-[calc(100%+1.5rem)] left-0 w-[calc(100%+2rem)] -ml-4 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 max-h-60 overflow-y-auto z-[60] animate-scale-in origin-top">
+                      <div className={POPUP_CLASSES}>
                         {filteredBrands.length > 0 ? filteredBrands.map((b) => (
                           <button
                             key={b}
                             onClick={() => { setBrand(b); setBrandSearch(b); setIsBrandOpen(false); setModel(""); setModelSearch(""); }}
-                            className={`w-full text-left px-5 py-2.5 text-sm font-bold transition-colors ${brand === b ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                            className={`${ITEM_CLASSES} ${brand === b ? ACTIVE_ITEM_CLASSES : DEFAULT_ITEM_CLASSES}`}
                           >
                             {b}
                           </button>
@@ -314,7 +348,7 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
                     )}
                   </>
                 )}
-                <ChevronDown className={`absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform duration-200 ${isBrandOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform duration-200 ${(isBrandOpen || isAccessoryOpen) ? 'rotate-180' : ''}`} />
               </div>
             </div>
 
@@ -333,12 +367,12 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
                   className="w-full bg-transparent outline-none text-gray-700 font-bold placeholder:text-gray-400 border-none p-0 focus:ring-0 disabled:cursor-not-allowed"
                 />
                 {!isAccessoryMode && isModelOpen && (
-                  <div className="absolute top-[calc(100%+1.5rem)] left-0 w-[calc(100%+2rem)] -ml-4 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 max-h-60 overflow-y-auto z-[60] animate-scale-in origin-top">
+                  <div className={POPUP_CLASSES}>
                     {filteredModels.length > 0 ? filteredModels.map((m) => (
                       <button
                         key={m}
                         onClick={() => { setModel(m); setModelSearch(m); setIsModelOpen(false); }}
-                        className={`w-full text-left px-5 py-2.5 text-sm font-bold transition-colors ${model === m ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                        className={`${ITEM_CLASSES} ${model === m ? ACTIVE_ITEM_CLASSES : DEFAULT_ITEM_CLASSES}`}
                       >
                         {m}
                       </button>
@@ -351,25 +385,43 @@ const Hero: React.FC<HeroProps> = ({ onSearch, onNavigate, isLoggedIn, onTrigger
               </div>
             </div>
 
-            {/* Input 4: Location */}
-            <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group">
+            {/* Input 4: Location - CUSTOM DROPDOWN */}
+            <div className="flex-1 flex items-center px-4 md:px-6 py-4 md:py-5 border-b md:border-b-0 md:border-r border-gray-100 relative group" ref={locationRef}>
               <MapPin className={`w-5 h-5 mr-3 flex-shrink-0 transition-colors ${location === "Ma position" ? "text-primary-600" : "text-gray-400"}`} />
               <div className="flex-1 relative">
-                <select 
-                  id="search-city"
-                  value={location === "Ma position" ? "around_me" : location}
-                  onChange={handleLocationChange}
-                  className={`w-full bg-transparent outline-none font-bold appearance-none cursor-pointer pr-8 truncate focus:ring-0 border-none ${location === "Ma position" ? "text-primary-600" : "text-gray-700"}`}
+                <button 
+                  onClick={() => setIsLocationOpen(!isLocationOpen)}
+                  className={`w-full text-left bg-transparent outline-none font-bold pr-8 truncate ${location === "Ma position" ? "text-primary-600" : "text-gray-700"}`}
                 >
-                  <option value="" disabled>Où ça ?</option>
-                  <option value="around_me" className="font-bold text-primary-600">Autour de moi</option>
-                  <option disabled>──────────</option>
-                  {tunisianCities.map((city) => <option key={city} value={city}>{city}</option>)}
-                </select>
+                  {location || "Où ça ?"}
+                </button>
+                
                 {isLocating ? (
                    <div className="absolute right-0 top-1/2 transform -translate-y-1/2"><div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div></div>
                 ) : (
-                  <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className={`absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
+                )}
+
+                {isLocationOpen && (
+                  <div className={POPUP_CLASSES}>
+                    <button
+                      onClick={handleLocationRequest}
+                      className={`${ITEM_CLASSES} text-primary-600 flex items-center gap-2 hover:bg-primary-50`}
+                    >
+                      <Navigation size={14} className="fill-current" />
+                      Autour de moi
+                    </button>
+                    <div className="mx-5 my-2 border-t border-gray-100"></div>
+                    {tunisianCities.map((city) => (
+                      <button
+                        key={city}
+                        onClick={() => { setLocation(city); setIsLocationOpen(false); }}
+                        className={`${ITEM_CLASSES} ${location === city ? ACTIVE_ITEM_CLASSES : DEFAULT_ITEM_CLASSES}`}
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

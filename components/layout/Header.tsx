@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Menu, 
@@ -22,7 +21,6 @@ import {
   Mail,
   ChevronRight,
   HelpCircle,
-  // Fix: added missing Layers icon import
   Layers
 } from 'lucide-react';
 import { useFavorites } from '../../context/FavoritesContext';
@@ -154,7 +152,7 @@ const Header: React.FC<HeaderProps> = ({
               <img 
                 src={isSolid ? LOGO_COLOR : LOGO_WHITE} 
                 alt="MotoScoot.tn" 
-                className="h-5 md:h-7 w-auto object-contain transition-all duration-500 group-hover:opacity-90"
+                className={`h-6 md:h-7 w-auto object-contain transition-all duration-500 group-hover:opacity-90`}
               />
             </button>
 
@@ -237,7 +235,7 @@ const Header: React.FC<HeaderProps> = ({
           {/* Menu Header */}
           <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-10">
             <button className="flex items-center" onClick={() => { setIsMobileMenuOpen(false); onGoHome?.(); }}>
-              <img src={LOGO_COLOR} alt="MotoScoot.tn" className="h-4 w-auto" />
+              <img src={LOGO_COLOR} alt="MotoScoot.tn" className="h-5 w-auto" />
             </button>
             <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2 text-gray-400 hover:text-gray-900 bg-gray-50 rounded-full transition-all">
               <X className="w-7 h-7" />

@@ -199,7 +199,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [sortBy, setSortBy] = useState<SortOption[]>(['recent']);
   
   // Proximity State
   const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
@@ -255,7 +255,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
         const { latitude, longitude } = position.coords;
         setUserLocation({ lat: latitude, lng: longitude });
         setLocationStatus('success');
-        setSortBy('proximity'); 
+        setSortBy(['proximity']); 
       },
       (error) => {
         console.warn("Géolocalisation ignorée:", error.message || "Erreur inconnue");
@@ -323,25 +323,32 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
       }
       return true;
     }).sort((a, b) => {
-      if (sortBy === 'proximity' && a.distance !== null && b.distance !== null) {
-          return a.distance - b.distance;
+      // Chain multiple sorting criteria
+      for (const option of sortBy) {
+        let result = 0;
+        if (option === 'proximity' && a.distance !== null && b.distance !== null) {
+          result = a.distance - b.distance;
+        } else {
+          const priceA = parseInt(a.price.replace(/\D/g, ''));
+          const priceB = parseInt(b.price.replace(/\D/g, ''));
+          
+          switch (option) {
+            case 'price_asc': result = priceA - priceB; break;
+            case 'price_desc': result = priceB - priceA; break;
+            case 'year_desc': result = parseInt(b.year) - parseInt(a.year); break;
+            case 'km_asc': 
+              const kmA = parseInt(a.mileage.replace(/\D/g, '')) || 0;
+              const kmB = parseInt(b.mileage.replace(/\D/g, '')) || 0;
+              result = kmA - kmB;
+              break;
+            case 'recent':
+              result = b.id - a.id;
+              break;
+          }
+        }
+        if (result !== 0) return result;
       }
-
-      const priceA = parseInt(a.price.replace(/\D/g, ''));
-      const priceB = parseInt(b.price.replace(/\D/g, ''));
-      
-      switch (sortBy) {
-        case 'price_asc': return priceA - priceB;
-        case 'price_desc': return priceB - priceA;
-        case 'year_desc': return parseInt(b.year) - parseInt(a.year);
-        case 'km_asc': 
-          const kmA = parseInt(a.mileage.replace(/\D/g, '')) || 0;
-          const kmB = parseInt(b.mileage.replace(/\D/g, '')) || 0;
-          return kmA - kmB;
-        case 'recent':
-        default:
-          return b.id - a.id;
-      }
+      return 0;
     });
   }, [listingsWithDistance, filters, sortBy]);
 
@@ -366,7 +373,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
       minCC: 50,
       maxCC: 1650
     });
-    setSortBy(userLocation ? 'proximity' : 'recent');
+    setSortBy(userLocation ? ['proximity'] : ['recent']);
   };
 
   const handleCardClick = (listingId: number) => {
@@ -445,8 +452,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                   onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
                   className={`flex items-center gap-3 px-4 h-11 rounded-xl border transition-all text-sm font-bold shadow-sm active:scale-95 ${isSortDropdownOpen ? 'bg-primary-50 border-primary-500 text-primary-700' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'}`}
                 >
-                   {sortBy === 'proximity' ? <Navigation size={16} className="text-primary-600" /> : <ArrowUpDown size={16} className={sortBy !== 'recent' ? 'text-primary-600' : 'text-gray-400'} />}
-                   <span className="hidden sm:inline">{sortLabels[sortBy]}</span>
+                   {sortBy.includes('proximity') ? <Navigation size={16} className="text-primary-600" /> : <ArrowUpDown size={16} className={sortBy.length > 0 && !sortBy.includes('recent') ? 'text-primary-600' : 'text-gray-400'} />}
+                   <span className="hidden sm:inline">
+                      {sortBy.length > 1 ? `${sortBy.length} tris` : (sortBy.length === 1 ? sortLabels[sortBy[0]] : 'Trier')}
+                   </span>
                    <ChevronDown size={14} className={`transition-transform duration-300 ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -458,16 +467,19 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                           <button
                             key={option}
                             onClick={() => {
-                              setSortBy(option);
-                              setIsSortDropdownOpen(false);
+                              setSortBy(prev => 
+                                prev.includes(option) 
+                                  ? prev.filter(item => item !== option) 
+                                  : [...prev, option]
+                              );
                             }}
-                            className={`w-full text-left px-4 py-3 text-sm font-bold flex items-center justify-between transition-colors ${sortBy === option ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-50'}`}
+                            className={`w-full text-left px-4 py-3 text-sm font-bold flex items-center justify-between transition-colors ${sortBy.includes(option) ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-50'}`}
                           >
                              <div className="flex items-center gap-2">
                                 {option === 'proximity' && <Navigation size={14} />}
                                 {sortLabels[option]}
                              </div>
-                             {sortBy === option && <Check size={14} strokeWidth={3} />}
+                             {sortBy.includes(option) && <Check size={14} strokeWidth={3} />}
                           </button>
                         );
                      })}
@@ -536,7 +548,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ initialFilters, onGoHome,
                         </div>
                         <div>
                            <span className="block text-[10px] font-black text-success-700 uppercase tracking-tight leading-none mb-1">Position active</span>
-                           <span className="block text-[9px] font-bold text-success-600 uppercase">Trié par distance</span>
+                           <span className="block text-[9px) font-bold text-success-600 uppercase">Trié par distance</span>
                         </div>
                      </div>
                    )}
